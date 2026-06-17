@@ -1,0 +1,17 @@
+id: type_escape_advisory
+title: Type escape advisory
+description: Broad type escapes should be rare, localized, and explained when they cross trusted boundaries.
+pack: web
+default_mode: advisory
+severity: medium
+applies_to:
+  languages: [typescript]
+  paths: [src, apps, packages]
+scan:
+  patterns: ["as any", ": any", "@ts-ignore"]
+recommendation:
+  changed_files: true
+  baseline_supported: true
+public_safe_examples:
+  bad: Use as any to bypass an unknown payload shape.
+  good: Add a boundary parser or narrow type guard where the data enters the system.

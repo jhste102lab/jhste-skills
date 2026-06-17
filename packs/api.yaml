@@ -1,0 +1,8 @@
+id: api
+title: API boundary pack
+default_mode: advisory
+rules:
+  - rules/nextjs/thin_api_route.yaml
+  - rules/core/public_safe_error.yaml
+  - rules/core/external_input_validation.yaml
+  - rules/database/sql_parameter_binding.yaml

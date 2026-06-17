@@ -1,0 +1,9 @@
+id: core
+title: Core AI coding safety pack
+default_mode: advisory
+rules:
+  - rules/core/no_silent_failure.yaml
+  - rules/core/no_secret_logging.yaml
+  - rules/core/file_size_advisory.yaml
+  - rules/core/external_input_validation.yaml
+  - rules/core/side_effect_boundary.yaml

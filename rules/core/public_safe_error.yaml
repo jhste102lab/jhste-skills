@@ -1,0 +1,17 @@
+id: public_safe_error
+title: Public-safe error output
+description: Public responses and logs should expose useful reason codes without leaking raw internals or sensitive payloads.
+pack: api
+default_mode: advisory
+severity: high
+applies_to:
+  languages: [typescript, javascript, python]
+  paths: [src, apps, packages]
+scan:
+  keywords: [stack, error.message, details]
+recommendation:
+  changed_files: true
+  baseline_supported: false
+public_safe_examples:
+  bad: Return a raw database error or stack trace to a public client.
+  good: Return a stable public error code and keep detailed diagnostics in redacted internal logs.

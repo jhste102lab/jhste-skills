@@ -1,0 +1,17 @@
+id: side_effect_boundary
+title: Side effect boundary
+description: Network, clock, sleep, filesystem, browser lifecycle, notification, and environment effects should be explicit and testable when they affect policy behavior.
+pack: core
+default_mode: advisory
+severity: medium
+applies_to:
+  languages: [typescript, javascript, python]
+  paths: [src, apps, packages, scripts]
+scan:
+  keywords: [fetch, writeFile, readFile, exec, spawn, sleep, setTimeout, browser, page]
+recommendation:
+  changed_files: true
+  baseline_supported: true
+public_safe_examples:
+  bad: Hide a network call inside a generic formatting helper.
+  good: Put external calls behind an adapter or pass the side-effect dependency into policy code.

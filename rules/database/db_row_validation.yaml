@@ -1,0 +1,17 @@
+id: db_row_validation
+title: Database row validation
+description: Database and third-party rows should be validated or explicitly mapped before they become domain or public DTO values.
+pack: database
+default_mode: advisory
+severity: medium
+applies_to:
+  languages: [typescript, javascript, python]
+  paths: [src, apps, packages]
+scan:
+  path_hints: [repository, query, db, database]
+recommendation:
+  changed_files: true
+  baseline_supported: false
+public_safe_examples:
+  bad: Return a raw storage row directly from a public API.
+  good: Map and validate the fields needed by the caller.

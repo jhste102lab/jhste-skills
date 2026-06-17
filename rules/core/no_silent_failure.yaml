@@ -1,0 +1,20 @@
+id: no_silent_failure
+title: No silent failure
+description: Failures must be observable through an error, redacted log, event, response field, or explicit fallback reason.
+pack: core
+default_mode: advisory
+severity: high
+applies_to:
+  languages: [typescript, javascript, python]
+  paths: [src, apps, packages, scripts]
+scan:
+  patterns:
+    - "catch {}"
+    - ".catch(() => {})"
+    - "except Exception: pass"
+recommendation:
+  changed_files: true
+  baseline_supported: true
+public_safe_examples:
+  bad: Catch an error and return success without logging or fallback reason.
+  good: Return a typed failure, log a redacted warning, or document an intentional fallback.

@@ -1,0 +1,17 @@
+id: crawler_producer_boundary
+title: Crawler producer boundary
+description: Crawler and automation producers should create artifacts and documented handoff; consumer storage mutation belongs on the consumer side.
+pack: crawler
+default_mode: advisory
+severity: medium
+applies_to:
+  languages: [typescript, javascript, python]
+  paths: [src, apps, packages, scripts]
+scan:
+  path_hints: [crawler, scraper, automation, worker, scheduler, producer]
+recommendation:
+  changed_files: true
+  baseline_supported: true
+public_safe_examples:
+  bad: A crawler directly mutates downstream storage without a handoff contract.
+  good: Emit an artifact with metadata and let the consumer validate and persist it.

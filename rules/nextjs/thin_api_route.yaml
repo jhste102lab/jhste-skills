@@ -1,0 +1,17 @@
+id: thin_api_route
+title: Thin API route
+description: API routes and controllers should orchestrate auth, input parsing, service calls, and response mapping without owning deep persistence or domain transitions.
+pack: api
+default_mode: advisory
+severity: medium
+applies_to:
+  languages: [typescript, javascript]
+  paths: [app, pages, src]
+scan:
+  path_hints: [api, route, controller]
+recommendation:
+  changed_files: true
+  baseline_supported: true
+public_safe_examples:
+  bad: Put validation, SQL, transaction, domain policy, and public response shaping in one route file.
+  good: Route code validates input, calls a service, and maps a public-safe result.

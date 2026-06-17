@@ -1,0 +1,38 @@
+version: 1
+mode: advisory
+adapters:
+  codex: auto
+  claude: auto
+packs:
+  core:
+    mode: advisory
+  web:
+    mode: advisory
+  api:
+    mode: advisory
+  database:
+    mode: advisory
+  crawler:
+    mode: advisory
+rules:
+  file_size_advisory:
+    mode: advisory
+    source_file_warning_lines: 400
+    source_file_review_lines: 600
+  no_silent_failure:
+    mode: advisory
+  no_secret_logging:
+    mode: advisory
+  external_input_validation:
+    mode: advisory
+  db_api_boundary:
+    mode: advisory
+  crawler_producer_boundary:
+    mode: advisory
+baseline:
+  enabled: false
+  path: .jhste/baseline.json
+deep_scan:
+  last_run: null
+  report: .jhste/deep-scan-report.md
+  recommended_profile: .jhste/profile.recommended.yaml

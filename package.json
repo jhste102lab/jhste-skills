@@ -1,0 +1,37 @@
+{
+  "name": "jhste-skills",
+  "version": "0.1.0",
+  "description": "Portable AI coding skills kit with safe setup, shared rules, and optional deep scan.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhste102lab/jhste-skills.git"
+  },
+  "bin": {
+    "jhste-skills": "./cli/index.mjs"
+  },
+  "files": [
+    "adapters/",
+    "cli/",
+    "docs/",
+    "examples/",
+    "packs/",
+    "rules/",
+    "scripts/",
+    "skills/",
+    "vendor/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "npm run docs:check && npm run vendor:check && npm run public-safety:check && npm run smoke:test",
+    "docs:check": "node scripts/docs-check.mjs",
+    "vendor:check": "node scripts/vendor-check.mjs",
+    "public-safety:check": "node scripts/public-safety-check.mjs",
+    "smoke:test": "node scripts/smoke-test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

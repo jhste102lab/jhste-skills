@@ -1,0 +1,87 @@
+{
+  "upstream": "https://github.com/mattpocock/skills",
+  "imported_at": "2026-06-17T10:11:18Z",
+  "license": "MIT",
+  "skills": [
+    {
+      "name": "diagnose",
+      "source": "https://github.com/mattpocock/skills/tree/main/skills/engineering/diagnose",
+      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
+      "license": "MIT; see vendor/matt-pocock/LICENSE",
+      "vendored_path": "skills/diagnose",
+      "imported_at": "2026-06-17T10:11:18Z"
+    },
+    {
+      "name": "grill-with-docs",
+      "source": "https://github.com/mattpocock/skills/tree/main/skills/engineering/grill-with-docs",
+      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
+      "license": "MIT; see vendor/matt-pocock/LICENSE",
+      "vendored_path": "skills/grill-with-docs",
+      "imported_at": "2026-06-17T10:11:18Z"
+    },
+    {
+      "name": "triage",
+      "source": "https://github.com/mattpocock/skills/tree/main/skills/engineering/triage",
+      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
+      "license": "MIT; see vendor/matt-pocock/LICENSE",
+      "vendored_path": "skills/triage",
+      "imported_at": "2026-06-17T10:11:18Z"
+    },
+    {
+      "name": "improve-codebase-architecture",
+      "source": "https://github.com/mattpocock/skills/tree/main/skills/engineering/improve-codebase-architecture",
+      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
+      "license": "MIT; see vendor/matt-pocock/LICENSE",
+      "vendored_path": "skills/improve-codebase-architecture",
+      "imported_at": "2026-06-17T10:11:18Z"
+    },
+    {
+      "name": "to-issues",
+      "source": "https://github.com/mattpocock/skills/tree/main/skills/engineering/to-issues",
+      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
+      "license": "MIT; see vendor/matt-pocock/LICENSE",
+      "vendored_path": "skills/to-issues",
+      "imported_at": "2026-06-17T10:11:18Z"
+    },
+    {
+      "name": "to-prd",
+      "source": "https://github.com/mattpocock/skills/tree/main/skills/engineering/to-prd",
+      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
+      "license": "MIT; see vendor/matt-pocock/LICENSE",
+      "vendored_path": "skills/to-prd",
+      "imported_at": "2026-06-17T10:11:18Z"
+    },
+    {
+      "name": "prototype",
+      "source": "https://github.com/mattpocock/skills/tree/main/skills/engineering/prototype",
+      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
+      "license": "MIT; see vendor/matt-pocock/LICENSE",
+      "vendored_path": "skills/prototype",
+      "imported_at": "2026-06-17T10:11:18Z"
+    },
+    {
+      "name": "grill-me",
+      "source": "https://github.com/mattpocock/skills/tree/main/skills/productivity/grill-me",
+      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
+      "license": "MIT; see vendor/matt-pocock/LICENSE",
+      "vendored_path": "skills/grill-me",
+      "imported_at": "2026-06-17T10:11:18Z"
+    },
+    {
+      "name": "handoff",
+      "source": "https://github.com/mattpocock/skills/tree/main/skills/productivity/handoff",
+      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
+      "license": "MIT; see vendor/matt-pocock/LICENSE",
+      "vendored_path": "skills/handoff",
+      "imported_at": "2026-06-17T10:11:18Z"
+    },
+    {
+      "name": "write-a-skill",
+      "source": "https://github.com/mattpocock/skills/tree/main/skills/productivity/write-a-skill",
+      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
+      "license": "MIT; see vendor/matt-pocock/LICENSE",
+      "vendored_path": "skills/write-a-skill",
+      "imported_at": "2026-06-17T10:11:18Z"
+    }
+  ]
+}
