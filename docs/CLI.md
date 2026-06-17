@@ -27,6 +27,8 @@ Default behavior:
 
 It excludes generated, vendor, build, dependency, lock, large binary-like, and secret/env-like files. Secret-like findings are reported only as redacted summaries.
 
+The report includes responsibility budget candidates for large or mixed-responsibility pages, client modules, routes/controllers, import/ops scripts, and Python orchestrators. These are advisory review prompts by default and do not prove a file is wrong.
+
 ## `tune`
 
 `tune` shows that the recommended profile is separate, then applies non-strict pack/rule recommendations only after user approval. `strict` is rejected unless `--allow-strict` is explicit.

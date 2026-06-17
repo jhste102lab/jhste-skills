@@ -21,3 +21,16 @@ Merge order:
 5. explicit user instructions above all.
 
 Rule metadata lives in `rules/`. Pack files live in `packs/`. The example profile is `examples/profile.yaml`.
+
+## Responsibility budget advisory
+
+`responsibility_budget` is a review signal, not a default blocker. It looks for common module shapes that tend to collect unrelated work:
+
+- large Next `page.tsx` files;
+- large `"use client"` modules;
+- large route/controller files;
+- large import/ops scripts;
+- large Python orchestrator or runner files;
+- client, route, or script files that appear to mix several responsibility categories.
+
+The rule should be used with `advisory`, `changed-files`, or `baseline-new-only` modes unless a repository explicitly opts into stricter local enforcement. Repo-local thresholds remain authoritative.

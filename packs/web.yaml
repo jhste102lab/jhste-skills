@@ -5,3 +5,4 @@ rules:
   - rules/react/component_responsibility.yaml
   - rules/typescript/type_escape_advisory.yaml
   - rules/core/file_size_advisory.yaml
+  - rules/core/responsibility_budget.yaml

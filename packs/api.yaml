@@ -6,3 +6,4 @@ rules:
   - rules/core/public_safe_error.yaml
   - rules/core/external_input_validation.yaml
   - rules/database/sql_parameter_binding.yaml
+  - rules/core/responsibility_budget.yaml

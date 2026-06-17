@@ -55,7 +55,12 @@ fs.writeFileSync(path.join(repo, 'AGENTS.md'), '# Repo instructions\n\nLocal gui
 fs.writeFileSync(path.join(repo, 'package.json'), '{"name":"smoke-target","scripts":{"test":"echo ok"}}\n');
 fs.writeFileSync(path.join(repo, 'package-lock.json'), '{"lockfileVersion":3}\n');
 fs.mkdirSync(path.join(repo, 'src'), { recursive: true });
+fs.mkdirSync(path.join(repo, 'src', 'app', 'dashboard'), { recursive: true });
 fs.writeFileSync(path.join(repo, 'src', 'route.ts'), `export async function GET() {\n  try {\n    return Response.json({ ok: true });\n  } catch {}\n}\n`);
+fs.writeFileSync(
+  path.join(repo, 'src', 'app', 'dashboard', 'page.tsx'),
+  `export default function Page() {\n  return <main>dashboard</main>;\n}\n${Array.from({ length: 205 }, (_, index) => `// page shell line ${index + 1}`).join('\n')}\n`,
+);
 
 const packageHashBefore = hashFile(path.join(repo, 'package.json'));
 const lockHashBefore = hashFile(path.join(repo, 'package-lock.json'));
@@ -91,7 +96,11 @@ if (hashFile(path.join(repo, 'src', 'route.ts')) !== sourceHashBeforeScan) fail(
 if (hashFile(path.join(repo, 'package.json')) !== packageHashBefore) fail('deep scan modified target package.json');
 if (!fs.existsSync(path.join(repo, '.jhste', 'deep-scan-report.md'))) fail('deep scan report missing');
 if (!fs.existsSync(path.join(repo, '.jhste', 'profile.recommended.yaml'))) fail('recommended profile missing');
+const report = fs.readFileSync(path.join(repo, '.jhste', 'deep-scan-report.md'), 'utf8');
+if (!report.includes('Existing responsibility budget candidates')) fail('responsibility budget report section missing');
+if (!report.includes('src/app/dashboard/page.tsx:1')) fail('Next page responsibility budget candidate missing');
 const recommended = fs.readFileSync(path.join(repo, '.jhste', 'profile.recommended.yaml'), 'utf8');
 if (/mode:\s*strict/.test(recommended) || /enabled:\s*true/.test(recommended)) fail('recommended profile enabled strict mode');
+if (!recommended.includes('responsibility_budget:')) fail('recommended profile missing responsibility budget rule');
 
 console.log(`smoke-test passed in ${elapsed}ms: install safe defaults, bridge idempotency, overwrite protection, and deep scan read-only behavior verified.`);

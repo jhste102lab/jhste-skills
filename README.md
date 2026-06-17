@@ -19,6 +19,7 @@ This kit does **not** replace existing repository instructions. Repo-local `AGEN
 - It does not run a repo-wide strict scan.
 - It does not auto-refactor code.
 - It does not enable `strict` mode without explicit opt-in.
+- Responsibility budget checks are advisory by default; they flag review candidates rather than blocking a repository.
 
 ## Quick start
 

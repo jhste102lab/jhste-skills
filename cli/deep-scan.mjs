@@ -36,6 +36,11 @@ const EXCLUDED_FILE_NAMES = new Set([
 ]);
 const SECRET_FILE_RE = /(^|\/)(\.env(\..*)?|.*\.(pem|key|p12|pfx|crt)|id_rsa|id_ed25519)$/i;
 const MAX_FILE_BYTES = 1024 * 1024;
+const PAGE_RESPONSIBILITY_LINES = 200;
+const CLIENT_RESPONSIBILITY_LINES = 200;
+const ROUTE_RESPONSIBILITY_LINES = 250;
+const SCRIPT_RESPONSIBILITY_LINES = 280;
+const PYTHON_ORCHESTRATOR_LINES = 600;
 
 function readGitignoreRoots(repoRoot) {
   const gitignore = path.join(repoRoot, '.gitignore');
@@ -120,6 +125,165 @@ function candidate(list, kind, file, line, detail, severity = 'advisory') {
   list.push({ kind, file: file.rel, line, detail, severity });
 }
 
+function hasUseClientDirective(text) {
+  return /^\s*(?:"use client"|'use client')\s*;?/u.test(text);
+}
+
+function isNextPage(file) {
+  return file.rel.endsWith('/page.tsx') && /(^|\/)(app|src\/app|apps\/[^/]+\/src\/app)\//.test(file.rel);
+}
+
+function isScriptPipeline(file) {
+  return /(^|\/)scripts\/(data|ops|import|imports|backfill|repair|migrate|migration)\//.test(file.rel)
+    && /\.(ts|tsx|js|jsx|mjs|cjs|py)$/.test(file.rel);
+}
+
+function isPythonOrchestrator(file) {
+  return file.ext === '.py' && /(^|\/)(main|.*orchestrator|.*runner|stage_runner)\.py$/.test(file.rel);
+}
+
+function hasRuntimeImportFromClient(text) {
+  if (!hasUseClientDirective(text)) return false;
+  const runtimeImport = /^\s*import\s+(?!type\b)[^;\n]*\sfrom\s+['"]([^'"]+)['"]/gmu;
+  for (const match of text.matchAll(runtimeImport)) {
+    const source = match[1] || '';
+    if (
+      /^(fs|path|crypto|child_process|server-only|next\/headers|next\/cookies|next\/server)$/.test(source)
+      || /(^|\/)(server|db|database|repositories?|prisma|postgres)(\/|$)/i.test(source)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function matchedResponsibilityHints(text, hintGroups) {
+  return hintGroups
+    .filter((group) => group.patterns.some((pattern) => pattern.test(text)))
+    .map((group) => group.label);
+}
+
+function scanResponsibilityBudget(file, text, lineCount, findings) {
+  if (isNextPage(file) && lineCount > PAGE_RESPONSIBILITY_LINES) {
+    candidate(
+      findings.responsibilityBudget,
+      'responsibility budget candidate',
+      file,
+      1,
+      `${lineCount} lines in Next page; consider moving loading/model code to a loader and UI to route-local view/components`,
+      'review',
+    );
+  }
+
+  if (hasUseClientDirective(text) && lineCount > CLIENT_RESPONSIBILITY_LINES) {
+    candidate(
+      findings.responsibilityBudget,
+      'responsibility budget candidate',
+      file,
+      1,
+      `${lineCount} lines in client module; consider splitting state/API/storage hooks from leaf and presentation components`,
+      'review',
+    );
+  }
+
+  const routeLike = /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(file.rel) || /route\.(ts|js)$/.test(file.rel);
+  if (routeLike && lineCount >= ROUTE_RESPONSIBILITY_LINES) {
+    candidate(
+      findings.responsibilityBudget,
+      'responsibility budget candidate',
+      file,
+      1,
+      `${lineCount} lines in route/controller-like file; keep auth, validation, domain work, persistence, and response formatting in clear seams`,
+      'review',
+    );
+  }
+
+  if (isScriptPipeline(file) && lineCount >= SCRIPT_RESPONSIBILITY_LINES) {
+    candidate(
+      findings.responsibilityBudget,
+      'responsibility budget candidate',
+      file,
+      1,
+      `${lineCount} lines in import/ops-style script; consider separating CLI parse, artifact loading, transform plan, persistence, and reporting`,
+      'review',
+    );
+  }
+
+  if (isPythonOrchestrator(file) && lineCount >= PYTHON_ORCHESTRATOR_LINES) {
+    candidate(
+      findings.responsibilityBudget,
+      'responsibility budget candidate',
+      file,
+      1,
+      `${lineCount} lines in Python orchestrator/runner; consider splitting policy, IO, runtime services, notification, and result contract seams`,
+      'review',
+    );
+  }
+}
+
+function scanMixedResponsibilities(file, text, findings) {
+  if (hasUseClientDirective(text)) {
+    const hints = matchedResponsibilityHints(text, [
+      { label: 'browser storage', patterns: [/\b(localStorage|sessionStorage)\b/] },
+      { label: 'network/API', patterns: [/\bfetch\s*\(/, /\baxios\./, /\buse(Query|Mutation)\s*\(/] },
+      { label: 'toast/notification', patterns: [/\btoast\b/, /\bnotify\b/] },
+      { label: 'modal/dialog state', patterns: [/\b(Dialog|Modal|Sheet)\b/, /\bopen[A-Z]\w*\b/, /\bis[A-Z]\w*Open\b/] },
+      { label: 'route navigation', patterns: [/\buseRouter\s*\(/, /\brouter\.(push|replace|refresh)\b/] },
+      { label: 'heavy mapping', patterns: [/\.(map|filter|reduce)\s*\(/] },
+    ]);
+    if (hints.length >= 3) {
+      candidate(
+        findings.responsibilityBudget,
+        'mixed client responsibility candidate',
+        file,
+        1,
+        `client module mixes ${hints.slice(0, 4).join(', ')}; review hook/adapter/presentation split`,
+        'warning',
+      );
+    }
+  }
+
+  const routeLike = /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(file.rel) || /route\.(ts|js)$/.test(file.rel);
+  if (routeLike) {
+    const hints = matchedResponsibilityHints(text, [
+      { label: 'auth/session', patterns: [/\b(auth|session|permission|currentUser|getUser)\b/i] },
+      { label: 'validation', patterns: [/\b(z\.object|safeParse|parseAsync|validate|schema)\b/] },
+      { label: 'database', patterns: [/\b(prisma|pool\.query|client\.query|SELECT|INSERT|UPDATE|DELETE|db\.)\b/i] },
+      { label: 'response formatting', patterns: [/\b(Response\.json|NextResponse\.json|res\.json)\b/] },
+    ]);
+    if (hints.length >= 3) {
+      candidate(
+        findings.responsibilityBudget,
+        'mixed route responsibility candidate',
+        file,
+        1,
+        `route/controller mixes ${hints.join(', ')}; review route/service/repository/response split`,
+        'warning',
+      );
+    }
+  }
+
+  if (isScriptPipeline(file)) {
+    const hints = matchedResponsibilityHints(text, [
+      { label: 'CLI parsing', patterns: [/\b(process\.argv|argparse|ArgumentParser|commander)\b/] },
+      { label: 'file IO', patterns: [/\b(readFile|writeFile|open\(|Path\(|fs\.)\b/] },
+      { label: 'data transform', patterns: [/\.(map|filter|reduce)\s*\(/, /\bjson\.loads\b/i, /\bJSON\.parse\b/] },
+      { label: 'persistence/network', patterns: [/\b(fetch|pool\.query|client\.query|INSERT|UPDATE|DELETE|requests\.)\b/i] },
+      { label: 'reporting', patterns: [/\b(console\.|print\(|logger\.)\b/] },
+    ]);
+    if (hints.length >= 4) {
+      candidate(
+        findings.responsibilityBudget,
+        'mixed script responsibility candidate',
+        file,
+        1,
+        `script mixes ${hints.join(', ')}; review CLI/loader/transform/persist/report seams`,
+        'warning',
+      );
+    }
+  }
+}
+
 function scanFile(file, text, findings) {
   const lines = text.split(/\r?\n/);
   const lineCount = lines.length;
@@ -152,15 +316,18 @@ function scanFile(file, text, findings) {
   if (routeLike && /(prisma|sql`|SELECT|INSERT|UPDATE|DELETE|db\.|database)/i.test(text)) {
     candidate(findings.dbInRoutes, 'DB/API seam candidate', file, 1, 'route/controller appears to contain direct database access');
   }
-  if (routeLike && lineCount >= 250) {
+  if (routeLike && lineCount >= ROUTE_RESPONSIBILITY_LINES) {
     candidate(findings.routeResponsibility, 'route responsibility candidate', file, 1, `${lineCount} lines in route/controller-like file`);
   }
-  if (/['"]use client['"]/.test(text) && /from ['"](fs|path|server-only|.*db.*|.*database.*|.*prisma.*)['"]/.test(text)) {
+  if (hasRuntimeImportFromClient(text)) {
     candidate(findings.clientServerSeam, 'client/server seam candidate', file, 1, 'client file imports a server-like module');
   }
   if (/function\s+(format|helper|build|make|map)\w*\s*\([^)]*\)\s*{[\s\S]{0,1200}\b(fetch|writeFile|readFile|exec|spawn|setTimeout)\b/.test(text)) {
     candidate(findings.hiddenSideEffects, 'hidden side-effect candidate', file, 1, 'generic helper appears to perform side effects');
   }
+
+  scanResponsibilityBudget(file, text, lineCount, findings);
+  scanMixedResponsibilities(file, text, findings);
 }
 
 function scanFiles(files) {
@@ -171,6 +338,7 @@ function scanFiles(files) {
     rawSql: [],
     dbInRoutes: [],
     routeResponsibility: [],
+    responsibilityBudget: [],
     clientServerSeam: [],
     hiddenSideEffects: [],
     secretLogging: [],
@@ -249,6 +417,8 @@ ${tableRows(findings.typeEscapes)}
 ${tableRows(findings.rawSql)}
 ### Existing DB/API seam candidates
 ${tableRows([...findings.dbInRoutes, ...findings.routeResponsibility])}
+### Existing responsibility budget candidates
+${tableRows(findings.responsibilityBudget)}
 ### Existing client/server seam candidates
 ${tableRows(findings.clientServerSeam)}
 ### Existing hidden side-effect candidates
@@ -302,6 +472,13 @@ rules:
     mode: advisory
     source_file_warning_lines: 400
     source_file_review_lines: 600
+  responsibility_budget:
+    mode: advisory
+    next_page_review_lines: ${PAGE_RESPONSIBILITY_LINES}
+    client_module_review_lines: ${CLIENT_RESPONSIBILITY_LINES}
+    route_review_lines: ${ROUTE_RESPONSIBILITY_LINES}
+    import_ops_script_review_lines: ${SCRIPT_RESPONSIBILITY_LINES}
+    python_orchestrator_review_lines: ${PYTHON_ORCHESTRATOR_LINES}
   type_escape_advisory:
     mode: advisory
 baseline:

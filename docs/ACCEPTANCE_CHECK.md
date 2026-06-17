@@ -20,7 +20,7 @@ Core skills implemented:
 
 ## Deep scan
 
-`cli/deep-scan.mjs` excludes generated/vendor/build/dependency/lock/secret-like files, detects stack hints, reports local instruction presence, separates existing debt candidates from new-code guard candidates, redacts secret-like values, and writes only `.jhste/deep-scan-report.md` and `.jhste/profile.recommended.yaml`.
+`cli/deep-scan.mjs` excludes generated/vendor/build/dependency/lock/secret-like files, detects stack hints, reports local instruction presence, separates existing debt candidates from new-code guard candidates, redacts secret-like values, includes advisory responsibility budget candidates, and writes only `.jhste/deep-scan-report.md` and `.jhste/profile.recommended.yaml`.
 
 ## Rule/profile model
 

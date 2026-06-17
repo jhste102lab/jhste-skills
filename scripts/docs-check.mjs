@@ -16,6 +16,7 @@ const required = [
   'rules/core/no_silent_failure.yaml',
   'rules/core/no_secret_logging.yaml',
   'rules/core/file_size_advisory.yaml',
+  'rules/core/responsibility_budget.yaml',
   'rules/database/sql_parameter_binding.yaml',
   'rules/crawler/crawler_producer_boundary.yaml',
   'packs/core.yaml',

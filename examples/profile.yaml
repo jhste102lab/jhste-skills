@@ -19,6 +19,13 @@ rules:
     mode: advisory
     source_file_warning_lines: 400
     source_file_review_lines: 600
+  responsibility_budget:
+    mode: advisory
+    next_page_review_lines: 200
+    client_module_review_lines: 200
+    route_review_lines: 250
+    import_ops_script_review_lines: 280
+    python_orchestrator_review_lines: 600
   no_silent_failure:
     mode: advisory
   no_secret_logging:

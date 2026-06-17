@@ -1,0 +1,33 @@
+id: responsibility_budget
+title: Responsibility budget advisory
+description: Review modules that are likely to accumulate multiple responsibilities before they become hard-to-split architecture debt.
+pack: core
+default_mode: advisory
+severity: medium
+applies_to:
+  languages: [typescript, javascript, python]
+  paths: [src, app, apps, packages, scripts]
+settings:
+  next_page_review_lines: 200
+  client_module_review_lines: 200
+  route_review_lines: 250
+  import_ops_script_review_lines: 280
+  python_orchestrator_review_lines: 600
+scan:
+  type: responsibility_budget
+  signals:
+    - next_page_line_count
+    - use_client_line_count
+    - route_controller_line_count
+    - import_ops_script_line_count
+    - python_orchestrator_line_count
+    - mixed_client_responsibilities
+    - mixed_route_responsibilities
+    - mixed_script_responsibilities
+recommendation:
+  changed_files: true
+  baseline_supported: true
+  default_enforcement: review_only
+public_safe_examples:
+  bad: Keep adding data loading, storage, API calls, mapping, and UI states to one client component.
+  good: Split page shell, model loader, hook/adapter, persistence, and presentation seams when a file has multiple reasons to change.
