@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { findGitRoot, nowIso, parseArgs, relativeDisplay } from './shared.mjs';
+import { KIT_ROOT, findGitRoot, nowIso, parseArgs, relativeDisplay } from './shared.mjs';
 
 const TEXT_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py', '.yml', '.yaml']);
 const EXCLUDED_DIRS = new Set(['.git', 'node_modules', 'vendor', 'dist', 'build', '.next', 'out', 'coverage', '.turbo', '.cache', '__pycache__']);
@@ -14,6 +14,8 @@ const EXIT_GUARD_FAILURE = 2;
 const EXIT_CONFIG_FAILURE = 3;
 const SEVERITIES = ['info', 'warning', 'error'];
 const DEFAULT_BASELINE = '.jhste/baseline.json';
+const DEFAULT_COMMAND_TIMEOUT_MS = 120000;
+const PROFILE_OUTPUT_LIMIT = 4000;
 let currentFormat = 'text';
 
 function failGuard(message, details = []) {
@@ -92,11 +94,34 @@ function resolveBaseRef(repoRoot, explicitBase, headRef) {
   }
 }
 
-function uniqueScannableExisting(repoRoot, relPaths) {
-  return [...new Set(relPaths.map(normalizePath))]
-    .filter(isScannablePath)
-    .filter((rel) => fs.existsSync(path.join(repoRoot, rel)))
-    .sort();
+function repoRelativePath(repoRoot, rawPath) {
+  const raw = String(rawPath || '').trim();
+  if (!raw) return '';
+  const resolved = path.isAbsolute(raw) ? path.resolve(raw) : path.resolve(repoRoot, raw);
+  const relative = normalizePath(path.relative(repoRoot, resolved));
+  if (!relative || relative === '.') return '';
+  if (relative.startsWith('../') || relative === '..' || path.isAbsolute(relative)) {
+    throw new Error(`Path escapes repo root: ${raw}`);
+  }
+  return relative;
+}
+
+function uniqueExistingScannableWithCount(repoRoot, relPaths) {
+  const normalized = [];
+  for (const relPath of relPaths) {
+    if (!relPath) continue;
+    normalized.push(repoRelativePath(repoRoot, relPath));
+  }
+  const unique = [...new Set(normalized)].sort();
+  return {
+    considered: unique.length,
+    files: unique.filter(isScannablePath).filter((rel) => fs.existsSync(path.join(repoRoot, rel))),
+  };
+}
+
+function scopePayload(repoRoot, scope, relPaths, gitMeta = {}) {
+  const { files, considered } = uniqueExistingScannableWithCount(repoRoot, relPaths);
+  return { scope, files, files_considered: considered, git: gitMeta };
 }
 
 function resolveScopeFiles(repoRoot, args) {
@@ -104,14 +129,40 @@ function resolveScopeFiles(repoRoot, args) {
   if (!['changed', 'staged', 'all', 'files-from'].includes(scope)) {
     failConfig(`Unsupported --scope ${scope}. Use changed, staged, all, or files-from.`);
   }
-  if (scope === 'all') return listAllFiles(repoRoot).sort();
+  const gitMeta = {
+    root: repoRoot,
+    head: '',
+    base: '',
+  };
+  try {
+    gitMeta.head = git(repoRoot, ['rev-parse', '--short', 'HEAD']).trim();
+  } catch {
+    gitMeta.head = 'unavailable';
+  }
+
+  if (scope === 'all') {
+    const files = listAllFiles(repoRoot).sort();
+    return { scope, files, files_considered: files.length, git: gitMeta };
+  }
+
   if (scope === 'files-from') {
     if (!args['files-from']) failConfig('--scope files-from requires --files-from <nul-delimited-file>.');
-    return uniqueScannableExisting(repoRoot, readNulFile(path.resolve(String(args['files-from']))));
+    let rawPaths;
+    try {
+      rawPaths = readNulFile(path.resolve(String(args['files-from'])));
+    } catch (error) {
+      failGuard('Failed to read --files-from input.', [error instanceof Error ? error.message : String(error)]);
+    }
+    try {
+      return scopePayload(repoRoot, scope, rawPaths, gitMeta);
+    } catch (error) {
+      failGuard('Invalid path in --files-from input.', [error instanceof Error ? error.message : String(error)]);
+    }
   }
+
   if (scope === 'staged') {
     try {
-      return uniqueScannableExisting(repoRoot, readGitPathList(repoRoot, ['diff', '--cached', '--name-only', '-z', '--diff-filter=ACMRTUX', '--']));
+      return scopePayload(repoRoot, scope, readGitPathList(repoRoot, ['diff', '--cached', '--name-only', '-z', '--diff-filter=ACMRTUX', '--']), gitMeta);
     } catch (error) {
       failGuard('Failed to resolve staged files.', [error instanceof Error ? error.message : String(error)]);
     }
@@ -120,17 +171,19 @@ function resolveScopeFiles(repoRoot, args) {
   try {
     const headRef = String(args.head || 'HEAD');
     const baseRef = resolveBaseRef(repoRoot, args.base ? String(args.base) : '', headRef);
+    gitMeta.head = git(repoRoot, ['rev-parse', '--short', headRef]).trim();
+    gitMeta.base = baseRef;
     const files = [
       ...readGitPathList(repoRoot, ['diff', '--name-only', '-z', '--diff-filter=ACMRTUX', baseRef, headRef, '--']),
       ...readGitPathList(repoRoot, ['diff', '--name-only', '-z', '--diff-filter=ACMRTUX', '--']),
       ...readGitPathList(repoRoot, ['diff', '--cached', '--name-only', '-z', '--diff-filter=ACMRTUX', '--']),
       ...readGitPathList(repoRoot, ['ls-files', '--others', '--exclude-standard', '-z']),
     ];
-    return uniqueScannableExisting(repoRoot, files);
+    return scopePayload(repoRoot, scope, files, gitMeta);
   } catch (error) {
     failGuard('Failed to resolve changed files.', [error instanceof Error ? error.message : String(error)]);
   }
-  return [];
+  return { scope, files: [], files_considered: 0, git: gitMeta };
 }
 
 function lineAt(text, index) {
@@ -141,8 +194,8 @@ function hasUseClientDirective(text) {
   return /^\s*(?:"use client"|'use client')\s*;?/u.test(text);
 }
 
-function fingerprintFor(ruleId, relPath, symbol, message) {
-  const stable = `${ruleId}|${normalizePath(relPath)}|${symbol || ''}|${message.replace(/\d+/g, '#')}`;
+function fingerprintFor(ruleId, relPath, symbol) {
+  const stable = `${ruleId}|${normalizePath(relPath)}|${symbol || ''}`;
   return crypto.createHash('sha1').update(stable).digest('hex');
 }
 
@@ -154,7 +207,7 @@ function violation({ ruleId, severity, relPath, line = 1, symbol = '', message, 
     line,
     symbol,
     message,
-    fingerprint: fingerprintFor(ruleId, relPath, symbol, message),
+    fingerprint: fingerprintFor(ruleId, relPath, symbol),
     source,
     confidence,
   };
@@ -408,6 +461,17 @@ function printResult(result, format) {
   }
 }
 
+function compactOutput(text) {
+  const value = String(text || '').trim();
+  if (value.length <= PROFILE_OUTPUT_LIMIT) return value;
+  return `${value.slice(0, PROFILE_OUTPUT_LIMIT)}\n... truncated ${value.length - PROFILE_OUTPUT_LIMIT} chars`;
+}
+
+function safeCommandRuleId(name) {
+  const slug = String(name || 'unnamed').toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '');
+  return `profile.command.${slug || 'unnamed'}`;
+}
+
 function parseProfileCommands(repoRoot) {
   const profilePath = path.join(repoRoot, '.jhste', 'profile.yaml');
   if (!fs.existsSync(profilePath)) return [];
@@ -421,33 +485,76 @@ function parseProfileCommands(repoRoot) {
     if (!inCommands) continue;
     const name = /^\s*-\s+name:\s*(.+?)\s*$/.exec(line);
     if (name) {
-      current = { name: name[1].replace(/^['"]|['"]$/g, ''), run: '' };
+      current = { name: name[1].replace(/^['"]|['"]$/g, ''), run: '', severity: 'error', timeoutSeconds: 120 };
       commands.push(current);
       continue;
     }
     const run = /^\s+run:\s*(.+?)\s*$/.exec(line);
     if (run && current) current.run = run[1].replace(/^['"]|['"]$/g, '');
+    const severity = /^\s+severity:\s*(.+?)\s*$/.exec(line);
+    if (severity && current) current.severity = severity[1].replace(/^['"]|['"]$/g, '');
+    const timeout = /^\s+timeout_seconds:\s*(\d+)\s*$/.exec(line);
+    if (timeout && current) current.timeoutSeconds = Number(timeout[1]);
   }
-  return commands.filter((item) => item.name && item.run);
+  for (const command of commands) {
+    if (!command.name || !command.run) failConfig('Each profile command needs name and run fields.');
+    if (!SEVERITIES.includes(command.severity)) failConfig(`Profile command ${command.name} has unsupported severity ${command.severity}.`);
+    if (!Number.isFinite(command.timeoutSeconds) || command.timeoutSeconds <= 0 || command.timeoutSeconds > 1800) {
+      failConfig(`Profile command ${command.name} has invalid timeout_seconds; use 1..1800.`);
+    }
+  }
+  return commands;
 }
 
 function runProfileCommands(repoRoot) {
   const commands = parseProfileCommands(repoRoot);
+  const violations = [];
   const failures = [];
   for (const command of commands) {
-    const result = spawnSync(command.run, [], { cwd: repoRoot, shell: true, encoding: 'utf8' });
-    if (result.status !== 0) {
+    const result = spawnSync(command.run, [], {
+      cwd: repoRoot,
+      shell: true,
+      encoding: 'utf8',
+      timeout: command.timeoutSeconds ? command.timeoutSeconds * 1000 : DEFAULT_COMMAND_TIMEOUT_MS,
+      maxBuffer: 1024 * 1024,
+    });
+    if (result.error) {
       failures.push({
-        code: 'profile.command.failed',
-        message: `Profile command failed: ${command.name}`,
-        details: [`exit=${result.status}`, command.run],
+        code: 'profile.command.runtime',
+        message: `Profile command could not run: ${command.name}`,
+        details: [result.error.message, command.run],
       });
+      continue;
+    }
+    if (result.status !== 0) {
+      const output = compactOutput([result.stdout, result.stderr].filter(Boolean).join('\n'));
+      violations.push(violation({
+        ruleId: safeCommandRuleId(command.name),
+        severity: command.severity,
+        relPath: '.jhste/profile.yaml',
+        line: 1,
+        symbol: command.name,
+        message: `Profile command failed: ${command.name}`,
+        source: 'profile',
+        confidence: 'high',
+      }));
+      if (output) violations[violations.length - 1].details = [`exit=${result.status}`, output];
     }
   }
-  return failures;
+  return { violations, failures };
+}
+
+function toolVersion() {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(KIT_ROOT, 'package.json'), 'utf8'));
+    return String(pkg.version || '0.0.0');
+  } catch {
+    return '0.0.0';
+  }
 }
 
 async function main() {
+  const startedAt = Date.now();
   const args = parseArgs(process.argv.slice(2));
   const repoRoot = findGitRoot(args.repo || process.cwd());
   const format = String(args.format || 'text');
@@ -456,25 +563,37 @@ async function main() {
   const failOn = String(args['fail-on'] || 'none');
   if (!['none', 'warning', 'error'].includes(failOn)) failConfig('--fail-on must be none, warning, or error.');
   const baselineMode = String(args.baseline || 'off');
+  if (!['off', 'use', 'update', 'ratchet'].includes(baselineMode)) failConfig(`Unsupported --baseline ${baselineMode}. Use off, use, update, or ratchet.`);
   const baselinePath = path.resolve(repoRoot, String(args['baseline-path'] || DEFAULT_BASELINE));
-  const scopeFiles = resolveScopeFiles(repoRoot, args);
+  if (baselineMode === 'ratchet' && !fs.existsSync(baselinePath)) {
+    failConfig(`--baseline ratchet requires an existing baseline at ${relativeDisplay(repoRoot, baselinePath)}.`);
+  }
+  const scope = resolveScopeFiles(repoRoot, args);
   const violations = [];
   const failures = [];
-  for (const relPath of scopeFiles) {
+  for (const relPath of scope.files) {
     const result = scanFile(repoRoot, relPath);
     violations.push(...result.violations);
     if (result.failure) failures.push(result.failure);
   }
-  if (args['run-profile-commands']) failures.push(...runProfileCommands(repoRoot));
+  if (args['run-profile-commands']) {
+    const profile = runProfileCommands(repoRoot);
+    violations.push(...profile.violations);
+    failures.push(...profile.failures);
+  }
   const baselineMap = loadBaseline(repoRoot, baselinePath);
-  if (baselineMode === 'update') writeBaseline(baselinePath, violations);
+  if (baselineMode === 'update' && failures.length === 0) writeBaseline(baselinePath, violations);
   const managed = applyBaseline(violations, baselineMap, baselineMode);
   const result = guardResult(managed, failures, {
-    scope: String(args.scope || 'changed'),
-    files_scanned: scopeFiles.length,
+    tool_version: toolVersion(),
+    scope: scope.scope,
+    files_considered: scope.files_considered,
+    files_scanned: scope.files.length,
     fail_on: failOn,
     baseline_mode: baselineMode,
     baseline_path: relativeDisplay(repoRoot, baselinePath),
+    duration_ms: Date.now() - startedAt,
+    git: scope.git,
   });
   printResult(result, format);
   process.exit(exitCodeFor(result, failOn, baselineMode));

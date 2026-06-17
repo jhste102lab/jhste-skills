@@ -14,7 +14,7 @@ This kit does **not** replace existing repository instructions. Repo-local `AGEN
 ## What the quick install never does by default
 
 - It does not modify CI.
-- It does not install git hooks.
+- It does not install git hooks during quick install; hook automation is explicit opt-in.
 - It does not modify a target repository `package.json` or lockfile.
 - It does not run a repo-wide strict scan.
 - It does not auto-refactor code.
@@ -33,6 +33,7 @@ Useful local-development commands:
 node cli/install.mjs --yes --repo /path/to/repo
 node cli/deep-scan.mjs --repo /path/to/repo
 node cli/guard.mjs --repo /path/to/repo --scope changed --format text --fail-on error
+node cli/hooks.mjs install --repo /path/to/repo --mode advisory
 node cli/tune.mjs --repo /path/to/repo
 node cli/baseline.mjs --repo /path/to/repo
 ```
@@ -49,6 +50,14 @@ The install prompt is intentionally one question:
 진행할까요? [Enter=예 / n=아니오 / c=직접 설정]
 ```
 
+## Recommended rollout
+
+1. Run `deep-scan` once to get advisory recommendations.
+2. Run `guard --scope changed --format text --fail-on error` manually after AI or code changes.
+3. Create a baseline only after reviewing existing debt. Use `ratchet` to stop new debt, not to hide scanner failures.
+4. Enable profile commands only after repo-local guard commands are stable.
+5. Install hooks later and start with `hooks install --mode advisory`; use blocking mode only after dogfooding noise and false positives.
+
 ## Repository layout
 
 ```text
@@ -56,7 +65,7 @@ skills/                 AI-readable skill guidance
 rules/                  Stable rule metadata for skills and scans
 packs/                  Rule bundles for core, web, API, database, crawler
 adapters/               Codex, Claude, and generic adapter notes
-cli/                    install, deep-scan, guard, tune, and baseline commands
+cli/                    install, deep-scan, guard, hooks, tune, and baseline commands
 vendor/matt-pocock/     Matt Pocock allowlist, source lock, and attribution
 examples/profile.yaml   Default advisory profile example
 ```

@@ -111,13 +111,37 @@ if (!recommended.includes('responsibility_budget:')) fail('recommended profile m
 const guardJson = run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json', '--fail-on', 'none'], { cwd: repo }).stdout;
 const guardResult = JSON.parse(guardJson);
 if (guardResult.schema_version !== 1) fail('guard JSON schema_version missing');
+if (guardResult.meta?.tool_version !== '0.1.0') fail('guard JSON meta tool_version missing');
+if (typeof guardResult.meta?.files_considered !== 'number') fail('guard JSON meta files_considered missing');
 if (!guardResult.violations.some(item => item.rule_id === 'silent.catch.empty')) fail('guard did not report empty catch');
 if (!guardResult.violations.some(item => item.rule_id === 'responsibility.page.budget')) fail('guard did not report responsibility budget');
 const failingGuard = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json', '--fail-on', 'error'], { cwd: repo });
 if (failingGuard.status !== 1) fail(`guard --fail-on error should exit 1, got ${failingGuard.status}`);
+const missingRatchet = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'ratchet', '--baseline-path', '.jhste/missing-baseline.json', '--format', 'json'], { cwd: repo });
+if (missingRatchet.status !== 3) fail(`guard ratchet without baseline should exit 3, got ${missingRatchet.status}`);
+const filesFrom = path.join(tmp, 'files.zlist');
+fs.writeFileSync(filesFrom, `/etc/passwd\0${path.join(repo, 'src', 'route.ts')}\0`);
+const filesFromGuard = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'files-from', '--files-from', filesFrom, '--format', 'json'], { cwd: repo });
+if (filesFromGuard.status !== 2) fail(`guard files-from outside repo should exit 2, got ${filesFromGuard.status}`);
 run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'update', '--format', 'json'], { cwd: repo });
 if (!fs.existsSync(path.join(repo, '.jhste', 'baseline.json'))) fail('guard baseline update did not create baseline');
 const baselineUse = JSON.parse(run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'use', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout);
 if (baselineUse.summary.suppressed < 1) fail('guard baseline use did not suppress known violations');
+
+fs.appendFileSync(profilePath, '\ncommands:\n  - name: local-check\n    run: node -e "process.exit(1)"\n    timeout_seconds: 5\n');
+const profileGuard = JSON.parse(runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--run-profile-commands', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout);
+if (!profileGuard.violations.some(item => item.rule_id === 'profile.command.local-check' && item.source === 'profile')) fail('profile command failure was not reported as profile violation');
+
+run(process.execPath, [path.join(root, 'cli/hooks.mjs'), 'install', '--repo', repo, '--mode', 'advisory'], { cwd: repo });
+const preCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
+if (!fs.readFileSync(preCommit, 'utf8').includes('jhste-skills managed hook start')) fail('managed pre-commit hook missing marker');
+run('sh', [preCommit], { cwd: repo });
+run(process.execPath, [path.join(root, 'cli/hooks.mjs'), 'uninstall', '--repo', repo], { cwd: repo });
+if (fs.existsSync(preCommit)) fail('managed pre-commit hook was not removed');
+fs.writeFileSync(preCommit, '#!/usr/bin/env sh\necho existing\n', { mode: 0o755 });
+const refusedHook = runAny(process.execPath, [path.join(root, 'cli/hooks.mjs'), 'install', '--repo', repo], { cwd: repo });
+if (refusedHook.status !== 3) fail(`hooks install should refuse non-managed hook, got ${refusedHook.status}`);
+if (!fs.readFileSync(preCommit, 'utf8').includes('echo existing')) fail('hooks install overwrote non-managed hook');
+if (hashFile(path.join(repo, 'package.json')) !== packageHashBefore) fail('hooks modified target package.json');
 
 console.log(`smoke-test passed in ${elapsed}ms: install safe defaults, bridge idempotency, overwrite protection, deep scan read-only behavior, and guard contract verified.`);

@@ -42,10 +42,10 @@ jhste-skills guard --scope files-from --files-from /tmp/files.zlist
 
 Stable contract:
 
-- `--scope`: one of `changed`, `staged`, `all`, `files-from`.
+- `--scope`: one of `changed`, `staged`, `all`, `files-from`. `changed` means committed diff from base/head plus unstaged, staged, and untracked files; `staged` means staged files only.
 - `--format`: `text` for humans or schema-versioned `json` for AI/hooks/CI.
 - `--fail-on`: `none`, `warning`, or `error`.
-- `--baseline`: `off`, `use`, `update`, or `ratchet`.
+- `--baseline`: `off`, `use`, `update`, or `ratchet`. `ratchet` requires an existing baseline. `update` is refused when guard runtime failures occur.
 - exit `0`: pass; exit `1`: violations met `--fail-on` or ratchet found new issues; exit `2`: guard runtime/scope/scan failure; exit `3`: config/profile error.
 
 The JSON output starts with:
@@ -54,11 +54,39 @@ The JSON output starts with:
 {
   "schema_version": 1,
   "summary": { "error": 0, "warning": 0, "info": 0, "suppressed": 0, "failures": 0 },
+  "meta": {
+    "tool_version": "0.1.0",
+    "scope": "changed",
+    "files_considered": 0,
+    "files_scanned": 0,
+    "duration_ms": 0
+  },
   "violations": []
 }
 ```
 
 Guard failures are not validation success. AI agents should report exit `2` or `3` separately from rule violations.
+
+## `hooks`
+
+`hooks` is opt-in automation for local git hooks. It is intentionally separate from `install`.
+
+```bash
+jhste-skills hooks install --mode advisory
+jhste-skills hooks install --mode blocking --fail-on error
+jhste-skills hooks install --hook all --mode advisory
+jhste-skills hooks doctor
+jhste-skills hooks uninstall --hook all
+```
+
+Safety contract:
+
+- quick install never installs hooks;
+- default hook is `pre-commit` in advisory mode;
+- advisory hooks print guard output but do not block commits;
+- blocking hooks return the guard exit code;
+- existing non-managed hooks are never overwritten;
+- uninstall removes only hooks marked as managed by this tool.
 
 ## `tune`
 

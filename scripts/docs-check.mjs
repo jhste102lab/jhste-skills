@@ -30,6 +30,7 @@ const required = [
   'cli/install.mjs',
   'cli/deep-scan.mjs',
   'cli/guard.mjs',
+  'cli/hooks.mjs',
   'cli/tune.mjs',
   'cli/baseline.mjs',
   'vendor/matt-pocock/allowlist.json',

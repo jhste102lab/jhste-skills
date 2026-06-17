@@ -31,7 +31,11 @@ Rule metadata lives in `rules/`. Pack files live in `packs/`. The example profil
 - Exit codes are fixed: `0` pass, `1` rule violation failure, `2` guard runtime/scope/scan failure, `3` profile/config error.
 - Baseline mode is explicit: `off`, `use`, `update`, or `ratchet`.
 
-Violation fingerprints are based on rule id, normalized path, and semantic symbol rather than line number alone. This lets line moves avoid unnecessary baseline churn.
+Violation fingerprints are based on rule id, normalized path, and semantic symbol. They intentionally avoid line number and message text so line moves or clearer wording do not churn the baseline.
+
+Profile command runner is disabled unless `--run-profile-commands` is passed. A nonzero repo-local command is reported as a profile-sourced violation. Command execution failures are guard runtime failures, and malformed command configuration is a config failure. Commands should declare `name`, `run`, optional `severity`, and optional `timeout_seconds`.
+
+Hook automation is opt-in. Generated hooks default to advisory mode, refuse to overwrite non-managed hooks, and can be made blocking only through explicit `hooks install --mode blocking`.
 
 Repo-specific policy should stay in repo-local guards or `.jhste/profile.yaml` declarations. Shared rules are defaults and templates, not the authority over a repository.
 
