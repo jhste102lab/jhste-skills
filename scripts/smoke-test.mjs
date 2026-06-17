@@ -84,6 +84,18 @@ if (hashFile(path.join(repo, 'package.json')) !== packageHashBefore) fail('insta
 if (hashFile(path.join(repo, 'package-lock.json')) !== lockHashBefore) fail('install modified target lockfile');
 if (hashDir(path.join(repo, '.git', 'hooks')) !== hooksHashBefore) fail('install modified git hooks');
 
+const hookRepo = path.join(tmp, 'hook-repo');
+fs.mkdirSync(hookRepo, { recursive: true });
+run('git', ['init'], { cwd: hookRepo });
+fs.writeFileSync(path.join(hookRepo, 'AGENTS.md'), '# Hook repo\n');
+fs.writeFileSync(path.join(hookRepo, 'package.json'), '{"name":"hook-target"}\n');
+const hookPackageHashBefore = hashFile(path.join(hookRepo, 'package.json'));
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', hookRepo, '--skills-dir', skillsDir, '--skip-deep-scan', '--hooks', 'advisory'], { cwd: hookRepo });
+const hookPreCommit = path.join(hookRepo, '.git', 'hooks', 'pre-commit');
+if (!fs.existsSync(hookPreCommit)) fail('install --hooks advisory did not create pre-commit hook');
+if (!fs.readFileSync(hookPreCommit, 'utf8').includes('mode=advisory')) fail('install --hooks advisory did not create advisory hook');
+if (hashFile(path.join(hookRepo, 'package.json')) !== hookPackageHashBefore) fail('install --hooks modified target package.json');
+
 const agentsAfterFirst = fs.readFileSync(path.join(repo, 'AGENTS.md'), 'utf8');
 const bridgeCount = (agentsAfterFirst.match(/Repo-local instructions in this file remain authoritative\./g) || []).length;
 if (bridgeCount !== 1) fail('bridge block was not inserted exactly once');

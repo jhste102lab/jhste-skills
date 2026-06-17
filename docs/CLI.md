@@ -7,16 +7,20 @@
 ```bash
 npx jhste-skills install
 node cli/install.mjs --yes --repo /path/to/repo
+node cli/install.mjs --yes --repo /path/to/repo --hooks advisory
 ```
 
 Default behavior:
+
+Install can also ask about hook automation in interactive mode. Enter skips hooks, `a` installs advisory hooks, and `b` installs blocking hooks. Non-interactive installs skip hooks unless `--hooks advisory|blocking` is explicit.
+
 
 - one main prompt;
 - selected skills copied to a kit-managed skill directory;
 - `.jhste/profile.yaml` created with `mode: advisory` when missing;
 - existing profile is not overwritten unless `--force` is explicit;
 - `AGENTS.md` and `CLAUDE.md` bridge blocks are appended only when the file exists and the exact block is missing;
-- CI, hooks, target `package.json`, and lockfiles are not changed.
+- CI, target `package.json`, and lockfiles are not changed. Hooks are installed only when the interactive prompt selects them or `--hooks advisory|blocking` is passed.
 
 ## `deep-scan`
 

@@ -16,7 +16,7 @@ Core skills implemented:
 
 ## Fast setup
 
-`cli/install.mjs` implements the one-question recommended setup, creates `.jhste/profile.yaml`, keeps mode advisory, appends bridge blocks idempotently, and does not touch target CI, hooks, `package.json`, or lockfiles.
+`cli/install.mjs` implements the one-question recommended setup, creates `.jhste/profile.yaml`, keeps mode advisory, appends bridge blocks idempotently, and does not touch target CI, `package.json`, or lockfiles. Hook automation is installed only by explicit prompt choice or `--hooks advisory|blocking`.
 
 ## Deep scan
 

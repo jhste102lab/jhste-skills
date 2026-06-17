@@ -22,7 +22,7 @@ const PROMPT = `추천 설정으로 설치합니다.
 - 현재 repo에도 가볍게 연결
 - 기존 코드는 막지 않음
 - 앞으로 AI가 바꾸는 파일 중심으로 규칙 참고
-- CI, hook, package.json은 건드리지 않음
+- CI, hook, package.json은 기본값으로 건드리지 않음
 진행할까요? [Enter=예 / n=아니오 / c=직접 설정] `;
 
 function writeProfile(repoRoot, { force = false } = {}) {
@@ -57,6 +57,11 @@ function installSkills(skillsDir, { force = false } = {}) {
   });
 }
 
+function installHooks(repoRoot, mode) {
+  const result = spawnSync(process.execPath, [path.join(KIT_ROOT, 'cli', 'hooks.mjs'), 'install', '--repo', repoRoot, '--mode', mode], { stdio: 'inherit' });
+  return result.status ?? 1;
+}
+
 function printInstallResult({ repoRoot, skillsDir, skillResults, profileResult, bridgeResults }) {
   const skillSummary = skillResults.reduce((acc, result) => {
     acc[result.status] = (acc[result.status] || 0) + 1;
@@ -75,7 +80,8 @@ function printInstallResult({ repoRoot, skillsDir, skillResults, profileResult, 
     }
   }
   console.log('- Enforcement: advisory only');
-  console.log('- CI/hook/package.json/lockfile: unchanged by installer');
+  console.log('- CI/package.json/lockfile: unchanged by installer');
+  console.log('- Git hooks: unchanged unless explicitly selected');
   console.log('\n나중에 deep scan을 실행하려면:');
   console.log('  npx jhste-skills deep-scan');
 }
@@ -109,6 +115,31 @@ async function main() {
   const bridgeResults = args['no-bridge'] ? [] : ['AGENTS.md', 'CLAUDE.md'].map((file) => maybeAppendBridge(repoRoot, file));
 
   printInstallResult({ repoRoot, skillsDir, skillResults, profileResult, bridgeResults });
+
+  let hooksMode = args.hooks ? String(args.hooks) : '';
+  if (hooksMode === 'true') hooksMode = 'advisory';
+  if (!hooksMode && !args['skip-hooks'] && !nonInteractive) {
+    const hooks = await ask(`\n커밋할 때 guard를 자동 실행할까요?
+- a/advisory: 문제를 보여주지만 커밋은 막지 않음
+- b/blocking: error면 커밋을 막음
+- Enter: 설치 안 함
+선택하세요. [a=advisory / b=blocking / Enter=안 함] `);
+    const normalizedHooks = hooks.toLowerCase();
+    if (normalizedHooks === 'a' || normalizedHooks === 'advisory') hooksMode = 'advisory';
+    if (normalizedHooks === 'b' || normalizedHooks === 'blocking') hooksMode = 'blocking';
+  }
+  if (hooksMode) {
+    if (!['advisory', 'blocking'].includes(hooksMode)) {
+      console.error('--hooks must be advisory or blocking.');
+      process.exitCode = 3;
+      return;
+    }
+    const hookStatus = installHooks(repoRoot, hooksMode);
+    if (hookStatus !== 0) {
+      process.exitCode = hookStatus;
+      return;
+    }
+  }
 
   if (!args['skip-deep-scan'] && !nonInteractive) {
     const scan = await ask(`\n더 정확히 맞추려면 현재 repo를 깊게 점검할 수 있습니다.

@@ -14,7 +14,7 @@ This kit does **not** replace existing repository instructions. Repo-local `AGEN
 ## What the quick install never does by default
 
 - It does not modify CI.
-- It does not install git hooks during quick install; hook automation is explicit opt-in.
+- It does not install git hooks unless you explicitly choose hook automation during install or pass `--hooks advisory|blocking`.
 - It does not modify a target repository `package.json` or lockfile.
 - It does not run a repo-wide strict scan.
 - It does not auto-refactor code.
@@ -31,6 +31,7 @@ Useful local-development commands:
 
 ```bash
 node cli/install.mjs --yes --repo /path/to/repo
+node cli/install.mjs --yes --repo /path/to/repo --hooks advisory
 node cli/deep-scan.mjs --repo /path/to/repo
 node cli/guard.mjs --repo /path/to/repo --scope changed --format text --fail-on error
 node cli/hooks.mjs install --repo /path/to/repo --mode advisory
@@ -56,7 +57,7 @@ The install prompt is intentionally one question:
 2. Run `guard --scope changed --format text --fail-on error` manually after AI or code changes.
 3. Create a baseline only after reviewing existing debt. Use `ratchet` to stop new debt, not to hide scanner failures.
 4. Enable profile commands only after repo-local guard commands are stable.
-5. Install hooks later and start with `hooks install --mode advisory`; use blocking mode only after dogfooding noise and false positives.
+5. When prompted during install, choose advisory hooks if you want automation. Use blocking mode only after dogfooding noise and false positives.
 
 ## Repository layout
 
