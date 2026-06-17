@@ -342,13 +342,22 @@ function scanFiles(files) {
     clientServerSeam: [],
     hiddenSideEffects: [],
     secretLogging: [],
+    scanWarnings: [],
   };
   for (const file of files) {
     try {
       const text = fs.readFileSync(file.full, 'utf8');
       scanFile(file, text, findings);
-    } catch {
-      // File read failures are represented in summary by omission; scan remains best-effort.
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      candidate(
+        findings.scanWarnings,
+        'scan warning',
+        file,
+        1,
+        `file could not be scanned and was omitted from rule candidates: ${message}`,
+        'warning',
+      );
     }
   }
   return findings;
@@ -425,6 +434,8 @@ ${tableRows(findings.clientServerSeam)}
 ${tableRows(findings.hiddenSideEffects)}
 ### Secret-like logging candidates
 ${tableRows(findings.secretLogging)}
+### Scan warnings
+${tableRows(findings.scanWarnings)}
 
 ## New-code guard candidates
 - Start with changed-files mode for no_silent_failure and no_secret_logging after human review.
@@ -434,6 +445,7 @@ ${tableRows(findings.secretLogging)}
 ## Skipped file summary
 - Excluded generated/vendor/build/dependency folders, lockfiles, large files, binary-like extensions, and secret/env-like files.
 - Skipped entries recorded: ${skipped.length}
+- Per-file scan warnings: ${findings.scanWarnings.length}
 
 ## Risks
 - Static analysis can produce false positives and cannot prove runtime behavior.
