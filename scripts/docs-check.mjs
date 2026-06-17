@@ -29,6 +29,7 @@ const required = [
   'adapters/generic/README.md',
   'cli/install.mjs',
   'cli/deep-scan.mjs',
+  'cli/guard.mjs',
   'cli/tune.mjs',
   'cli/baseline.mjs',
   'vendor/matt-pocock/allowlist.json',

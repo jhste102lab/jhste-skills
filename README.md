@@ -32,6 +32,7 @@ Useful local-development commands:
 ```bash
 node cli/install.mjs --yes --repo /path/to/repo
 node cli/deep-scan.mjs --repo /path/to/repo
+node cli/guard.mjs --repo /path/to/repo --scope changed --format text --fail-on error
 node cli/tune.mjs --repo /path/to/repo
 node cli/baseline.mjs --repo /path/to/repo
 ```
@@ -55,7 +56,7 @@ skills/                 AI-readable skill guidance
 rules/                  Stable rule metadata for skills and scans
 packs/                  Rule bundles for core, web, API, database, crawler
 adapters/               Codex, Claude, and generic adapter notes
-cli/                    install, deep-scan, tune, and baseline commands
+cli/                    install, deep-scan, guard, tune, and baseline commands
 vendor/matt-pocock/     Matt Pocock allowlist, source lock, and attribution
 examples/profile.yaml   Default advisory profile example
 ```

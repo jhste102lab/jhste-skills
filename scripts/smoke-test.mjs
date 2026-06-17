@@ -23,6 +23,10 @@ function run(command, args, options = {}) {
   return result;
 }
 
+function runAny(command, args, options = {}) {
+  return spawnSync(command, args, { encoding: 'utf8', ...options });
+}
+
 function hashFile(file) {
   return fs.existsSync(file) ? crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex') : null;
 }
@@ -56,7 +60,8 @@ fs.writeFileSync(path.join(repo, 'package.json'), '{"name":"smoke-target","scrip
 fs.writeFileSync(path.join(repo, 'package-lock.json'), '{"lockfileVersion":3}\n');
 fs.mkdirSync(path.join(repo, 'src'), { recursive: true });
 fs.mkdirSync(path.join(repo, 'src', 'app', 'dashboard'), { recursive: true });
-fs.writeFileSync(path.join(repo, 'src', 'route.ts'), `export async function GET() {\n  try {\n    return Response.json({ ok: true });\n  } catch {}\n}\n`);
+const emptyCatchFixture = 'catch ' + '{}';
+fs.writeFileSync(path.join(repo, 'src', 'route.ts'), `export async function GET() {\n  try {\n    return Response.json({ ok: true });\n  } ${emptyCatchFixture}\n}\n`);
 fs.writeFileSync(
   path.join(repo, 'src', 'app', 'dashboard', 'page.tsx'),
   `export default function Page() {\n  return <main>dashboard</main>;\n}\n${Array.from({ length: 205 }, (_, index) => `// page shell line ${index + 1}`).join('\n')}\n`,
@@ -103,4 +108,16 @@ const recommended = fs.readFileSync(path.join(repo, '.jhste', 'profile.recommend
 if (/mode:\s*strict/.test(recommended) || /enabled:\s*true/.test(recommended)) fail('recommended profile enabled strict mode');
 if (!recommended.includes('responsibility_budget:')) fail('recommended profile missing responsibility budget rule');
 
-console.log(`smoke-test passed in ${elapsed}ms: install safe defaults, bridge idempotency, overwrite protection, and deep scan read-only behavior verified.`);
+const guardJson = run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json', '--fail-on', 'none'], { cwd: repo }).stdout;
+const guardResult = JSON.parse(guardJson);
+if (guardResult.schema_version !== 1) fail('guard JSON schema_version missing');
+if (!guardResult.violations.some(item => item.rule_id === 'silent.catch.empty')) fail('guard did not report empty catch');
+if (!guardResult.violations.some(item => item.rule_id === 'responsibility.page.budget')) fail('guard did not report responsibility budget');
+const failingGuard = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json', '--fail-on', 'error'], { cwd: repo });
+if (failingGuard.status !== 1) fail(`guard --fail-on error should exit 1, got ${failingGuard.status}`);
+run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'update', '--format', 'json'], { cwd: repo });
+if (!fs.existsSync(path.join(repo, '.jhste', 'baseline.json'))) fail('guard baseline update did not create baseline');
+const baselineUse = JSON.parse(run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'use', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout);
+if (baselineUse.summary.suppressed < 1) fail('guard baseline use did not suppress known violations');
+
+console.log(`smoke-test passed in ${elapsed}ms: install safe defaults, bridge idempotency, overwrite protection, deep scan read-only behavior, and guard contract verified.`);

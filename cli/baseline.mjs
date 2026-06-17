@@ -1,35 +1,25 @@
 #!/usr/bin/env node
-import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import path from 'node:path';
-import { ask, ensureDir, findGitRoot, nowIso, parseArgs, relativeDisplay } from './shared.mjs';
+import { ask, findGitRoot, parseArgs, relativeDisplay, KIT_ROOT } from './shared.mjs';
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const repoRoot = findGitRoot(args.repo || process.cwd());
-  const reportPath = path.join(repoRoot, '.jhste', 'deep-scan-report.md');
   const baselinePath = path.join(repoRoot, '.jhste', 'baseline.json');
-  if (!fs.existsSync(reportPath)) {
-    console.error(`Deep scan report not found: ${relativeDisplay(repoRoot, reportPath)}`);
-    console.error('Run deep-scan first.');
-    process.exit(1);
-  }
   console.log('Baseline is optional and does not enable strict mode by itself.');
+  console.log('It stores stable guard fingerprints so existing debt can be separated from new issues.');
   const autoYes = Boolean(args.yes) || !process.stdin.isTTY;
-  const answer = autoYes ? 'y' : await ask('Create .jhste/baseline.json from the current deep scan report? [y/N] ');
+  const answer = autoYes ? 'y' : await ask(`Create/update ${relativeDisplay(repoRoot, baselinePath)} from guard --scope all? [y/N] `);
   if (answer.toLowerCase() !== 'y') {
     console.log('No baseline created.');
     return;
   }
-  ensureDir(path.dirname(baselinePath));
-  fs.writeFileSync(baselinePath, `${JSON.stringify({
-    version: 1,
-    created_at: nowIso(),
-    source_report: '.jhste/deep-scan-report.md',
-    mode: 'baseline-new-only-ready',
-    strict_enabled: false,
-    note: 'Human review is required before using this baseline for enforcement.',
-  }, null, 2)}\n`);
-  console.log(`Created ${relativeDisplay(repoRoot, baselinePath)}.`);
+  const result = spawnSync(process.execPath, [path.join(KIT_ROOT, 'cli', 'guard.mjs'), '--repo', repoRoot, '--scope', 'all', '--baseline', 'update', '--format', 'text', '--fail-on', 'none'], {
+    cwd: repoRoot,
+    stdio: 'inherit',
+  });
+  process.exit(result.status ?? 1);
 }
 
 main().catch((error) => {

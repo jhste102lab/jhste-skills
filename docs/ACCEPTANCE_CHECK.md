@@ -22,6 +22,8 @@ Core skills implemented:
 
 `cli/deep-scan.mjs` excludes generated/vendor/build/dependency/lock/secret-like files, detects stack hints, reports local instruction presence, separates existing debt candidates from new-code guard candidates, redacts secret-like values, includes advisory responsibility budget candidates, and writes only `.jhste/deep-scan-report.md` and `.jhste/profile.recommended.yaml`.
 
+`cli/guard.mjs` provides the repeatable guard contract: explicit scope, text/json output, fixed exit codes, baseline use/update/ratchet modes, stable fingerprints, and guard failures reported separately from rule violations.
+
 ## Rule/profile model
 
 Rule modes are documented in `docs/RULES.md`, example profile defaults to advisory, and rule metadata covers file size, silent failure, secret logging, external input validation, DB/API boundaries, side effects, and crawler producer seams.

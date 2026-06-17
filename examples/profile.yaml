@@ -39,6 +39,15 @@ rules:
 baseline:
   enabled: false
   path: .jhste/baseline.json
+guard:
+  default_scope: changed
+  default_format: text
+  fail_on: none
+  exit_codes:
+    pass: 0
+    violation_failure: 1
+    guard_runtime_failure: 2
+    config_failure: 3
 deep_scan:
   last_run: null
   report: .jhste/deep-scan-report.md

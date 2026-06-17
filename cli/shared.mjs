@@ -10,7 +10,9 @@ export const KIT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)
 export const BRIDGE_BLOCK = `## Agent skills
 This repo uses jhste skills as shared guidance.
 Repo-local instructions in this file remain authoritative.
-See \`.jhste/profile.yaml\` for local skill preferences.`;
+See \`.jhste/profile.yaml\` for local skill preferences.
+After code changes, run \`jhste-skills guard --scope changed --format text --fail-on error\` when available.
+Report guard warnings/errors; do not treat guard runtime/config failures as validation success.`;
 
 export const DEFAULT_PROFILE = `version: 1
 mode: advisory
@@ -47,6 +49,15 @@ rules:
 baseline:
   enabled: false
   path: .jhste/baseline.json
+guard:
+  default_scope: changed
+  default_format: text
+  fail_on: none
+  exit_codes:
+    pass: 0
+    violation_failure: 1
+    guard_runtime_failure: 2
+    config_failure: 3
 deep_scan:
   last_run: null
   report: .jhste/deep-scan-report.md

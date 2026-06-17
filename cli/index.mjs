@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const cliDir = path.dirname(fileURLToPath(import.meta.url));
 const [command, ...rest] = process.argv.slice(2);
-const commands = new Set(['install', 'deep-scan', 'tune', 'baseline']);
+const commands = new Set(['install', 'deep-scan', 'guard', 'tune', 'baseline']);
 
 if (!command || command === '--help' || command === '-h') {
   console.log(`jhste-skills
@@ -13,6 +13,7 @@ if (!command || command === '--help' || command === '-h') {
 Usage:
   jhste-skills install [--yes] [--repo <path>]
   jhste-skills deep-scan [--repo <path>]
+  jhste-skills guard [--repo <path>] [--scope changed|staged|all|files-from] [--format text|json]
   jhste-skills tune [--repo <path>]
   jhste-skills baseline [--repo <path>]
 `);
