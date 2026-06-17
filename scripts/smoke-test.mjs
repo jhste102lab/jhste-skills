@@ -69,7 +69,6 @@ fs.writeFileSync(
 
 const packageHashBefore = hashFile(path.join(repo, 'package.json'));
 const lockHashBefore = hashFile(path.join(repo, 'package-lock.json'));
-const hooksHashBefore = hashDir(path.join(repo, '.git', 'hooks'));
 const started = Date.now();
 run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', repo, '--skills-dir', skillsDir, '--skip-deep-scan'], { cwd: repo });
 const elapsed = Date.now() - started;
@@ -82,7 +81,25 @@ if (!/^mode: advisory$/m.test(profile)) fail('profile default mode is not adviso
 if (/mode:\s*strict/.test(profile)) fail('profile enabled strict mode');
 if (hashFile(path.join(repo, 'package.json')) !== packageHashBefore) fail('install modified target package.json');
 if (hashFile(path.join(repo, 'package-lock.json')) !== lockHashBefore) fail('install modified target lockfile');
-if (hashDir(path.join(repo, '.git', 'hooks')) !== hooksHashBefore) fail('install modified git hooks');
+const defaultPreCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
+if (!fs.existsSync(defaultPreCommit)) fail('install did not create default advisory pre-commit hook');
+if (!fs.readFileSync(defaultPreCommit, 'utf8').includes('mode=advisory')) fail('default pre-commit hook is not advisory');
+
+const skipHookRepo = path.join(tmp, 'skip-hook-repo');
+fs.mkdirSync(skipHookRepo, { recursive: true });
+run('git', ['init'], { cwd: skipHookRepo });
+fs.writeFileSync(path.join(skipHookRepo, 'AGENTS.md'), '# Skip hook repo\n');
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', skipHookRepo, '--skills-dir', skillsDir, '--skip-deep-scan', '--skip-hooks'], { cwd: skipHookRepo });
+if (fs.existsSync(path.join(skipHookRepo, '.git', 'hooks', 'pre-commit'))) fail('install --skip-hooks created pre-commit hook');
+
+const existingHookRepo = path.join(tmp, 'existing-hook-repo');
+fs.mkdirSync(existingHookRepo, { recursive: true });
+run('git', ['init'], { cwd: existingHookRepo });
+fs.writeFileSync(path.join(existingHookRepo, 'AGENTS.md'), '# Existing hook repo\n');
+const existingPreCommit = path.join(existingHookRepo, '.git', 'hooks', 'pre-commit');
+fs.writeFileSync(existingPreCommit, '#!/usr/bin/env sh\necho existing\n', { mode: 0o755 });
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', existingHookRepo, '--skills-dir', skillsDir, '--skip-deep-scan'], { cwd: existingHookRepo });
+if (!fs.readFileSync(existingPreCommit, 'utf8').includes('echo existing')) fail('default install overwrote non-managed pre-commit hook');
 
 const hookRepo = path.join(tmp, 'hook-repo');
 fs.mkdirSync(hookRepo, { recursive: true });
@@ -156,4 +173,4 @@ if (refusedHook.status !== 3) fail(`hooks install should refuse non-managed hook
 if (!fs.readFileSync(preCommit, 'utf8').includes('echo existing')) fail('hooks install overwrote non-managed hook');
 if (hashFile(path.join(repo, 'package.json')) !== packageHashBefore) fail('hooks modified target package.json');
 
-console.log(`smoke-test passed in ${elapsed}ms: install safe defaults, bridge idempotency, overwrite protection, deep scan read-only behavior, and guard contract verified.`);
+console.log(`smoke-test passed in ${elapsed}ms: install default advisory hook, bridge idempotency, overwrite protection, deep scan read-only behavior, and guard contract verified.`);

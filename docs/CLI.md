@@ -7,20 +7,21 @@
 ```bash
 npx jhste-skills install
 node cli/install.mjs --yes --repo /path/to/repo
-node cli/install.mjs --yes --repo /path/to/repo --hooks advisory
+node cli/install.mjs --yes --repo /path/to/repo --skip-hooks
+node cli/install.mjs --yes --repo /path/to/repo --hooks blocking
 ```
 
 Default behavior:
 
-Install can also ask about hook automation in interactive mode. Enter skips hooks, `a` installs advisory hooks, and `b` installs blocking hooks. Non-interactive installs skip hooks unless `--hooks advisory|blocking` is explicit.
+Install enables advisory hook automation by default. In interactive mode, Enter keeps advisory hooks, `b` installs blocking hooks, and `n` skips hooks. Non-interactive installs also use advisory hooks unless `--skip-hooks` or `--hooks blocking` is explicit.
 
 
-- one main prompt;
+- one main setup prompt, plus a short hook choice in interactive mode;
 - selected skills copied to a kit-managed skill directory;
 - `.jhste/profile.yaml` created with `mode: advisory` when missing;
 - existing profile is not overwritten unless `--force` is explicit;
 - `AGENTS.md` and `CLAUDE.md` bridge blocks are appended only when the file exists and the exact block is missing;
-- CI, target `package.json`, and lockfiles are not changed. Hooks are installed only when the interactive prompt selects them or `--hooks advisory|blocking` is passed.
+- CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install.
 
 ## `deep-scan`
 
@@ -73,7 +74,7 @@ Guard failures are not validation success. AI agents should report exit `2` or `
 
 ## `hooks`
 
-`hooks` is opt-in automation for local git hooks. It is intentionally separate from `install`.
+`hooks` manages local git hook automation. `install` uses advisory hooks by default, and this command lets you inspect, replace, or remove managed hooks later.
 
 ```bash
 jhste-skills hooks install --mode advisory
@@ -85,8 +86,8 @@ jhste-skills hooks uninstall --hook all
 
 Safety contract:
 
-- quick install never installs hooks;
-- default hook is `pre-commit` in advisory mode;
+- quick install installs a managed advisory `pre-commit` hook by default;
+- `--skip-hooks` opts out;
 - advisory hooks print guard output but do not block commits;
 - blocking hooks return the guard exit code;
 - existing non-managed hooks are never overwritten;

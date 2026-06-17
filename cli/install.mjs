@@ -22,7 +22,8 @@ const PROMPT = `추천 설정으로 설치합니다.
 - 현재 repo에도 가볍게 연결
 - 기존 코드는 막지 않음
 - 앞으로 AI가 바꾸는 파일 중심으로 규칙 참고
-- CI, hook, package.json은 기본값으로 건드리지 않음
+- CI, package.json은 건드리지 않음
+- 자동 guard hook은 advisory로 기본 설치
 진행할까요? [Enter=예 / n=아니오 / c=직접 설정] `;
 
 function writeProfile(repoRoot, { force = false } = {}) {
@@ -62,6 +63,11 @@ function installHooks(repoRoot, mode) {
   return result.status ?? 1;
 }
 
+function warnHookSkipped(mode) {
+  console.log(`- Git hooks: ${mode} 자동 설치를 건너뜀. 기존 hook이 있거나 git repo가 아닐 수 있습니다.`);
+  console.log('  필요하면 `jhste-skills hooks doctor`로 상태를 확인하세요.');
+}
+
 function printInstallResult({ repoRoot, skillsDir, skillResults, profileResult, bridgeResults }) {
   const skillSummary = skillResults.reduce((acc, result) => {
     acc[result.status] = (acc[result.status] || 0) + 1;
@@ -81,7 +87,7 @@ function printInstallResult({ repoRoot, skillsDir, skillResults, profileResult, 
   }
   console.log('- Enforcement: advisory only');
   console.log('- CI/package.json/lockfile: unchanged by installer');
-  console.log('- Git hooks: unchanged unless explicitly selected');
+  console.log('- Git hooks: advisory by default unless --skip-hooks or blocking is selected');
   console.log('\n나중에 deep scan을 실행하려면:');
   console.log('  npx jhste-skills deep-scan');
 }
@@ -116,17 +122,21 @@ async function main() {
 
   printInstallResult({ repoRoot, skillsDir, skillResults, profileResult, bridgeResults });
 
-  let hooksMode = args.hooks ? String(args.hooks) : '';
+  const explicitHooks = Boolean(args.hooks);
+  let hooksMode = args['skip-hooks'] ? '' : 'advisory';
+  if (explicitHooks) hooksMode = String(args.hooks);
   if (hooksMode === 'true') hooksMode = 'advisory';
-  if (!hooksMode && !args['skip-hooks'] && !nonInteractive) {
-    const hooks = await ask(`\n커밋할 때 guard를 자동 실행할까요?
-- a/advisory: 문제를 보여주지만 커밋은 막지 않음
+  if (!args['skip-hooks'] && !explicitHooks && !nonInteractive) {
+    const hooks = await ask(`
+커밋할 때 guard를 자동 실행합니다. 기본값은 advisory입니다.
+- Enter/advisory: 문제를 보여주지만 커밋은 막지 않음
 - b/blocking: error면 커밋을 막음
-- Enter: 설치 안 함
-선택하세요. [a=advisory / b=blocking / Enter=안 함] `);
+- n/skip: 설치 안 함
+선택하세요. [Enter=advisory / b=blocking / n=안 함] `);
     const normalizedHooks = hooks.toLowerCase();
-    if (normalizedHooks === 'a' || normalizedHooks === 'advisory') hooksMode = 'advisory';
+    if (normalizedHooks === 'n' || normalizedHooks === 'skip' || normalizedHooks === 'none') hooksMode = '';
     if (normalizedHooks === 'b' || normalizedHooks === 'blocking') hooksMode = 'blocking';
+    if (normalizedHooks === 'a' || normalizedHooks === 'advisory') hooksMode = 'advisory';
   }
   if (hooksMode) {
     if (!['advisory', 'blocking'].includes(hooksMode)) {
@@ -136,8 +146,11 @@ async function main() {
     }
     const hookStatus = installHooks(repoRoot, hooksMode);
     if (hookStatus !== 0) {
-      process.exitCode = hookStatus;
-      return;
+      if (explicitHooks || hooksMode === 'blocking') {
+        process.exitCode = hookStatus;
+        return;
+      }
+      warnHookSkipped(hooksMode);
     }
   }
 

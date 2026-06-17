@@ -11,10 +11,10 @@ This kit does **not** replace existing repository instructions. Repo-local `AGEN
 - Adds a short bridge block to `AGENTS.md` or `CLAUDE.md` only when the file already exists and the bridge is missing.
 - Keeps enforcement advisory by default.
 
-## What the quick install never does by default
+## What the quick install still avoids
 
 - It does not modify CI.
-- It does not install git hooks unless you explicitly choose hook automation during install or pass `--hooks advisory|blocking`.
+- It does not install blocking git hooks by default. The default hook is advisory only; use `--skip-hooks` to opt out or `--hooks blocking` to enforce errors.
 - It does not modify a target repository `package.json` or lockfile.
 - It does not run a repo-wide strict scan.
 - It does not auto-refactor code.
@@ -31,7 +31,8 @@ Useful local-development commands:
 
 ```bash
 node cli/install.mjs --yes --repo /path/to/repo
-node cli/install.mjs --yes --repo /path/to/repo --hooks advisory
+node cli/install.mjs --yes --repo /path/to/repo --skip-hooks
+node cli/install.mjs --yes --repo /path/to/repo --hooks blocking
 node cli/deep-scan.mjs --repo /path/to/repo
 node cli/guard.mjs --repo /path/to/repo --scope changed --format text --fail-on error
 node cli/hooks.mjs install --repo /path/to/repo --mode advisory
@@ -39,7 +40,7 @@ node cli/tune.mjs --repo /path/to/repo
 node cli/baseline.mjs --repo /path/to/repo
 ```
 
-The install prompt is intentionally one question:
+The install prompts are intentionally small:
 
 ```text
 추천 설정으로 설치합니다.
@@ -47,7 +48,8 @@ The install prompt is intentionally one question:
 - 현재 repo에도 가볍게 연결
 - 기존 코드는 막지 않음
 - 앞으로 AI가 바꾸는 파일 중심으로 규칙 참고
-- CI, hook, package.json은 건드리지 않음
+- CI, package.json은 건드리지 않음
+- 자동 guard hook은 advisory로 기본 설치
 진행할까요? [Enter=예 / n=아니오 / c=직접 설정]
 ```
 
@@ -57,7 +59,7 @@ The install prompt is intentionally one question:
 2. Run `guard --scope changed --format text --fail-on error` manually after AI or code changes.
 3. Create a baseline only after reviewing existing debt. Use `ratchet` to stop new debt, not to hide scanner failures.
 4. Enable profile commands only after repo-local guard commands are stable.
-5. When prompted during install, choose advisory hooks if you want automation. Use blocking mode only after dogfooding noise and false positives.
+5. Keep the default advisory hook at first. Use `--skip-hooks` only if you do not want commit-time checks; use blocking mode only after dogfooding noise and false positives.
 
 ## Repository layout
 
