@@ -1,0 +1,17 @@
+id: performance_duplicate_fetch
+title: Performance and duplicate fetch
+description: Client and route code should avoid obvious duplicate requests or hot-path work that harms perceived performance.
+pack: core
+default_mode: advisory
+severity: medium
+applies_to:
+  languages: [typescript, javascript]
+  paths: [src, app, apps, packages]
+scan:
+  keywords: [fetch, axios, useQuery, useEffect, map, reduce]
+recommendation:
+  changed_files: true
+  baseline_supported: true
+public_safe_examples:
+  bad: Trigger repeated fetches for the same screen path or hide heavy work inside a hot client render path.
+  good: Consolidate requests, cache where appropriate, and keep hot-path work visible and bounded.

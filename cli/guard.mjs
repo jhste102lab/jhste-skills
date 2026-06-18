@@ -198,6 +198,18 @@ function hasUseClientDirective(text) {
   return /^\s*(?:"use client"|'use client')\s*;?/u.test(text);
 }
 
+function isRouteLikePath(relPath) {
+  return /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(relPath) || /route\.(ts|js)$/.test(relPath);
+}
+
+function isScriptPipelinePath(relPath) {
+  return /(^|\/)scripts\/(data|ops|import|imports|backfill|repair|migrate|migration)\//.test(relPath);
+}
+
+function countMatches(text, pattern) {
+  return [...text.matchAll(pattern)].length;
+}
+
 function fingerprintFor(ruleId, relPath, symbol) {
   const stable = `${ruleId}|${normalizePath(relPath)}|${symbol || ''}`;
   return crypto.createHash('sha1').update(stable).digest('hex');
@@ -350,6 +362,192 @@ function scanResponsibilityBudget(relPath, text) {
   return out;
 }
 
+function scanStateSafety(relPath, text) {
+  const out = [];
+  if (!/\.(tsx?|jsx?)$/u.test(relPath)) return out;
+  for (const match of text.matchAll(/\b[A-Za-z_$][\w$]*!\s*(?:\.|\[|\()/gu)) {
+    out.push(violation({
+      ruleId: 'state.non_null_assertion',
+      severity: 'warning',
+      relPath,
+      line: lineAt(text, match.index || 0),
+      symbol: match[0].trim(),
+      message: 'Non-null assertion hides null or empty-state risk; prefer an explicit guard or fallback on the affected path.',
+      confidence: 'medium',
+    }));
+  }
+  if ((hasUseClientDirective(text) || /page\.(tsx|jsx)$/.test(relPath))
+    && /\b(useQuery|useSuspenseQuery|fetch\s*\(|axios\.)\b/.test(text)
+    && !/\b(isLoading|loading|isError|error|notFound|empty|Empty|skeleton|placeholder)\b/.test(text)) {
+    out.push(violation({
+      ruleId: 'state.async_ui_missing_fallback',
+      severity: 'warning',
+      relPath,
+      symbol: 'async-ui-state',
+      message: 'Async UI path has data-loading hints but no obvious loading, empty, or error fallback; review state handling before ship.',
+      confidence: 'low',
+    }));
+  }
+  return out;
+}
+
+function scanAuthzDataIsolation(relPath, text) {
+  if (!isRouteLikePath(relPath)) return [];
+  const out = [];
+  const hasDbAccess = /\b(prisma\.\w+\.(find|create|update|delete|upsert)|pool\.query|client\.query|db\.|database\.|SELECT|INSERT|UPDATE|DELETE)\b/i.test(text);
+  const hasAuthContext = /\b(auth\s*\(|session|currentUser|getUser|permission|requireUser|requireAuth)\b/i.test(text);
+  const hasScopeHint = /\b(userId|accountId|orgId|tenantId|ownerId|workspaceId|teamId|projectId|where\s*:|filter\s*:)\b/i.test(text);
+  if (hasDbAccess && hasAuthContext && !hasScopeHint) {
+    out.push(violation({
+      ruleId: 'authz.scope_not_visible',
+      severity: 'warning',
+      relPath,
+      symbol: 'authz-scope',
+      message: 'Route uses auth context and persistence but no obvious owner or tenant filter is visible; review data isolation before ship.',
+      confidence: 'low',
+    }));
+  }
+  if (hasDbAccess
+    && /\b(export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)|router\.(post|put|patch|delete)|app\.(post|put|patch|delete))\b/i.test(text)
+    && !hasAuthContext) {
+    out.push(violation({
+      ruleId: 'authz.mutation_without_auth_context',
+      severity: 'warning',
+      relPath,
+      symbol: 'authz-mutation',
+      message: 'Mutation path touches persistence without obvious auth or permission context; confirm whether the route is intentionally public.',
+      confidence: 'low',
+    }));
+  }
+  return out;
+}
+
+function scanRuntimeEnvSafety(relPath, text) {
+  const out = [];
+  const lines = text.split(/\r?\n/);
+  lines.forEach((line, index) => {
+    if (/\bprocess\.env\.(?!NODE_ENV\b)[A-Z0-9_]+\b/.test(line) && !/\?\?|\|\||default|safeParse|parseEnv|assertEnv|requiredEnv|validate|schema/i.test(line)) {
+      out.push(violation({
+        ruleId: 'runtime.env_direct_access',
+        severity: 'warning',
+        relPath,
+        line: index + 1,
+        symbol: line.trim(),
+        message: 'Env var is read directly without an obvious validation or fallback path; review build/runtime setup safety.',
+        confidence: 'medium',
+      }));
+    }
+    if (/\bimport\.meta\.env\.(?!MODE\b|DEV\b|PROD\b|SSR\b)[A-Z0-9_]+\b/.test(line) && !/\?\?|\|\||default|safeParse|validate|schema/i.test(line)) {
+      out.push(violation({
+        ruleId: 'runtime.import_meta_env_direct_access',
+        severity: 'warning',
+        relPath,
+        line: index + 1,
+        symbol: line.trim(),
+        message: 'Client env var is read directly without an obvious fallback or validation; review runtime safety before ship.',
+        confidence: 'medium',
+      }));
+    }
+    if (/\bos\.getenv\(['"][A-Z0-9_]+['"]\)/.test(line) && !/\bor\b|\bif\b|default|validate|schema/i.test(line)) {
+      out.push(violation({
+        ruleId: 'runtime.getenv_direct_access',
+        severity: 'warning',
+        relPath,
+        line: index + 1,
+        symbol: line.trim(),
+        message: 'Python env lookup has no obvious fallback or validation; review startup/runtime safety.',
+        confidence: 'medium',
+      }));
+    }
+  });
+  return out;
+}
+
+function scanWriteSafety(relPath, text) {
+  const out = [];
+  const hasWrite = /\b(prisma\.\w+\.(create|update|delete|upsert)|pool\.query|client\.query|db\.|INSERT|UPDATE|DELETE)\b/i.test(text);
+  if (hasWrite
+    && /(forEach\s*\(|for\s*\([^)]*;|for\s*\(\s*const\s+.+\s+of\s+|\.map\s*\(|while\s*\()/i.test(text)
+    && !/\b(transaction|batch|Promise\.allSettled|idempotenc|dedup|dedupe|upsert|ON CONFLICT|on conflict)\b/i.test(text)) {
+    out.push(violation({
+      ruleId: 'write.loop_without_transaction',
+      severity: 'warning',
+      relPath,
+      symbol: 'write-loop',
+      message: 'Repeated writes appear inside a loop without an obvious transaction, batch, or dedupe strategy; review write safety before ship.',
+      confidence: 'low',
+    }));
+  }
+  if (isRouteLikePath(relPath)
+    && /\b(export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)|router\.(post|put|patch|delete)|app\.(post|put|patch|delete))\b/i.test(text)
+    && hasWrite
+    && !/\b(idempotenc|dedup|dedupe|upsert|transaction|ON CONFLICT|on conflict)\b/i.test(text)) {
+    out.push(violation({
+      ruleId: 'write.mutation_retry_safety',
+      severity: 'warning',
+      relPath,
+      symbol: 'mutation-retry-safety',
+      message: 'Mutation route has no obvious idempotency, dedupe, or transaction marker; review duplicate execution and partial-write risk.',
+      confidence: 'low',
+    }));
+  }
+  return out;
+}
+
+function scanApiContractCompatibility(relPath, text) {
+  if (!isRouteLikePath(relPath)) return [];
+  const out = [];
+  if (/\b(request\.json\(|req\.body\b|params\.[A-Za-z_$]|\bsearchParams\.get\(|new URLSearchParams\b)/.test(text)
+    && !/\b(safeParse|parseAsync|schema|z\.object|validate|validator|assert)\b/.test(text)) {
+    out.push(violation({
+      ruleId: 'contract.boundary_without_schema',
+      severity: 'warning',
+      relPath,
+      symbol: 'boundary-without-schema',
+      message: 'Route reads request body, params, or search params without an obvious schema or validator; review contract compatibility before ship.',
+      confidence: 'medium',
+    }));
+  }
+  if (/\b(Response\.json|NextResponse\.json|res\.json)\(\s*await\s+(?:prisma|db|client|pool)|\breturn\s+(?:await\s+)?(?:prisma|db|client|pool)\./.test(text)) {
+    out.push(violation({
+      ruleId: 'contract.raw_storage_response',
+      severity: 'warning',
+      relPath,
+      symbol: 'raw-storage-response',
+      message: 'Route appears to expose storage-shaped data directly; review DTO mapping and caller compatibility before ship.',
+      confidence: 'low',
+    }));
+  }
+  return out;
+}
+
+function scanPerformanceDuplicateFetch(relPath, text) {
+  const out = [];
+  if (!/\.(tsx?|jsx?)$/u.test(relPath)) return out;
+  const fetchCount = countMatches(text, /\b(fetch\s*\(|axios\.|useQuery\s*\(|useSuspenseQuery\s*\()/g);
+  if (fetchCount >= 2) {
+    out.push(violation({
+      ruleId: 'performance.multiple_fetch_sources',
+      severity: 'warning',
+      relPath,
+      symbol: `fetch-count:${fetchCount}`,
+      message: 'File appears to trigger multiple fetch paths; review whether duplicate requests or split caches are avoidable.',
+      confidence: 'low',
+    }));
+  }
+  if (hasUseClientDirective(text) && /useEffect\s*\([\s\S]{0,500}\b(fetch\s*\(|axios\.)/su.test(text)) {
+    out.push(violation({
+      ruleId: 'performance.fetch_in_effect',
+      severity: 'warning',
+      relPath,
+      symbol: 'fetch-in-effect',
+      message: 'Client module fetches inside useEffect; review whether the request can move to a cached loader or shared data hook.',
+      confidence: 'low',
+    }));
+  }
+  return out;
+}
+
 function scanFile(repoRoot, relPath) {
   const full = path.join(repoRoot, relPath);
   let text;
@@ -372,6 +570,12 @@ function scanFile(repoRoot, relPath) {
       ...scanClientServerBoundary(relPath, text),
       ...scanWorkflowSecurity(relPath, text),
       ...scanResponsibilityBudget(relPath, text),
+      ...scanStateSafety(relPath, text),
+      ...scanAuthzDataIsolation(relPath, text),
+      ...scanRuntimeEnvSafety(relPath, text),
+      ...scanWriteSafety(relPath, text),
+      ...scanApiContractCompatibility(relPath, text),
+      ...scanPerformanceDuplicateFetch(relPath, text),
     ],
     failure: null,
   };

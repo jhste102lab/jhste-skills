@@ -32,6 +32,18 @@ rules:
     mode: advisory
   external_input_validation:
     mode: advisory
+  null_state_safety:
+    mode: advisory
+  authz_data_isolation:
+    mode: advisory
+  build_runtime_env_safety:
+    mode: advisory
+  write_safety_idempotency:
+    mode: advisory
+  api_contract_compatibility:
+    mode: advisory
+  performance_duplicate_fetch:
+    mode: advisory
   db_api_boundary:
     mode: advisory
   crawler_producer_boundary:

@@ -1,0 +1,17 @@
+id: write_safety_idempotency
+title: Write safety and idempotency
+description: Mutation paths should make duplicate execution, batch writes, and persistence safety visible before they reach production.
+pack: core
+default_mode: advisory
+severity: high
+applies_to:
+  languages: [typescript, javascript, python]
+  paths: [src, app, apps, packages, scripts]
+scan:
+  keywords: [create, update, delete, insert, patch, post, upsert, transaction, idempotency]
+recommendation:
+  changed_files: true
+  baseline_supported: true
+public_safe_examples:
+  bad: Fire repeated writes in a loop or POST handler with no transaction, dedupe, or idempotency plan.
+  good: Make mutation safety explicit with transaction, upsert, dedupe key, or other bounded write contract.

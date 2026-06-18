@@ -6,3 +6,5 @@ rules:
   - rules/typescript/type_escape_advisory.yaml
   - rules/core/file_size_advisory.yaml
   - rules/core/responsibility_budget.yaml
+  - rules/core/null_state_safety.yaml
+  - rules/core/performance_duplicate_fetch.yaml

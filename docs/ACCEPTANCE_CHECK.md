@@ -29,7 +29,7 @@ Core skills implemented:
 
 ## Rule/profile model
 
-Rule modes are documented in `docs/RULES.md`, example profile defaults to advisory, and rule metadata covers file size, silent failure, secret logging, external input validation, DB/API boundaries, side effects, and crawler producer seams.
+Rule modes are documented in `docs/RULES.md`, example profile defaults to advisory, and rule metadata covers file size, silent failure, secret logging, external input validation, null/state safety, auth/data isolation, build/runtime env safety, write safety/idempotency, API contract compatibility, performance duplication, DB/API boundaries, side effects, and crawler producer seams.
 
 ## Conflict handling
 

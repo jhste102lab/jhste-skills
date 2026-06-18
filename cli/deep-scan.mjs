@@ -142,6 +142,10 @@ function isPythonOrchestrator(file) {
   return file.ext === '.py' && /(^|\/)(main|.*orchestrator|.*runner|stage_runner)\.py$/.test(file.rel);
 }
 
+function isRouteLike(file) {
+  return /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(file.rel) || /route\.(ts|js)$/.test(file.rel);
+}
+
 function hasRuntimeImportFromClient(text) {
   if (!hasUseClientDirective(text)) return false;
   const runtimeImport = /^\s*import\s+(?!type\b)[^;\n]*\sfrom\s+['"]([^'"]+)['"]/gmu;
@@ -284,6 +288,74 @@ function scanMixedResponsibilities(file, text, findings) {
   }
 }
 
+function scanFinalReviewFamilies(file, text, findings) {
+  const lines = text.split(/\r?\n/);
+
+  if (/\.(tsx?|jsx?)$/.test(file.rel)) {
+    if (/\b[A-Za-z_$][\w$]*!\s*(?:\.|\[|\()/.test(text)) {
+      candidate(findings.stateSafety, 'null/state safety candidate', file, 1, 'non-null assertion detected on a likely UI path; review null and empty-state handling', 'warning');
+    }
+    if ((hasUseClientDirective(text) || /page\.(tsx|jsx)$/.test(file.rel))
+      && /\b(useQuery|useSuspenseQuery|fetch\s*\(|axios\.)\b/.test(text)
+      && !/\b(isLoading|loading|isError|error|notFound|empty|Empty|skeleton|placeholder)\b/.test(text)) {
+      candidate(findings.stateSafety, 'null/state safety candidate', file, 1, 'async UI path has data-loading hints but no obvious loading, empty, or error fallback', 'warning');
+    }
+    const fetchCount = [...text.matchAll(/\b(fetch\s*\(|axios\.|useQuery\s*\(|useSuspenseQuery\s*\()/g)].length;
+    if (fetchCount >= 2) {
+      candidate(findings.performanceDuplication, 'performance duplicate-fetch candidate', file, 1, `file appears to trigger ${fetchCount} fetch paths; review duplicate requests or split caches`, 'warning');
+    }
+    if (hasUseClientDirective(text) && /useEffect\s*\([\s\S]{0,500}\b(fetch\s*\(|axios\.)/su.test(text)) {
+      candidate(findings.performanceDuplication, 'performance duplicate-fetch candidate', file, 1, 'client module fetches inside useEffect; review cached loader or shared data hook alternatives', 'warning');
+    }
+  }
+
+  if (isRouteLike(file)) {
+    const hasDbAccess = /\b(prisma\.\w+\.(find|create|update|delete|upsert)|pool\.query|client\.query|db\.|database\.|SELECT|INSERT|UPDATE|DELETE)\b/i.test(text);
+    const hasAuthContext = /\b(auth\s*\(|session|currentUser|getUser|permission|requireUser|requireAuth)\b/i.test(text);
+    const hasScopeHint = /\b(userId|accountId|orgId|tenantId|ownerId|workspaceId|teamId|projectId|where\s*:|filter\s*:)\b/i.test(text);
+    if (hasDbAccess && hasAuthContext && !hasScopeHint) {
+      candidate(findings.authzIsolation, 'auth/data isolation candidate', file, 1, 'route uses auth context and persistence but no obvious owner or tenant filter is visible', 'warning');
+    }
+    if (hasDbAccess
+      && /\b(export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)|router\.(post|put|patch|delete)|app\.(post|put|patch|delete))\b/i.test(text)
+      && !hasAuthContext) {
+      candidate(findings.authzIsolation, 'auth/data isolation candidate', file, 1, 'mutation path touches persistence without obvious auth or permission context', 'warning');
+    }
+    if (/\b(request\.json\(|req\.body\b|params\.[A-Za-z_$]|\bsearchParams\.get\(|new URLSearchParams\b)/.test(text)
+      && !/\b(safeParse|parseAsync|schema|z\.object|validate|validator|assert)\b/.test(text)) {
+      candidate(findings.apiContract, 'API contract candidate', file, 1, 'route reads request body, params, or search params without an obvious schema or validator', 'warning');
+    }
+    if (/\b(Response\.json|NextResponse\.json|res\.json)\(\s*await\s+(?:prisma|db|client|pool)|\breturn\s+(?:await\s+)?(?:prisma|db|client|pool)\./.test(text)) {
+      candidate(findings.apiContract, 'API contract candidate', file, 1, 'route appears to expose storage-shaped data directly; review DTO mapping and caller compatibility', 'warning');
+    }
+    if (hasDbAccess
+      && /\b(export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)|router\.(post|put|patch|delete)|app\.(post|put|patch|delete))\b/i.test(text)
+      && !/\b(idempotenc|dedup|dedupe|upsert|transaction|ON CONFLICT|on conflict)\b/i.test(text)) {
+      candidate(findings.writeSafety, 'write safety candidate', file, 1, 'mutation route has no obvious idempotency, dedupe, or transaction marker', 'warning');
+    }
+  }
+
+  if ((isRouteLike(file) || isScriptPipeline(file))
+    && /\b(prisma\.\w+\.(create|update|delete|upsert)|pool\.query|client\.query|db\.|INSERT|UPDATE|DELETE)\b/i.test(text)
+    && /(forEach\s*\(|for\s*\([^)]*;|for\s*\(\s*const\s+.+\s+of\s+|\.map\s*\(|while\s*\()/i.test(text)
+    && !/\b(transaction|batch|Promise\.allSettled|idempotenc|dedup|dedupe|upsert|ON CONFLICT|on conflict)\b/i.test(text)) {
+    candidate(findings.writeSafety, 'write safety candidate', file, 1, 'repeated writes appear inside a loop without an obvious transaction, batch, or dedupe strategy', 'warning');
+  }
+
+  lines.forEach((lineText, index) => {
+    const lineNo = index + 1;
+    if (/\bprocess\.env\.(?!NODE_ENV\b)[A-Z0-9_]+\b/.test(lineText) && !/\?\?|\|\||default|safeParse|parseEnv|assertEnv|requiredEnv|validate|schema/i.test(lineText)) {
+      candidate(findings.runtimeEnv, 'runtime/env safety candidate', file, lineNo, 'env var is read directly without an obvious validation or fallback path', 'warning');
+    }
+    if (/\bimport\.meta\.env\.(?!MODE\b|DEV\b|PROD\b|SSR\b)[A-Z0-9_]+\b/.test(lineText) && !/\?\?|\|\||default|safeParse|validate|schema/i.test(lineText)) {
+      candidate(findings.runtimeEnv, 'runtime/env safety candidate', file, lineNo, 'client env var is read directly without an obvious fallback or validation', 'warning');
+    }
+    if (/\bos\.getenv\(['"][A-Z0-9_]+['"]\)/.test(lineText) && !/\bor\b|\bif\b|default|validate|schema/i.test(lineText)) {
+      candidate(findings.runtimeEnv, 'runtime/env safety candidate', file, lineNo, 'Python env lookup has no obvious fallback or validation', 'warning');
+    }
+  });
+}
+
 function scanFile(file, text, findings) {
   const lines = text.split(/\r?\n/);
   const lineCount = lines.length;
@@ -342,12 +414,19 @@ function scanFiles(files) {
     clientServerSeam: [],
     hiddenSideEffects: [],
     secretLogging: [],
+    stateSafety: [],
+    authzIsolation: [],
+    runtimeEnv: [],
+    writeSafety: [],
+    apiContract: [],
+    performanceDuplication: [],
     scanWarnings: [],
   };
   for (const file of files) {
     try {
       const text = fs.readFileSync(file.full, 'utf8');
       scanFile(file, text, findings);
+      scanFinalReviewFamilies(file, text, findings);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       candidate(
@@ -432,6 +511,18 @@ ${tableRows(findings.responsibilityBudget)}
 ${tableRows(findings.clientServerSeam)}
 ### Existing hidden side-effect candidates
 ${tableRows(findings.hiddenSideEffects)}
+### Existing null/state safety candidates
+${tableRows(findings.stateSafety)}
+### Existing auth/data isolation candidates
+${tableRows(findings.authzIsolation)}
+### Existing runtime/env safety candidates
+${tableRows(findings.runtimeEnv)}
+### Existing write safety candidates
+${tableRows(findings.writeSafety)}
+### Existing API contract candidates
+${tableRows(findings.apiContract)}
+### Existing performance duplication candidates
+${tableRows(findings.performanceDuplication)}
 ### Secret-like logging candidates
 ${tableRows(findings.secretLogging)}
 ### Scan warnings
@@ -491,6 +582,18 @@ rules:
     route_review_lines: ${ROUTE_RESPONSIBILITY_LINES}
     import_ops_script_review_lines: ${SCRIPT_RESPONSIBILITY_LINES}
     python_orchestrator_review_lines: ${PYTHON_ORCHESTRATOR_LINES}
+  null_state_safety:
+    mode: advisory
+  authz_data_isolation:
+    mode: advisory
+  build_runtime_env_safety:
+    mode: advisory
+  write_safety_idempotency:
+    mode: advisory
+  api_contract_compatibility:
+    mode: advisory
+  performance_duplicate_fetch:
+    mode: advisory
   type_escape_advisory:
     mode: advisory
 baseline:

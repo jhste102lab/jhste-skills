@@ -8,3 +8,4 @@ When reviewing a proposed change, ask:
 - What side effect becomes easier to test or replace?
 - Does this module hide complexity or merely pass it through?
 - Are repo-local docs using a more specific term or rule?
+- Where do caller contracts, mutation safety, or hot-path performance assumptions belong so they stay visible instead of leaking across seams?

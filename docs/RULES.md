@@ -48,6 +48,15 @@ Shared guidance now distinguishes two review stages:
 
 Final review should run for non-trivial code changes and may be skipped for docs-only, comment-only, formatting-only, and trivial rename-only changes. Agents should stop after at most two fix + re-review cycles and report residual risks instead of looping indefinitely.
 
+The first shared finding families behind final review are:
+
+- `null_state_safety`
+- `authz_data_isolation`
+- `build_runtime_env_safety`
+- `write_safety_idempotency`
+- `api_contract_compatibility`
+- `performance_duplicate_fetch`
+
 ## Responsibility budget advisory
 
 `responsibility_budget` is a review signal, not a default blocker. It looks for common module shapes that tend to collect unrelated work:

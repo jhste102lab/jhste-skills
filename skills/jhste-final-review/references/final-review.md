@@ -23,3 +23,12 @@ Summarize the result in this order:
 2. Findings: short bullets with the concrete problem and impact
 3. Verification: tests, guard output, builds, or other checks that support the conclusion
 4. Residual risk: what still might be wrong, if anything
+
+When shared tooling reports rule families, interpret them as prompts rather than proof:
+
+- `null_state_safety` → inspect null, empty, loading, and error handling
+- `authz_data_isolation` → inspect auth context, tenancy, and owner scoping
+- `build_runtime_env_safety` → inspect env validation and runtime assumptions
+- `write_safety_idempotency` → inspect duplicate execution, batching, and partial-write risks
+- `api_contract_compatibility` → inspect schema, parsing, DTO mapping, and caller drift
+- `performance_duplicate_fetch` → inspect duplicate requests and hot-path work

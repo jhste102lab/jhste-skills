@@ -10,8 +10,11 @@ Use this skill for API and persistence boundary changes. Repo-local API contract
 ## Checkpoints
 
 - Keep API routes/controllers focused on auth, input parsing, service calls, and response mapping.
+- Make auth context and tenant or owner scoping visible when a route reads or mutates user data.
 - Use parameter binding or a safe query abstraction for SQL.
+- Keep request and response contracts explicit enough that caller drift is visible before runtime.
 - Validate database rows or third-party records before treating them as domain objects when shape matters.
+- Make write safety visible for repeated execution, batch mutation, or idempotent retry paths.
 - Return public-safe errors; do not leak raw database, stack, or secret-like details.
 
 ## References

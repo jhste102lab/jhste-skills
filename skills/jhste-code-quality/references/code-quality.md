@@ -5,3 +5,5 @@ Prefer small, explicit changes. Validate data at boundaries such as user input, 
 Failure handling must be observable. Empty catches and ignored promise rejections need a clear reason, a typed fallback, or redacted logging.
 
 Logging should help diagnose behavior without exposing sensitive values. When reporting secret-like matches, show only file, line, and a redacted summary.
+
+When code crosses async UI, env, or persistence paths, be skeptical of fragile assumptions. Nullable values, missing loading/error states, direct env reads, duplicate fetches, and repeated writes without dedupe or transaction safety are all review candidates.

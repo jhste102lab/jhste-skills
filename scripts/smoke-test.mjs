@@ -60,11 +60,21 @@ fs.writeFileSync(path.join(repo, 'package.json'), '{"name":"smoke-target","scrip
 fs.writeFileSync(path.join(repo, 'package-lock.json'), '{"lockfileVersion":3}\n');
 fs.mkdirSync(path.join(repo, 'src'), { recursive: true });
 fs.mkdirSync(path.join(repo, 'src', 'app', 'dashboard'), { recursive: true });
+fs.mkdirSync(path.join(repo, 'src', 'app', 'orders'), { recursive: true });
+fs.mkdirSync(path.join(repo, 'src', 'app', 'api', 'orders'), { recursive: true });
 const emptyCatchFixture = 'catch ' + '{}';
 fs.writeFileSync(path.join(repo, 'src', 'route.ts'), `export async function GET() {\n  try {\n    return Response.json({ ok: true });\n  } ${emptyCatchFixture}\n}\n`);
 fs.writeFileSync(
   path.join(repo, 'src', 'app', 'dashboard', 'page.tsx'),
   `export default function Page() {\n  return <main>dashboard</main>;\n}\n${Array.from({ length: 205 }, (_, index) => `// page shell line ${index + 1}`).join('\n')}\n`,
+);
+fs.writeFileSync(
+  path.join(repo, 'src', 'app', 'orders', 'client.tsx'),
+  `"use client";\nimport { useEffect } from "react";\nconst apiBase = process.env.NEXT_PUBLIC_API_URL;\nexport default function OrdersClient({ items }) {\n  useEffect(() => {\n    fetch(apiBase + "/orders");\n    fetch(apiBase + "/orders");\n  }, []);\n  return <ul>{items!.map((item) => <li key={item.id}>{item.name}</li>)}</ul>;\n}\n`,
+);
+fs.writeFileSync(
+  path.join(repo, 'src', 'app', 'api', 'orders', 'route.ts'),
+  `export async function POST(request) {\n  const session = await auth();\n  const body = await request.json();\n  const order = await prisma.order.update({ data: body });\n  return Response.json(order);\n}\n`,
 );
 
 const packageHashBefore = hashFile(path.join(repo, 'package.json'));
@@ -136,9 +146,22 @@ if (!fs.existsSync(path.join(repo, '.jhste', 'profile.recommended.yaml'))) fail(
 const report = fs.readFileSync(path.join(repo, '.jhste', 'deep-scan-report.md'), 'utf8');
 if (!report.includes('Existing responsibility budget candidates')) fail('responsibility budget report section missing');
 if (!report.includes('src/app/dashboard/page.tsx:1')) fail('Next page responsibility budget candidate missing');
+for (const heading of [
+  'Existing null/state safety candidates',
+  'Existing auth/data isolation candidates',
+  'Existing runtime/env safety candidates',
+  'Existing write safety candidates',
+  'Existing API contract candidates',
+  'Existing performance duplication candidates',
+]) {
+  if (!report.includes(heading)) fail(`deep scan report missing section ${heading}`);
+}
 const recommended = fs.readFileSync(path.join(repo, '.jhste', 'profile.recommended.yaml'), 'utf8');
 if (/mode:\s*strict/.test(recommended) || /enabled:\s*true/.test(recommended)) fail('recommended profile enabled strict mode');
 if (!recommended.includes('responsibility_budget:')) fail('recommended profile missing responsibility budget rule');
+for (const ruleName of ['null_state_safety:', 'authz_data_isolation:', 'build_runtime_env_safety:', 'write_safety_idempotency:', 'api_contract_compatibility:', 'performance_duplicate_fetch:']) {
+  if (!recommended.includes(ruleName)) fail(`recommended profile missing ${ruleName}`);
+}
 
 const guardJson = run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json', '--fail-on', 'none'], { cwd: repo }).stdout;
 const guardResult = JSON.parse(guardJson);
@@ -147,6 +170,12 @@ if (guardResult.meta?.tool_version !== '0.1.0') fail('guard JSON meta tool_versi
 if (typeof guardResult.meta?.files_considered !== 'number') fail('guard JSON meta files_considered missing');
 if (!guardResult.violations.some(item => item.rule_id === 'silent.catch.empty')) fail('guard did not report empty catch');
 if (!guardResult.violations.some(item => item.rule_id === 'responsibility.page.budget')) fail('guard did not report responsibility budget');
+if (!guardResult.violations.some(item => item.rule_id === 'state.non_null_assertion')) fail('guard did not report null/state safety');
+if (!guardResult.violations.some(item => item.rule_id === 'authz.scope_not_visible')) fail('guard did not report auth/data isolation');
+if (!guardResult.violations.some(item => item.rule_id === 'runtime.env_direct_access')) fail('guard did not report runtime/env safety');
+if (!guardResult.violations.some(item => item.rule_id === 'write.mutation_retry_safety')) fail('guard did not report write safety');
+if (!guardResult.violations.some(item => item.rule_id === 'contract.boundary_without_schema')) fail('guard did not report API contract compatibility');
+if (!guardResult.violations.some(item => item.rule_id === 'performance.multiple_fetch_sources')) fail('guard did not report performance duplication');
 const failingGuard = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json', '--fail-on', 'error'], { cwd: repo });
 if (failingGuard.status !== 1) fail(`guard --fail-on error should exit 1, got ${failingGuard.status}`);
 const missingRatchet = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'ratchet', '--baseline-path', '.jhste/missing-baseline.json', '--format', 'json'], { cwd: repo });

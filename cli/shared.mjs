@@ -39,11 +39,30 @@ rules:
     mode: advisory
     source_file_warning_lines: 400
     source_file_review_lines: 600
+  responsibility_budget:
+    mode: advisory
+    next_page_review_lines: 200
+    client_module_review_lines: 200
+    route_review_lines: 250
+    import_ops_script_review_lines: 280
+    python_orchestrator_review_lines: 600
   no_silent_failure:
     mode: advisory
   no_secret_logging:
     mode: advisory
   external_input_validation:
+    mode: advisory
+  null_state_safety:
+    mode: advisory
+  authz_data_isolation:
+    mode: advisory
+  build_runtime_env_safety:
+    mode: advisory
+  write_safety_idempotency:
+    mode: advisory
+  api_contract_compatibility:
+    mode: advisory
+  performance_duplicate_fetch:
     mode: advisory
   db_api_boundary:
     mode: advisory

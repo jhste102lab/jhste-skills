@@ -5,3 +5,4 @@ rules:
   - rules/database/sql_parameter_binding.yaml
   - rules/database/db_row_validation.yaml
   - rules/core/no_secret_logging.yaml
+  - rules/core/write_safety_idempotency.yaml
