@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readJsonFile, validateJsonObject, validateStringArray } from '../cli/json-file.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const expected = [
@@ -27,7 +28,13 @@ function fail(message) {
 }
 
 function readJson(file) {
-  return JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
+  const validate = file.endsWith('allowlist.json') ? validateStringArray : validateJsonObject;
+  try {
+    return readJsonFile(path.join(root, file), { description: file, validate });
+  } catch (error) {
+    fail(error instanceof Error ? error.message : String(error));
+  }
+  return null;
 }
 
 const allowlist = readJson('vendor/matt-pocock/allowlist.json');

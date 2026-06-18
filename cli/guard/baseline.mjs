@@ -1,12 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { readJsonFile, validateJsonObject } from '../json-file.mjs';
 import { nowIso, relativeDisplay } from '../shared.mjs';
 
 export function loadBaseline(repoRoot, baselinePath, callbacks = {}) {
   const failConfig = callbacks.failConfig || ((message) => { throw new Error(message); });
   if (!fs.existsSync(baselinePath)) return new Map();
   try {
-    const data = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+    const data = readJsonFile(baselinePath, {
+      description: `baseline ${relativeDisplay(repoRoot, baselinePath)}`,
+      validate: validateJsonObject,
+    });
     const items = Array.isArray(data.violations) ? data.violations : [];
     return new Map(items.filter((item) => typeof item.fingerprint === 'string').map((item) => [item.fingerprint, item]));
   } catch (error) {
@@ -58,4 +62,3 @@ export function applyBaseline(violations, baselineMap, mode, callbacks = {}) {
     };
   });
 }
-

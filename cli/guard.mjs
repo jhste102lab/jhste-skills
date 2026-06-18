@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import fs from 'node:fs';
 import path from 'node:path';
 import { KIT_ROOT, findGitRoot, parseArgs, relativeDisplay } from './shared.mjs';
 import {
@@ -8,6 +7,7 @@ import {
   responsibilityBudgetSettings,
   validateProfileConfig,
 } from './profile.mjs';
+import { readJsonFile, validateJsonObject } from './json-file.mjs';
 import { loadBaseline, writeBaseline, applyBaseline } from './guard/baseline.mjs';
 import { resolveGuardConfig } from './guard/config.mjs';
 import { runProfileCommands } from './guard/profile-commands.mjs';
@@ -38,7 +38,10 @@ function failConfig(message, details = []) {
 
 function toolVersion() {
   try {
-    const pkg = JSON.parse(fs.readFileSync(path.join(KIT_ROOT, 'package.json'), 'utf8'));
+    const pkg = readJsonFile(path.join(KIT_ROOT, 'package.json'), {
+      description: 'package.json',
+      validate: validateJsonObject,
+    });
     return String(pkg.version || '0.0.0');
   } catch {
     return '0.0.0';

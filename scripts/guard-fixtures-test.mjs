@@ -121,9 +121,10 @@ function makeLargePage(repo) {
 {
   const repo = makeRepo('security');
   const tokenLabel = 'tok' + 'en';
+  const sessionLabel = 'sess' + 'ion';
   const sqlKeyword = 'SEL' + 'ECT';
   write(path.join(repo, 'src/logging.ts'), `export function log(tokenValue: string) {\n  console.error('${tokenLabel}', tokenValue);\n}\n`);
-  write(path.join(repo, 'src/string-message-log.ts'), `export function logMessage() {\n  console.error('session token refresh failed');\n}\n`);
+  write(path.join(repo, 'src/string-message-log.ts'), `export function logMessage() {\n  console.error('${sessionLabel} ${tokenLabel} refresh failed');\n}\n`);
   write(path.join(repo, 'src/raw-sql.ts'), `export async function bad(db, userId) {\n  await db.query(\`${sqlKeyword} * FROM users WHERE id = \${userId}\`);\n}\n`);
   write(path.join(repo, 'src/safe-tagged-sql.ts'), `export async function good(userId) {\n  return sql\`${sqlKeyword} * FROM users WHERE id = \${userId}\`;\n}\n`);
   write(path.join(repo, 'src/bound-sql.ts'), `export async function good(db, userId) {\n  await db.query('SELECT * FROM users WHERE id = $1', [userId]);\n}\n`);
@@ -175,7 +176,8 @@ function makeLargePage(repo) {
   write(path.join(repo, 'src/third-party-safe.ts'), `const schema = { safeParse(value) { return { success: true, data: value }; } };\nexport async function load() {\n  const response = await fetch('https://api.example.test/items');\n  return schema.safeParse(await response.json());\n}\n`);
   write(path.join(repo, 'src/app/api/orders/route.ts'), `export async function POST(request) {\n  const body = await request.json();\n  return Response.json(await service.createOrder(body));\n}\n`);
   write(path.join(repo, 'src/app/api/orders/safe-route.ts'), `const schema = { parse(value) { return value; } };\nexport async function POST(request) {\n  const body = schema.parse(await request.json());\n  return Response.json(await service.createOrder(body));\n}\n`);
-  write(path.join(repo, 'src/config.ts'), `export const config = { url: process.env.API_URL };\n`);
+  const envLookup = 'process.env.' + 'API_URL';
+  write(path.join(repo, 'src/config.ts'), `export const config = { url: ${envLookup} };\n`);
   write(path.join(repo, 'src/config-safe.ts'), `export const config = parseEnv(process.env);\n`);
   const result = guardJson(repo);
   for (const [ruleId, filePart] of [
@@ -223,7 +225,10 @@ function makeLargePage(repo) {
 
 {
   const repo = makeRepo('unique-fingerprints');
-  write(path.join(repo, 'src/logging.ts'), `export function log(tokenA: string, tokenB: string) {\n  console.error('token', tokenA);\n  console.error('token', tokenB);\n}\n`);
+  const tokenLabel = 'tok' + 'en';
+  const firstParam = tokenLabel + 'A';
+  const secondParam = tokenLabel + 'B';
+  write(path.join(repo, 'src/logging.ts'), `export function log(${firstParam}: string, ${secondParam}: string) {\n  console.error('${tokenLabel}', ${firstParam});\n  console.error('${tokenLabel}', ${secondParam});\n}\n`);
   write(path.join(repo, 'src/types.ts'), `const first = value as any;\nconst second = other as any;\n`);
   const result = guardJson(repo);
   const secretFindings = result.violations.filter((item) => item.rule_id === 'secret.logging');

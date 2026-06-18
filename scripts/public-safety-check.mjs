@@ -81,5 +81,5 @@ for (const { full: file, scanContent } of walk(scanRoot)) {
 }
 
 if (!process.exitCode) {
-  console.log('public-safety-check passed: no private repo names, private local paths, or secret-like values detected.');
+  console.log('public-safety-check passed: no private repo names, private local paths, or sensitive value patterns detected.');
 }

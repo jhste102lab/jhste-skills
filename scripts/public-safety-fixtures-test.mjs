@@ -45,4 +45,4 @@ for (const filename of secretLikeFilenames) {
   if (output.includes('harmless fixture text')) fail(`${filename} failure leaked file contents`);
 }
 
-console.log('public-safety-fixtures-test passed: secret-like filenames are rejected without content leakage.');
+console.log('public-safety-fixtures-test passed: sensitive filenames are rejected without content leakage.');

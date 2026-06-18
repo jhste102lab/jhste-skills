@@ -16,6 +16,7 @@ import {
   relativeDisplay,
 } from './shared.mjs';
 import { installHookTarget, preflightHookTarget } from './hook-utils.mjs';
+import { readJsonFile, validateStringArray } from './json-file.mjs';
 
 const EXIT_CONFIG_FAILURE = 3;
 
@@ -31,11 +32,10 @@ export function preflightPlan(plan) {
 
 function vendoredSkillNames() {
   const allowlistPath = path.join(KIT_ROOT, 'vendor', 'matt-pocock', 'allowlist.json');
-  const parsed = JSON.parse(fs.readFileSync(allowlistPath, 'utf8'));
-  if (!Array.isArray(parsed) || !parsed.every((name) => typeof name === 'string' && name.trim())) {
-    throw new Error('vendor/matt-pocock/allowlist.json must be a JSON array of skill names.');
-  }
-  return new Set(parsed);
+  return new Set(readJsonFile(allowlistPath, {
+    description: 'vendor/matt-pocock/allowlist.json',
+    validate: validateStringArray,
+  }));
 }
 
 function skillNamesForSet(skillSet) {
