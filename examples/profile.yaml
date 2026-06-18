@@ -52,3 +52,12 @@ deep_scan:
   last_run: null
   report: .jhste/deep-scan-report.md
   recommended_profile: .jhste/profile.recommended.yaml
+workflow:
+  final_review:
+    auto_for_non_trivial_code_changes: true
+    skip_when:
+      - docs_only
+      - comment_only
+      - formatting_only
+      - trivial_rename_only
+    max_fix_review_cycles: 2

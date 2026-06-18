@@ -56,10 +56,12 @@ The install prompts are intentionally small:
 ## Recommended rollout
 
 1. Run `deep-scan` once to get advisory recommendations.
-2. Run `guard --scope changed --format text --fail-on error` manually after AI or code changes.
-3. Create a baseline only after reviewing existing debt. Use `ratchet` to stop new debt, not to hide scanner failures.
-4. Enable profile commands only after repo-local guard commands are stable.
-5. Keep the default advisory hook at first. Use `--skip-hooks` only if you do not want commit-time checks; use blocking mode only after dogfooding noise and false positives.
+2. Keep the default advisory hook at first. Use `--skip-hooks` only if you do not want commit-time checks; use blocking mode only after dogfooding noise and false positives.
+3. Run `guard --scope changed --format text --fail-on error` manually while iterating on code changes.
+4. Before declaring non-trivial code work complete, use the `jhste-final-review` skill. Skip docs-only, comment-only, formatting-only, and trivial rename-only changes.
+5. Stop after at most two fix + re-review cycles and report remaining risks instead of chasing an unbounded review loop.
+6. Create a baseline only after reviewing existing debt. Use `ratchet` to stop new debt, not to hide scanner failures.
+7. Enable profile commands only after repo-local guard commands are stable.
 
 ## Repository layout
 
@@ -80,6 +82,7 @@ examples/profile.yaml   Default advisory profile example
 - `jhste-architecture-review`
 - `jhste-db-api-boundary`
 - `jhste-crawler-automation`
+- `jhste-final-review`
 
 The kit also vendors exactly 10 allowlisted Matt Pocock skills. See [`vendor/matt-pocock/allowlist.json`](vendor/matt-pocock/allowlist.json) and [`vendor/matt-pocock/source-lock.json`](vendor/matt-pocock/source-lock.json).
 

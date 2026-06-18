@@ -35,9 +35,18 @@ Violation fingerprints are based on rule id, normalized path, and semantic symbo
 
 Profile command runner is disabled unless `--run-profile-commands` is passed. A nonzero repo-local command is reported as a profile-sourced violation. Command execution failures are guard runtime failures, and malformed command configuration is a config failure. Commands should declare `name`, `run`, optional `severity`, and optional `timeout_seconds`.
 
-Hook automation is opt-in. Generated hooks default to advisory mode, refuse to overwrite non-managed hooks, and can be made blocking only through explicit `hooks install --mode blocking`.
+Default install adds a managed advisory `pre-commit` hook unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install. Managed hooks default to advisory mode, refuse to overwrite non-managed hooks, set `JHSTE_HOOK_ACTIVE=1` to skip nested runs, and remain read-only by refusing `--baseline update` and `--run-profile-commands` while the hook sentinel is active.
 
 Repo-specific policy should stay in repo-local guards or `.jhste/profile.yaml` declarations. Shared rules are defaults and templates, not the authority over a repository.
+
+## Completion-time final review
+
+Shared guidance now distinguishes two review stages:
+
+- commit-time guard: fast, read-only, and safe for hooks;
+- completion-time final review: a read-only red-team pass before declaring non-trivial code work complete.
+
+Final review should run for non-trivial code changes and may be skipped for docs-only, comment-only, formatting-only, and trivial rename-only changes. Agents should stop after at most two fix + re-review cycles and report residual risks instead of looping indefinitely.
 
 ## Responsibility budget advisory
 

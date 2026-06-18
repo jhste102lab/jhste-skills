@@ -19,7 +19,7 @@ Usage:
   jhste-skills hooks doctor [--repo <path>]
 
 Notes:
-  install is opt-in and never overwrites a non-managed existing hook.
+  install never overwrites a non-managed existing hook.
   advisory hooks print guard output but return success.
   blocking hooks return the guard exit code.
 `);
@@ -67,6 +67,10 @@ function hookScript({ hook, mode, failOn }) {
 ${MANAGED_START}
 # mode=${mode} hook=${hook} scope=${scope}
 set -u
+if [ "\${JHSTE_HOOK_ACTIVE:-}" = "1" ]; then
+  echo "jhste-skills: nested managed hook invocation skipped."
+  exit 0
+fi
 run_jhste_skills() {
   if command -v jhste-skills >/dev/null 2>&1; then
     jhste-skills "$@"
@@ -76,6 +80,7 @@ run_jhste_skills() {
 }
 
 echo "jhste-skills: running guard --scope ${scope} --fail-on ${failOn} (${mode})"
+export JHSTE_HOOK_ACTIVE=1
 run_jhste_skills guard --scope ${scope} --format text --fail-on ${failOn}
 status=$?
 if [ "$status" -eq 2 ] || [ "$status" -eq 3 ]; then

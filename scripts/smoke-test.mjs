@@ -79,11 +79,13 @@ if (!fs.existsSync(profilePath)) fail('profile was not created');
 const profile = fs.readFileSync(profilePath, 'utf8');
 if (!/^mode: advisory$/m.test(profile)) fail('profile default mode is not advisory');
 if (/mode:\s*strict/.test(profile)) fail('profile enabled strict mode');
+if (!profile.includes('auto_for_non_trivial_code_changes: true')) fail('profile missing final review workflow guidance');
 if (hashFile(path.join(repo, 'package.json')) !== packageHashBefore) fail('install modified target package.json');
 if (hashFile(path.join(repo, 'package-lock.json')) !== lockHashBefore) fail('install modified target lockfile');
 const defaultPreCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
 if (!fs.existsSync(defaultPreCommit)) fail('install did not create default advisory pre-commit hook');
 if (!fs.readFileSync(defaultPreCommit, 'utf8').includes('mode=advisory')) fail('default pre-commit hook is not advisory');
+if (!fs.existsSync(path.join(skillsDir, 'jhste-final-review', 'SKILL.md'))) fail('install did not copy jhste-final-review skill');
 
 const skipHookRepo = path.join(tmp, 'skip-hook-repo');
 fs.mkdirSync(skipHookRepo, { recursive: true });
@@ -116,6 +118,7 @@ if (hashFile(path.join(hookRepo, 'package.json')) !== hookPackageHashBefore) fai
 const agentsAfterFirst = fs.readFileSync(path.join(repo, 'AGENTS.md'), 'utf8');
 const bridgeCount = (agentsAfterFirst.match(/Repo-local instructions in this file remain authoritative\./g) || []).length;
 if (bridgeCount !== 1) fail('bridge block was not inserted exactly once');
+if (!agentsAfterFirst.includes('jhste-final-review')) fail('bridge block missing final review guidance');
 
 fs.appendFileSync(profilePath, '# keep-existing-profile-marker\n');
 run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', repo, '--skills-dir', skillsDir, '--skip-deep-scan'], { cwd: repo });
@@ -154,17 +157,29 @@ const filesFromGuard = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'
 if (filesFromGuard.status !== 2) fail(`guard files-from outside repo should exit 2, got ${filesFromGuard.status}`);
 run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'update', '--format', 'json'], { cwd: repo });
 if (!fs.existsSync(path.join(repo, '.jhste', 'baseline.json'))) fail('guard baseline update did not create baseline');
+const hookBaselineUpdate = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'update', '--format', 'json'], {
+  cwd: repo,
+  env: { ...process.env, JHSTE_HOOK_ACTIVE: '1' },
+});
+if (hookBaselineUpdate.status !== 3) fail(`guard baseline update inside managed hook should exit 3, got ${hookBaselineUpdate.status}`);
 const baselineUse = JSON.parse(run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'use', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout);
 if (baselineUse.summary.suppressed < 1) fail('guard baseline use did not suppress known violations');
 
 fs.appendFileSync(profilePath, '\ncommands:\n  - name: local-check\n    run: node -e "process.exit(1)"\n    timeout_seconds: 5\n');
 const profileGuard = JSON.parse(runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--run-profile-commands', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout);
 if (!profileGuard.violations.some(item => item.rule_id === 'profile.command.local-check' && item.source === 'profile')) fail('profile command failure was not reported as profile violation');
+const hookProfileGuard = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--run-profile-commands', '--format', 'json', '--fail-on', 'error'], {
+  cwd: repo,
+  env: { ...process.env, JHSTE_HOOK_ACTIVE: '1' },
+});
+if (hookProfileGuard.status !== 3) fail(`guard run-profile-commands inside managed hook should exit 3, got ${hookProfileGuard.status}`);
 
 run(process.execPath, [path.join(root, 'cli/hooks.mjs'), 'install', '--repo', repo, '--mode', 'advisory'], { cwd: repo });
 const preCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
 if (!fs.readFileSync(preCommit, 'utf8').includes('jhste-skills managed hook start')) fail('managed pre-commit hook missing marker');
 run('sh', [preCommit], { cwd: repo });
+const nestedHook = run('sh', [preCommit], { cwd: repo, env: { ...process.env, JHSTE_HOOK_ACTIVE: '1' } });
+if (!nestedHook.stdout.includes('nested managed hook invocation skipped')) fail('managed hook did not skip nested invocation');
 run(process.execPath, [path.join(root, 'cli/hooks.mjs'), 'uninstall', '--repo', repo], { cwd: repo });
 if (fs.existsSync(preCommit)) fail('managed pre-commit hook was not removed');
 fs.writeFileSync(preCommit, '#!/usr/bin/env sh\necho existing\n', { mode: 0o755 });

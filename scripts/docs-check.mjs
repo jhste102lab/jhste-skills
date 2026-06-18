@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const required = [
+  'AGENTS.md',
   'README.md',
   'LICENSE',
   'package.json',
@@ -13,6 +14,7 @@ const required = [
   'skills/jhste-architecture-review/SKILL.md',
   'skills/jhste-db-api-boundary/SKILL.md',
   'skills/jhste-crawler-automation/SKILL.md',
+  'skills/jhste-final-review/SKILL.md',
   'rules/core/no_silent_failure.yaml',
   'rules/core/no_secret_logging.yaml',
   'rules/core/file_size_advisory.yaml',
@@ -55,9 +57,18 @@ if (/mode:\s*strict/.test(profile)) fail('example profile must not enable strict
 
 const bridgeText = 'Repo-local instructions in this file remain authoritative.';
 for (const rel of ['adapters/codex/README.md', 'docs/CONFLICT_RESOLUTION.md', 'cli/shared.mjs']) {
-  if (!fs.readFileSync(path.join(root, rel), 'utf8').includes(bridgeText)) {
+  const text = fs.readFileSync(path.join(root, rel), 'utf8');
+  if (!text.includes(bridgeText)) {
     fail(`${rel} must include authoritative repo-local bridge wording`);
   }
+  if (!text.includes('jhste-final-review')) {
+    fail(`${rel} must mention jhste-final-review in shared workflow guidance`);
+  }
+}
+
+const rootAgents = fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8');
+for (const requiredText of ['jhste-final-review', 'guard --scope changed --format text --fail-on error', 'at most two fix + re-review cycles']) {
+  if (!rootAgents.includes(requiredText)) fail(`AGENTS.md must mention ${requiredText}`);
 }
 
 const install = fs.readFileSync(path.join(root, 'cli/install.mjs'), 'utf8');

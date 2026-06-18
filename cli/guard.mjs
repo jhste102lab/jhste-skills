@@ -18,6 +18,10 @@ const DEFAULT_COMMAND_TIMEOUT_MS = 120000;
 const PROFILE_OUTPUT_LIMIT = 4000;
 let currentFormat = 'text';
 
+function inManagedHook() {
+  return process.env.JHSTE_HOOK_ACTIVE === '1';
+}
+
 function failGuard(message, details = []) {
   const result = guardResult([], [{ code: 'guard.runtime', message, details }]);
   printResult(result, currentFormat);
@@ -565,6 +569,9 @@ async function main() {
   const baselineMode = String(args.baseline || 'off');
   if (!['off', 'use', 'update', 'ratchet'].includes(baselineMode)) failConfig(`Unsupported --baseline ${baselineMode}. Use off, use, update, or ratchet.`);
   const baselinePath = path.resolve(repoRoot, String(args['baseline-path'] || DEFAULT_BASELINE));
+  if (inManagedHook() && baselineMode === 'update') {
+    failConfig('Managed hook execution is read-only; --baseline update is not allowed while JHSTE_HOOK_ACTIVE=1.');
+  }
   if (baselineMode === 'ratchet' && !fs.existsSync(baselinePath)) {
     failConfig(`--baseline ratchet requires an existing baseline at ${relativeDisplay(repoRoot, baselinePath)}.`);
   }
@@ -577,6 +584,9 @@ async function main() {
     if (result.failure) failures.push(result.failure);
   }
   if (args['run-profile-commands']) {
+    if (inManagedHook()) {
+      failConfig('Managed hook execution is read-only; --run-profile-commands is not allowed while JHSTE_HOOK_ACTIVE=1.');
+    }
     const profile = runProfileCommands(repoRoot);
     violations.push(...profile.violations);
     failures.push(...profile.failures);

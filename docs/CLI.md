@@ -21,7 +21,8 @@ Install enables advisory hook automation by default. In interactive mode, Enter 
 - `.jhste/profile.yaml` created with `mode: advisory` when missing;
 - existing profile is not overwritten unless `--force` is explicit;
 - `AGENTS.md` and `CLAUDE.md` bridge blocks are appended only when the file exists and the exact block is missing;
-- CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install.
+- CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install;
+- installed bridge/profile guidance tells agents to run `jhste-final-review` before declaring non-trivial code work complete, while skipping docs-only, comment-only, formatting-only, and trivial rename-only changes.
 
 ## `deep-scan`
 
@@ -72,6 +73,8 @@ The JSON output starts with:
 
 Guard failures are not validation success. AI agents should report exit `2` or `3` separately from rule violations.
 
+Managed hook executions are read-only. While `JHSTE_HOOK_ACTIVE=1`, `guard` refuses `--baseline update` and `--run-profile-commands`.
+
 ## `hooks`
 
 `hooks` manages local git hook automation. `install` uses advisory hooks by default, and this command lets you inspect, replace, or remove managed hooks later.
@@ -90,6 +93,7 @@ Safety contract:
 - `--skip-hooks` opts out;
 - advisory hooks print guard output but do not block commits;
 - blocking hooks return the guard exit code;
+- nested managed hook runs are skipped using `JHSTE_HOOK_ACTIVE=1`;
 - existing non-managed hooks are never overwritten;
 - uninstall removes only hooks marked as managed by this tool.
 
