@@ -32,12 +32,14 @@ const SKILL_SET_ALIASES = new Map([
   ['all', 'all'],
   ['full', 'all'],
 ]);
-const BOOLEAN_OPTIONS = new Set(['yes', 'force', 'skip-hooks', 'no-bridge', 'skip-deep-scan', 'install-missing']);
-const VALUE_OPTIONS = new Set(['repo', 'skills-dir', 'hooks', 'hook', 'skill-set', 'mode']);
+const BOOLEAN_OPTIONS = new Set(['yes', 'force', 'skip-hooks', 'no-bridge', 'skip-deep-scan', 'install-missing', 'no-line-limit']);
+const VALUE_OPTIONS = new Set(['repo', 'skills-dir', 'hooks', 'hook', 'skill-set', 'mode', 'line-limit', 'line-limit-mode']);
 const HELP_OPTIONS = new Set(['help', 'h']);
 const COMMON_OPTIONS = new Set([...BOOLEAN_OPTIONS, ...VALUE_OPTIONS, ...HELP_OPTIONS]);
 const HOOK_TARGETS = new Set(['pre-commit', 'pre-push', 'all']);
 const HOOK_MODES = new Set(['advisory', 'blocking']);
+const LINE_LIMIT_MODES = new Set(['advisory', 'blocking', 'off']);
+const DEFAULT_LINE_LIMIT = 300;
 function hasOption(args, key) {
   return Object.prototype.hasOwnProperty.call(args, key);
 }
@@ -90,6 +92,31 @@ function normalizeHookTargets(value, errors) {
   }
   return requested === 'all' ? ['pre-commit', 'pre-push'] : [requested];
 }
+
+function normalizeLineLimit(value, errors) {
+  if (value === undefined) return DEFAULT_LINE_LIMIT;
+  if (value === true || String(value).trim() === '') {
+    errors.push('--line-limit requires a positive number.');
+    return DEFAULT_LINE_LIMIT;
+  }
+  const parsed = Number(String(value).trim());
+  if (!Number.isInteger(parsed) || parsed < 50 || parsed > 5000) {
+    errors.push('--line-limit must be an integer from 50 to 5000.');
+    return DEFAULT_LINE_LIMIT;
+  }
+  return parsed;
+}
+
+function normalizeLineLimitMode(value, errors) {
+  if (value === undefined) return undefined;
+  if (value === true || String(value).trim() === '') return 'advisory';
+  const normalized = String(value).toLowerCase();
+  if (!LINE_LIMIT_MODES.has(normalized)) {
+    errors.push('--line-limit-mode must be advisory, blocking, or off.');
+    return undefined;
+  }
+  return normalized;
+}
 export function usage(command = 'install') {
   if (command === 'connect') {
     console.log(`jhste-skills connect
@@ -106,11 +133,13 @@ Notes:
   console.log(`jhste-skills install
 Usage:
   jhste-skills install [--mode minimal|normal|full|custom] [--yes] [--repo <path>] [--skills-dir <path>]
-  jhste-skills install --yes [--skill-set core|vendor|all] [--skip-hooks | --hooks advisory|blocking] [--hook pre-commit|pre-push|all]
+  jhste-skills install --yes [--skill-set core|vendor|all] [--line-limit <lines>] [--line-limit-mode advisory|blocking|off]
+  jhste-skills install --yes [--skip-hooks | --hooks advisory|blocking] [--hook pre-commit|pre-push|all]
 Notes:
   Non-interactive installs require explicit --yes or -y.
   The default mode is normal.
   Full installs all safe managed features; blocking hooks require an explicit interactive or CLI choice.
+  Line limit defaults to 300 lines when repo profile writing is enabled.
   --skip-hooks and --hooks are mutually exclusive.
 `);
 }
@@ -128,6 +157,7 @@ export function normalizeOptions(argv, { command, cwd, nonInteractive }) {
   const noBridge = readBooleanOption(args, 'no-bridge', errors);
   const skipDeepScan = readBooleanOption(args, 'skip-deep-scan', errors);
   const installMissing = readBooleanOption(args, 'install-missing', errors);
+  const noLineLimit = readBooleanOption(args, 'no-line-limit', errors);
   const repoInput = readPathOption(args, 'repo', errors);
   const skillsDirInput = readPathOption(args, 'skills-dir', errors);
   const mode = normalizeMode(hasOption(args, 'mode') ? args.mode : undefined, errors, { command });
@@ -137,9 +167,16 @@ export function normalizeOptions(argv, { command, cwd, nonInteractive }) {
   const explicitHookTargets = hasOption(args, 'hook');
   const hookMode = normalizeHookMode(explicitHooks ? args.hooks : undefined, errors);
   const hookTargets = normalizeHookTargets(explicitHookTargets ? args.hook : undefined, errors);
+  const explicitLineLimit = hasOption(args, 'line-limit');
+  const explicitLineLimitMode = hasOption(args, 'line-limit-mode');
+  const lineLimit = normalizeLineLimit(explicitLineLimit ? args['line-limit'] : undefined, errors);
+  const lineLimitMode = normalizeLineLimitMode(explicitLineLimitMode ? args['line-limit-mode'] : undefined, errors);
 
   if (skipHooks && explicitHooks) errors.push('--skip-hooks and --hooks are mutually exclusive.');
   if (skipHooks && explicitHookTargets) errors.push('--skip-hooks and --hook are mutually exclusive.');
+  if (noLineLimit && explicitLineLimit) errors.push('--no-line-limit and --line-limit are mutually exclusive.');
+  if (noLineLimit && explicitLineLimitMode && lineLimitMode !== 'off') errors.push('--no-line-limit conflicts with --line-limit-mode unless it is off.');
+  if (skipHooks && lineLimitMode === 'blocking') errors.push('--line-limit-mode blocking requires managed hooks; do not combine it with --skip-hooks.');
 
   const repoStart = path.resolve(repoInput || cwd);
   if (repoInput) {
@@ -173,13 +210,18 @@ export function normalizeOptions(argv, { command, cwd, nonInteractive }) {
     explicitHooks,
     explicitMode: hasOption(args, 'mode'),
     explicitRepo: Boolean(repoInput),
+    explicitLineLimit,
+    explicitLineLimitMode,
     explicitSkillSet,
     force,
     hookMode,
     hookTargets,
     installMissing,
+    lineLimit,
+    lineLimitMode,
     mode,
     noBridge,
+    noLineLimit,
     repoStart,
     skillSet,
     skillsDir,
@@ -201,6 +243,7 @@ function presetPlan(command, mode) {
         writeBridge: true,
         hooks: hookActions(['pre-commit', 'pre-push'], 'advisory'),
         deepScan: true,
+        lineLimit: defaultLineLimit(),
       };
     }
     return {
@@ -212,6 +255,7 @@ function presetPlan(command, mode) {
       writeBridge: true,
       hooks: hookActions(['pre-commit'], 'advisory'),
       deepScan: false,
+      lineLimit: defaultLineLimit(),
     };
   }
 
@@ -225,6 +269,7 @@ function presetPlan(command, mode) {
       writeBridge: false,
       hooks: [],
       deepScan: false,
+      lineLimit: disabledLineLimit(),
     };
   }
   if (mode === 'full') {
@@ -237,6 +282,7 @@ function presetPlan(command, mode) {
       writeBridge: true,
       hooks: hookActions(['pre-commit', 'pre-push'], 'advisory'),
       deepScan: true,
+      lineLimit: defaultLineLimit(),
     };
   }
   return {
@@ -248,14 +294,23 @@ function presetPlan(command, mode) {
     writeBridge: true,
     hooks: hookActions(['pre-commit'], 'advisory'),
     deepScan: false,
+    lineLimit: defaultLineLimit(),
   };
 }
 
-function hookActions(targets, mode) {
+function defaultLineLimit() {
+  return { enabled: true, maxLines: DEFAULT_LINE_LIMIT, enforcement: 'advisory' };
+}
+
+function disabledLineLimit() {
+  return { enabled: false, maxLines: DEFAULT_LINE_LIMIT, enforcement: 'off' };
+}
+
+function hookActions(targets, mode, failOn) {
   return targets.map((target) => ({
     target,
     mode,
-    failOn: mode === 'blocking' ? 'error' : 'none',
+    failOn: failOn || (mode === 'blocking' ? 'error' : 'none'),
   }));
 }
 
@@ -292,6 +347,73 @@ function applyOptionOverrides(plan, options) {
   return overrides;
 }
 
+function applyLineLimitToHooks(plan, options) {
+  if (!plan.lineLimit?.enabled || plan.lineLimit.enforcement !== 'blocking') return;
+  if (options.skipHooks) return;
+  const targets = targetList(plan);
+  plan.hooks = hookActions(targets, 'blocking', 'warning');
+}
+
+function applyLineLimitOptions(plan, options) {
+  if (options.noLineLimit || options.lineLimitMode === 'off') {
+    plan.lineLimit = { enabled: false, maxLines: options.lineLimit, enforcement: 'off' };
+    plan.overrides?.push(options.noLineLimit ? '--no-line-limit' : '--line-limit-mode off');
+    return;
+  }
+  if (!plan.lineLimit) plan.lineLimit = defaultLineLimit();
+  if (options.explicitLineLimit) {
+    plan.lineLimit.maxLines = options.lineLimit;
+    plan.overrides?.push(`--line-limit ${options.lineLimit}`);
+  }
+  if (options.lineLimitMode) {
+    plan.lineLimit.enforcement = options.lineLimitMode;
+    plan.overrides?.push(`--line-limit-mode ${options.lineLimitMode}`);
+  }
+  if (options.explicitLineLimit || options.explicitLineLimitMode) applyLineLimitToHooks(plan, options);
+}
+
+function parseLineLimitAnswer(value) {
+  const normalized = String(value).trim();
+  if (!normalized) return DEFAULT_LINE_LIMIT;
+  const parsed = Number(normalized);
+  return Number.isInteger(parsed) && parsed >= 50 && parsed <= 5000 ? parsed : null;
+}
+
+async function askLineLimitPolicy(plan, options) {
+  if (!plan.connectRepo || !plan.writeProfile) return;
+  applyLineLimitOptions(plan, options);
+  if (options.yes || options.noLineLimit || options.explicitLineLimit || options.explicitLineLimitMode) return;
+  const answer = await ask(`파일 길이 제한을 설정할까요?
+큰 파일은 리뷰/수정/테스트 경계가 흐려지기 쉽습니다.
+
+1) ${DEFAULT_LINE_LIMIT}줄 기준으로 경고만 표시
+2) ${DEFAULT_LINE_LIMIT}줄 기준으로 커밋 차단
+3) 사용하지 않기
+4) 줄 수 직접 입력
+
+선택 [Enter=1]: `);
+  const choice = String(answer).trim();
+  if (choice === '3') {
+    plan.lineLimit = disabledLineLimit();
+    return;
+  }
+  let enforcement = choice === '2' ? 'blocking' : 'advisory';
+  let maxLines = DEFAULT_LINE_LIMIT;
+  if (choice === '4') {
+    const limitAnswer = await ask(`라인 수 제한 [Enter=${DEFAULT_LINE_LIMIT}]: `);
+    const parsed = parseLineLimitAnswer(limitAnswer);
+    if (parsed === null) {
+      console.log(`${DEFAULT_LINE_LIMIT}~5000 사이 정수가 아니어서 기본값 ${DEFAULT_LINE_LIMIT}줄을 사용합니다.`);
+    } else {
+      maxLines = parsed;
+    }
+    const blockAnswer = await ask('이 제한을 넘으면 커밋을 막을까요? [y=막기 / Enter=경고만] ');
+    if (String(blockAnswer).trim().toLowerCase() === 'y') enforcement = 'blocking';
+  }
+  plan.lineLimit = { enabled: true, maxLines, enforcement };
+  applyLineLimitToHooks(plan, options);
+}
+
 export async function chooseMode(options) {
   if (options.mode) return options.mode;
   if (options.yes) return 'normal';
@@ -323,6 +445,7 @@ async function customInstallPlan(command) {
     writeBridge: true,
     hooks: hookActions(['pre-commit'], 'advisory'),
     deepScan: false,
+    lineLimit: defaultLineLimit(),
   };
 
   if (command === 'install') {
@@ -341,6 +464,7 @@ async function customInstallPlan(command) {
       plan.writeBridge = false;
       plan.hooks = [];
       plan.deepScan = false;
+      plan.lineLimit = disabledLineLimit();
     } else if (normalizedScope === '3') {
       plan.installSkills = false;
       plan.connectRepo = true;
@@ -476,6 +600,7 @@ export async function resolvePlan(options) {
     plan.deepScan = false;
   }
   await askFullEnforcement(plan, options);
+  await askLineLimitPolicy(plan, options);
 
   plan.preflight = preflightPlan(plan);
   return { plan };
@@ -524,10 +649,20 @@ export function printPlanSummary(plan) {
     console.log(`- 현재 프로젝트: ${plan.repoSkippedReason || '연결하지 않음'}`);
   }
 
+  if (plan.writeProfile && plan.lineLimit) {
+    if (plan.lineLimit.enabled) {
+      const behavior = plan.lineLimit.enforcement === 'blocking' ? '커밋 차단' : '경고만 표시';
+      console.log(`- 라인 수 제한: ${plan.lineLimit.maxLines}줄 초과 시 ${behavior}`);
+    } else {
+      console.log('- 라인 수 제한: 사용하지 않음');
+    }
+  }
+
   if (plan.hooks.length) {
     console.log('- 자동 검사:');
     for (const hook of plan.preflight.hooks) {
-      console.log(`  - ${hook.target}: ${describeHookMode(hook.mode)} (${hook.status})`);
+      const failOn = hook.failOn && hook.failOn !== 'none' ? `, fail-on=${hook.failOn}` : '';
+      console.log(`  - ${hook.target}: ${describeHookMode(hook.mode)}${failOn} (${hook.status})`);
     }
   } else {
     console.log('- 자동 검사: 설치하지 않음');

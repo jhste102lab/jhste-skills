@@ -12,6 +12,7 @@ node cli/install.mjs --yes --mode full --repo /path/to/repo
 node cli/install.mjs --yes --repo /path/to/repo --skip-hooks
 node cli/install.mjs --yes --repo /path/to/repo --hooks blocking
 node cli/install.mjs --yes --repo /path/to/repo --skill-set core|vendor|all
+node cli/install.mjs --yes --repo /path/to/repo --line-limit 300 --line-limit-mode advisory|blocking|off
 ```
 
 Default behavior:
@@ -25,6 +26,14 @@ Modes:
 - `full`: all skills, repo profile/bridge, advisory pre-commit and pre-push hooks, and deep scan by default. Interactive Full asks only whether automatic checks should warn, block at commit time, or block at commit and push time.
 - `custom`: interactive-only effect-oriented wizard.
 
+Line-size policy:
+
+- Normal, Full, and Custom ask whether to enable a source-file line limit when a repo profile will be written;
+- the default limit is `300` lines;
+- advisory mode writes the limit to `.jhste/profile.yaml` and reports warnings without blocking;
+- blocking mode installs/refreshes managed hooks with `--fail-on warning`, so line-size and other warning-level findings can block commits;
+- non-interactive `--yes` uses the safe default: `300` line advisory limit. Use `--line-limit <lines>`, `--line-limit-mode blocking`, `--line-limit-mode off`, or `--no-line-limit` for automation.
+
 Safety and compatibility:
 
 - selected skills copied to a kit-managed skill directory; default `--skill-set core` installs only jhste core skills, while `vendor` and `all` are explicit opt-ins for vendored workflow skills;
@@ -33,6 +42,7 @@ Safety and compatibility:
 - `AGENTS.md` and `CLAUDE.md` bridge blocks use `<!-- jhste-skills:start -->` / `<!-- jhste-skills:end -->` markers; only that managed block is updated on later runs;
 - CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default in Normal, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install;
 - installed bridge/profile guidance tells agents to run `jhste-red-team-review` before declaring non-trivial code work complete, while skipping docs-only, comment-only, formatting-only, and trivial rename-only changes.
+- guard text output includes short `의미` and `대처` guidance for warning/info findings so users can understand and address candidates from hook output.
 
 Repo detection:
 

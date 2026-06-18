@@ -36,8 +36,8 @@ export const DEFAULT_RESPONSIBILITY_BUDGET = Object.freeze({
   python_orchestrator_review_lines: 600,
 });
 export const DEFAULT_FILE_SIZE = Object.freeze({
-  source_file_warning_lines: 400,
-  source_file_review_lines: 600,
+  source_file_warning_lines: 300,
+  source_file_review_lines: 300,
 });
 
 const TOP_LEVEL_SECTIONS = new Set(['version', 'mode', 'installed_at', 'adapters', 'packs', 'rules', 'baseline', 'guard', 'deep_scan', 'workflow', 'strict', 'commands']);

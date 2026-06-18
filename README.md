@@ -77,18 +77,29 @@ The install prompts are intentionally small:
 4) Custom  - 직접 선택합니다
 
 선택 [Enter=Normal / q=취소]:
+
+파일 길이 제한을 설정할까요?
+큰 파일은 리뷰/수정/테스트 경계가 흐려지기 쉽습니다.
+
+1) 300줄 기준으로 경고만 표시
+2) 300줄 기준으로 커밋 차단
+3) 사용하지 않기
+4) 줄 수 직접 입력
+
+선택 [Enter=1]:
 ```
 
 ## Recommended rollout
 
 1. Run `deep-scan` once to get advisory recommendations.
 2. Keep the default advisory hook at first. Use `--skip-hooks` only if you do not want commit-time checks; use blocking mode only after dogfooding noise and false positives.
-3. Run `guard --scope changed --format text --fail-on error` manually while iterating on code changes.
-4. Before non-trivial code changes, use `jhste-engineering-judgment` to check scope, seams, failure paths, data contracts, and assumptions.
-5. Before declaring non-trivial code work complete, use the `jhste-red-team-review` skill. Skip docs-only, comment-only, formatting-only, and trivial rename-only changes.
-6. Stop after at most two fix + re-review cycles and report remaining risks instead of chasing an unbounded review loop.
-7. Create a baseline only after reviewing existing debt. Use `ratchet` to stop new debt, not to hide scanner failures.
-8. Enable profile commands only after repo-local guard commands are stable.
+3. Keep the default 300-line advisory limit at first. Use `--line-limit-mode blocking` only when the team is ready for warning-level hook enforcement.
+4. Run `guard --scope changed --format text --fail-on error` manually while iterating on code changes.
+5. Before non-trivial code changes, use `jhste-engineering-judgment` to check scope, seams, failure paths, data contracts, and assumptions.
+6. Before declaring non-trivial code work complete, use the `jhste-red-team-review` skill. Skip docs-only, comment-only, formatting-only, and trivial rename-only changes.
+7. Stop after at most two fix + re-review cycles and report remaining risks instead of chasing an unbounded review loop.
+8. Create a baseline only after reviewing existing debt. Use `ratchet` to stop new debt, not to hide scanner failures.
+9. Enable profile commands only after repo-local guard commands are stable.
 
 ## Repository layout
 

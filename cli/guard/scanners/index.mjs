@@ -224,7 +224,7 @@ function scanFileSizeAdvisory(relPath, text, settings) {
       severity: 'warning',
       relPath,
       symbol: 'source-file-review',
-      message: `${lineCount} lines in source file; review whether responsibilities can move behind a clearer seam.`,
+      message: `${lineCount} lines in source file; limit is ${settings.source_file_review_lines}. Large files are harder to review, test, and safely change.`,
       confidence: 'medium',
     }));
   } else if (lineCount >= settings.source_file_warning_lines) {
@@ -233,7 +233,7 @@ function scanFileSizeAdvisory(relPath, text, settings) {
       severity: 'info',
       relPath,
       symbol: 'source-file-warning',
-      message: `${lineCount} lines in source file; keep an eye on responsibility creep.`,
+      message: `${lineCount} lines in source file; warning threshold is ${settings.source_file_warning_lines}. Watch for responsibility creep.`,
       confidence: 'medium',
     }));
   }

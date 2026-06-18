@@ -33,7 +33,7 @@ Rule metadata lives in `rules/`. Pack files live in `packs/`. The example profil
 
 Violation fingerprints are based on finding id, normalized path, and a shape-hashed occurrence key. The occurrence key includes location/symbol shape so repeated findings in the same file do not accidentally share a broad baseline fingerprint; secret-related occurrence keys are hashes and do not expose raw values. JSON output includes `rule_id` for the concrete finding and `rule_family` for the profile-controlled metadata rule.
 
-Built-in scanners read `.jhste/profile.yaml` for root, pack/rule modes, and supported thresholds. The generated profile keeps only threshold settings under rules so root mode is not shadowed by redundant nested `advisory` entries. `mode: off` disables matching finding families, and responsibility/file-size thresholds come from the profile when present. Text output shows confidence markers such as `[low-confidence]` so heuristic findings are not mistaken for proof.
+Built-in scanners read `.jhste/profile.yaml` for root, pack/rule modes, and supported thresholds. The generated profile keeps file-size policy explicit: default source-file limit is 300 lines, `mode: advisory` reports it, and `mode: off` disables matching file-size findings. Responsibility/file-size thresholds come from the profile when present. Text output shows confidence markers plus short meaning/remediation hints so heuristic findings are not mistaken for proof and can be acted on from hook output.
 
 Each rule metadata file declares `implementation.guard.status` as one of `builtin`, `metadata_only`, `deep_scan_only`, or `profile_command`. A rule existing in metadata is not the same as a rule being automatically enforced.
 

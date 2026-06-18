@@ -127,14 +127,27 @@ function preflightDeepScan(plan) {
   };
 }
 
-function writeProfile(repoRoot, { force = false } = {}) {
+function renderProfile(lineLimit) {
+  const base = DEFAULT_PROFILE.replace('<installed_at>', nowIso());
+  const limit = lineLimit || { enabled: true, maxLines: 300, enforcement: 'advisory' };
+  const fileSizeBlock = limit.enabled
+    ? `  file_size_advisory:
+    mode: advisory
+    source_file_warning_lines: ${limit.maxLines}
+    source_file_review_lines: ${limit.maxLines}`
+    : `  file_size_advisory:
+    mode: off`;
+  return base.replace(/  file_size_advisory:\n(?:    .+\n){2,3}/, `${fileSizeBlock}\n`);
+}
+
+function writeProfile(repoRoot, { force = false, lineLimit = null } = {}) {
   const profilePath = path.join(repoRoot, '.jhste', 'profile.yaml');
   if (fs.existsSync(profilePath) && !force) {
     return { status: 'skipped-existing', path: profilePath };
   }
   const existed = fs.existsSync(profilePath);
   ensureDir(path.dirname(profilePath));
-  fs.writeFileSync(profilePath, DEFAULT_PROFILE.replace('<installed_at>', nowIso()));
+  fs.writeFileSync(profilePath, renderProfile(lineLimit));
   return { status: existed ? 'overwritten-managed' : 'created', path: profilePath };
 }
 
@@ -189,7 +202,7 @@ export function applyPlan(plan) {
   }
 
   if (plan.writeProfile && plan.repoRoot) {
-    result.profileResult = writeProfile(plan.repoRoot, { force: plan.force });
+    result.profileResult = writeProfile(plan.repoRoot, { force: plan.force, lineLimit: plan.lineLimit });
   }
 
   if (plan.writeBridge && plan.repoRoot) {
@@ -249,7 +262,8 @@ export function printApplyResult(plan, result) {
   }
   for (const hook of result.hookResults) {
     const reason = hook.reason ? ` - ${hook.reason}` : '';
-    console.log(`- Hook ${hook.target}: ${hook.status}${hook.mode ? ` (${hook.mode})` : ''}${reason}`);
+    const failOn = hook.failOn && hook.failOn !== 'none' ? `, fail-on=${hook.failOn}` : '';
+    console.log(`- Hook ${hook.target}: ${hook.status}${hook.mode ? ` (${hook.mode}${failOn})` : ''}${reason}`);
   }
   if (result.deepScanResult) {
     if (result.deepScanResult.status === 'completed') {

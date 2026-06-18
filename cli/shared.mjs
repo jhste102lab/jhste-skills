@@ -33,8 +33,9 @@ adapters:
   claude: auto
 rules:
   file_size_advisory:
-    source_file_warning_lines: 400
-    source_file_review_lines: 600
+    mode: advisory
+    source_file_warning_lines: 300
+    source_file_review_lines: 300
   responsibility_budget:
     next_page_review_lines: 200
     client_module_review_lines: 200

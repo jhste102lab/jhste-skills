@@ -156,6 +156,9 @@ if (!fs.existsSync(profilePath)) fail('profile was not created');
 const profile = fs.readFileSync(profilePath, 'utf8');
 if (!/^mode: advisory$/m.test(profile)) fail('profile default mode is not advisory');
 if (/mode:\s*strict/.test(profile)) fail('profile enabled strict mode');
+if (!/file_size_advisory:\n    mode: advisory\n    source_file_warning_lines: 300\n    source_file_review_lines: 300/m.test(profile)) {
+  fail('profile did not use default 300-line advisory file-size policy');
+}
 if (!profile.includes('auto_for_non_trivial_code_changes: true')) fail('profile missing red-team review workflow guidance');
 if (hashFile(path.join(repo, 'package.json')) !== packageHashBefore) fail('install modified target package.json');
 if (hashFile(path.join(repo, 'package-lock.json')) !== lockHashBefore) fail('install modified target lockfile');
@@ -166,6 +169,49 @@ if (!fs.existsSync(path.join(skillsDir, 'jhste-red-team-review', 'SKILL.md'))) f
 const defaultSkillDirs = skillDirs(skillsDir);
 if (defaultSkillDirs.length !== 7) fail(`default install should copy 7 core skills, got ${defaultSkillDirs.length}`);
 if (defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should not copy vendored workflow skills');
+
+const lineLimitRepo = path.join(tmp, 'line-limit-repo');
+const lineLimitSkills = path.join(tmp, 'line-limit-skills');
+fs.mkdirSync(lineLimitRepo, { recursive: true });
+run('git', ['init'], { cwd: lineLimitRepo });
+run(process.execPath, [
+  path.join(root, 'cli/install.mjs'),
+  '--yes',
+  '--repo',
+  lineLimitRepo,
+  '--skills-dir',
+  lineLimitSkills,
+  '--skip-deep-scan',
+  '--line-limit',
+  '123',
+  '--line-limit-mode',
+  'blocking',
+], { cwd: lineLimitRepo });
+const lineLimitProfile = fs.readFileSync(path.join(lineLimitRepo, '.jhste', 'profile.yaml'), 'utf8');
+if (!lineLimitProfile.includes('source_file_warning_lines: 123') || !lineLimitProfile.includes('source_file_review_lines: 123')) {
+  fail('custom line limit was not written to profile');
+}
+const lineLimitHook = fs.readFileSync(path.join(lineLimitRepo, '.git', 'hooks', 'pre-commit'), 'utf8');
+if (!lineLimitHook.includes('mode=blocking') || !lineLimitHook.includes('--fail-on warning')) {
+  fail('blocking line limit did not install warning-blocking hook');
+}
+
+const noLineLimitRepo = path.join(tmp, 'no-line-limit-repo');
+const noLineLimitSkills = path.join(tmp, 'no-line-limit-skills');
+fs.mkdirSync(noLineLimitRepo, { recursive: true });
+run('git', ['init'], { cwd: noLineLimitRepo });
+run(process.execPath, [
+  path.join(root, 'cli/install.mjs'),
+  '--yes',
+  '--repo',
+  noLineLimitRepo,
+  '--skills-dir',
+  noLineLimitSkills,
+  '--skip-deep-scan',
+  '--no-line-limit',
+], { cwd: noLineLimitRepo });
+const noLineLimitProfile = fs.readFileSync(path.join(noLineLimitRepo, '.jhste', 'profile.yaml'), 'utf8');
+if (!/file_size_advisory:\n    mode: off/m.test(noLineLimitProfile)) fail('--no-line-limit did not disable file-size policy');
 
 const vendorRepo = path.join(tmp, 'vendor-skill-repo');
 const vendorSkillsDir = path.join(tmp, 'vendor-skills');
