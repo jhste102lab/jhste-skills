@@ -9,6 +9,15 @@ applies_to:
   paths: [src, app, apps, packages, scripts]
 scan:
   keywords: [process.env, import.meta.env, os.getenv]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanRuntimeEnvSafety
+    confidence: heuristic
+    finding_ids:
+      - runtime.env_direct_access
+      - runtime.import_meta_env_direct_access
+      - runtime.getenv_direct_access
 recommendation:
   changed_files: true
   baseline_supported: true

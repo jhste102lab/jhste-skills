@@ -9,6 +9,13 @@ applies_to:
   paths: [src, apps, packages]
 scan:
   path_hints: [repository, query, db, database]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanDbRowValidation
+    confidence: heuristic
+    finding_ids:
+      - database.raw_row_public_response
 recommendation:
   changed_files: true
   baseline_supported: false

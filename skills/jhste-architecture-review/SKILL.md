@@ -9,6 +9,7 @@ Repo-local architecture docs remain authoritative. Use this skill to keep common
 
 ## Checkpoints
 
+- For non-trivial changes, apply `jhste-engineering-judgment` before proposing or editing architecture.
 - Keep routing, UI composition, service logic, persistence, and side effects in clear seams.
 - Avoid pass-through abstraction that adds names without protecting an invariant or simplifying a caller.
 - Make side effects visible in names, directories, or injected dependencies.
@@ -18,6 +19,7 @@ Repo-local architecture docs remain authoritative. Use this skill to keep common
 ## References
 
 - `references/architecture-review.md`
+- `../jhste-engineering-judgment/SKILL.md`
 - `../../rules/core/side_effect_boundary.yaml`
 - `../../rules/core/responsibility_budget.yaml`
 - `../../rules/nextjs/thin_api_route.yaml`

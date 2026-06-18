@@ -9,6 +9,13 @@ applies_to:
   paths: [src, apps, packages, scripts]
 scan:
   path_hints: [crawler, scraper, automation, worker, scheduler, producer]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanCrawlerProducerBoundary
+    confidence: heuristic
+    finding_ids:
+      - crawler.producer_direct_persistence
 recommendation:
   changed_files: true
   baseline_supported: true

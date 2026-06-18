@@ -9,6 +9,13 @@ applies_to:
   paths: [src, apps, packages, scripts]
 scan:
   patterns: ["except Exception", "except:"]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanBroadExceptionAdvisory
+    confidence: heuristic
+    finding_ids:
+      - python.broad_exception
 recommendation:
   changed_files: true
   baseline_supported: true

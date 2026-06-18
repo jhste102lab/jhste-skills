@@ -11,6 +11,7 @@ export const BRIDGE_BLOCK = `## Agent skills
 This repo uses jhste skills as shared guidance.
 Repo-local instructions in this file remain authoritative.
 See \`.jhste/profile.yaml\` for local skill preferences.
+Before non-trivial code changes, use the \`jhste-engineering-judgment\` skill to check scope, seams, failure paths, and assumptions.
 After code changes, run \`jhste-skills guard --scope changed --format text --fail-on error\` when available.
 Report guard warnings/errors; do not treat guard runtime/config failures as validation success.
 Before declaring non-trivial code work complete, use the \`jhste-final-review\` skill.
@@ -50,7 +51,11 @@ rules:
     mode: advisory
   no_secret_logging:
     mode: advisory
+  workflow_security:
+    mode: advisory
   external_input_validation:
+    mode: advisory
+  side_effect_boundary:
     mode: advisory
   null_state_safety:
     mode: advisory
@@ -64,7 +69,19 @@ rules:
     mode: advisory
   performance_duplicate_fetch:
     mode: advisory
-  db_api_boundary:
+  public_safe_error:
+    mode: advisory
+  sql_parameter_binding:
+    mode: advisory
+  db_row_validation:
+    mode: advisory
+  thin_api_route:
+    mode: advisory
+  component_responsibility:
+    mode: advisory
+  type_escape_advisory:
+    mode: advisory
+  broad_exception_advisory:
     mode: advisory
   crawler_producer_boundary:
     mode: advisory

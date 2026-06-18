@@ -9,6 +9,13 @@ applies_to:
   paths: [src, apps, packages]
 scan:
   patterns: ["as any", ": any", "@ts-ignore"]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanTypeEscapeAdvisory
+    confidence: heuristic
+    finding_ids:
+      - type.escape
 recommendation:
   changed_files: true
   baseline_supported: true

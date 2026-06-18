@@ -24,6 +24,17 @@ scan:
     - mixed_client_responsibilities
     - mixed_route_responsibilities
     - mixed_script_responsibilities
+implementation:
+  guard:
+    status: builtin
+    scanner: scanResponsibilityBudget
+    confidence: heuristic
+    finding_ids:
+      - responsibility.page.budget
+      - responsibility.client.budget
+      - responsibility.route.budget
+      - responsibility.script.budget
+      - responsibility.python_orchestrator.budget
 recommendation:
   changed_files: true
   baseline_supported: true

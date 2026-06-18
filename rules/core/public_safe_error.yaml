@@ -9,6 +9,13 @@ applies_to:
   paths: [src, apps, packages]
 scan:
   keywords: [stack, error.message, details]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanPublicSafeError
+    confidence: heuristic
+    finding_ids:
+      - error.public_raw_details
 recommendation:
   changed_files: true
   baseline_supported: false

@@ -4,6 +4,14 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { KIT_ROOT, findGitRoot, nowIso, parseArgs, relativeDisplay } from './shared.mjs';
+import {
+  DEFAULT_BASELINE_PATH,
+  effectiveRuleMode,
+  fileSizeSettings,
+  loadProfileConfig,
+  responsibilityBudgetSettings,
+  validateProfileConfig,
+} from './profile.mjs';
 
 const TEXT_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py', '.yml', '.yaml']);
 const EXCLUDED_DIRS = new Set(['.git', 'node_modules', 'vendor', 'dist', 'build', '.next', 'out', 'coverage', '.turbo', '.cache', '__pycache__']);
@@ -13,10 +21,51 @@ const EXIT_VIOLATION = 1;
 const EXIT_GUARD_FAILURE = 2;
 const EXIT_CONFIG_FAILURE = 3;
 const SEVERITIES = ['info', 'warning', 'error'];
-const DEFAULT_BASELINE = '.jhste/baseline.json';
 const DEFAULT_COMMAND_TIMEOUT_MS = 120000;
 const PROFILE_OUTPUT_LIMIT = 4000;
+const ACTIVE_PROFILE_MODES = new Set(['advisory', 'changed-files', 'baseline-new-only', 'strict']);
 let currentFormat = 'text';
+
+const FINDING_METADATA = {
+  'silent.catch.empty': { family: 'no_silent_failure', pack: 'core', scanner: 'scanSilentFailures' },
+  'silent.promise_catch.empty': { family: 'no_silent_failure', pack: 'core', scanner: 'scanSilentFailures' },
+  'silent.python_except.pass': { family: 'no_silent_failure', pack: 'core', scanner: 'scanSilentFailures' },
+  'silent.catch.fallback_no_reason': { family: 'no_silent_failure', pack: 'core', scanner: 'scanSilentFailures' },
+  'secret.logging': { family: 'no_secret_logging', pack: 'core', scanner: 'scanSecretLogging' },
+  'file_size.warning': { family: 'file_size_advisory', pack: 'core', scanner: 'scanFileSizeAdvisory' },
+  'file_size.review': { family: 'file_size_advisory', pack: 'core', scanner: 'scanFileSizeAdvisory' },
+  'boundary.import.server_in_client': { family: 'component_responsibility', pack: 'web', scanner: 'scanClientServerBoundary' },
+  'workflow.input_interpolation.run': { family: 'workflow_security', pack: 'core', scanner: 'scanWorkflowSecurity' },
+  'workflow.action.unpinned': { family: 'workflow_security', pack: 'core', scanner: 'scanWorkflowSecurity' },
+  'responsibility.page.budget': { family: 'responsibility_budget', pack: 'core', scanner: 'scanResponsibilityBudget' },
+  'responsibility.client.budget': { family: 'responsibility_budget', pack: 'core', scanner: 'scanResponsibilityBudget' },
+  'responsibility.route.budget': { family: 'responsibility_budget', pack: 'core', scanner: 'scanResponsibilityBudget' },
+  'responsibility.script.budget': { family: 'responsibility_budget', pack: 'core', scanner: 'scanResponsibilityBudget' },
+  'responsibility.python_orchestrator.budget': { family: 'responsibility_budget', pack: 'core', scanner: 'scanResponsibilityBudget' },
+  'state.non_null_assertion': { family: 'null_state_safety', pack: 'core', scanner: 'scanStateSafety' },
+  'state.async_ui_missing_fallback': { family: 'null_state_safety', pack: 'core', scanner: 'scanStateSafety' },
+  'authz.scope_not_visible': { family: 'authz_data_isolation', pack: 'core', scanner: 'scanAuthzDataIsolation' },
+  'authz.read_scope_not_visible': { family: 'authz_data_isolation', pack: 'core', scanner: 'scanAuthzDataIsolation' },
+  'authz.mutation_without_auth_context': { family: 'authz_data_isolation', pack: 'core', scanner: 'scanAuthzDataIsolation' },
+  'authz.read_without_auth_context': { family: 'authz_data_isolation', pack: 'core', scanner: 'scanAuthzDataIsolation' },
+  'runtime.env_direct_access': { family: 'build_runtime_env_safety', pack: 'core', scanner: 'scanRuntimeEnvSafety' },
+  'runtime.import_meta_env_direct_access': { family: 'build_runtime_env_safety', pack: 'core', scanner: 'scanRuntimeEnvSafety' },
+  'runtime.getenv_direct_access': { family: 'build_runtime_env_safety', pack: 'core', scanner: 'scanRuntimeEnvSafety' },
+  'write.loop_without_transaction': { family: 'write_safety_idempotency', pack: 'core', scanner: 'scanWriteSafety' },
+  'write.mutation_retry_safety': { family: 'write_safety_idempotency', pack: 'core', scanner: 'scanWriteSafety' },
+  'contract.boundary_without_schema': { family: 'api_contract_compatibility', pack: 'core', scanner: 'scanApiContractCompatibility' },
+  'contract.raw_storage_response': { family: 'api_contract_compatibility', pack: 'core', scanner: 'scanApiContractCompatibility' },
+  'performance.multiple_fetch_sources': { family: 'performance_duplicate_fetch', pack: 'core', scanner: 'scanPerformanceDuplicateFetch' },
+  'performance.fetch_in_effect': { family: 'performance_duplicate_fetch', pack: 'core', scanner: 'scanPerformanceDuplicateFetch' },
+  'sql.raw_interpolation': { family: 'sql_parameter_binding', pack: 'database', scanner: 'scanSqlParameterBinding' },
+  'error.public_raw_details': { family: 'public_safe_error', pack: 'api', scanner: 'scanPublicSafeError' },
+  'database.raw_row_public_response': { family: 'db_row_validation', pack: 'database', scanner: 'scanDbRowValidation' },
+  'route.direct_db_access': { family: 'thin_api_route', pack: 'api', scanner: 'scanThinApiRoute' },
+  'type.escape': { family: 'type_escape_advisory', pack: 'web', scanner: 'scanTypeEscapeAdvisory' },
+  'side_effect.hidden_in_helper': { family: 'side_effect_boundary', pack: 'core', scanner: 'scanSideEffectBoundary' },
+  'crawler.producer_direct_persistence': { family: 'crawler_producer_boundary', pack: 'crawler', scanner: 'scanCrawlerProducerBoundary' },
+  'python.broad_exception': { family: 'broad_exception_advisory', pack: 'core', scanner: 'scanBroadExceptionAdvisory' },
+};
 
 function inManagedHook() {
   return process.env.JHSTE_HOOK_ACTIVE === '1';
@@ -206,6 +255,45 @@ function isScriptPipelinePath(relPath) {
   return /(^|\/)scripts\/(data|ops|import|imports|backfill|repair|migrate|migration)\//.test(relPath);
 }
 
+function isSourceCodePath(relPath) {
+  return ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py'].includes(path.extname(relPath).toLowerCase());
+}
+
+function isCrawlerProducerPath(relPath) {
+  return /(^|\/)(crawler|crawlers|scraper|scrapers|automation|workers?|schedulers?)\//i.test(relPath)
+    || /crawler|scraper|automation|producer/i.test(path.basename(relPath));
+}
+
+function hasPersistenceRead(text) {
+  return /\b(prisma\.\w+\.(find(?:Unique|First|Many)?|aggregate|count)|pool\.query|client\.query|db\.|database\.)\b/i.test(text)
+    || /\bSELECT\b[\s\S]{0,120}\bFROM\b/i.test(text);
+}
+
+function hasPersistenceWrite(text) {
+  return /\b(prisma\.\w+\.(create|update|delete|upsert)|pool\.query|client\.query|db\.)\b/i.test(text)
+    || /\b(INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b/i.test(text);
+}
+
+function hasPersistenceAccess(text) {
+  return hasPersistenceRead(text) || hasPersistenceWrite(text);
+}
+
+function hasReadHandler(text) {
+  return /\b(export\s+async\s+function\s+GET|router\.get|app\.get)\b/i.test(text);
+}
+
+function hasMutationHandler(text) {
+  return /\b(export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)|router\.(post|put|patch|delete)|app\.(post|put|patch|delete))\b/i.test(text);
+}
+
+function hasAuthContext(text) {
+  return /\b(auth\s*\(|session|currentUser|getUser|permission|requireUser|requireAuth)\b/i.test(text);
+}
+
+function hasScopeHint(text) {
+  return /\b(userId|user\.id|accountId|orgId|tenantId|ownerId|workspaceId|teamId|projectId|where\s*:|filter\s*:)\b/i.test(text);
+}
+
 function countMatches(text, pattern) {
   return [...text.matchAll(pattern)].length;
 }
@@ -230,6 +318,7 @@ function violation({ ruleId, severity, relPath, line = 1, symbol = '', message, 
 }
 
 function scanSilentFailures(relPath, text) {
+  if (!isSourceCodePath(relPath)) return [];
   const out = [];
   for (const match of text.matchAll(/\bcatch\s*(?:\([^)]*\))?\s*\{\s*\}/gsu)) {
     const before = text.slice(Math.max(0, (match.index || 0) - 40), match.index || 0);
@@ -336,27 +425,54 @@ function scanWorkflowSecurity(relPath, text) {
   return out;
 }
 
-function scanResponsibilityBudget(relPath, text) {
+function scanFileSizeAdvisory(relPath, text, settings) {
+  const ext = path.extname(relPath).toLowerCase();
+  if (!['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py'].includes(ext)) return [];
+  const lineCount = text.split(/\r?\n/).length;
+  const out = [];
+  if (lineCount >= settings.source_file_review_lines) {
+    out.push(violation({
+      ruleId: 'file_size.review',
+      severity: 'warning',
+      relPath,
+      symbol: 'source-file-review',
+      message: `${lineCount} lines in source file; review whether responsibilities can move behind a clearer seam.`,
+      confidence: 'medium',
+    }));
+  } else if (lineCount >= settings.source_file_warning_lines) {
+    out.push(violation({
+      ruleId: 'file_size.warning',
+      severity: 'info',
+      relPath,
+      symbol: 'source-file-warning',
+      message: `${lineCount} lines in source file; keep an eye on responsibility creep.`,
+      confidence: 'medium',
+    }));
+  }
+  return out;
+}
+
+function scanResponsibilityBudget(relPath, text, settings) {
   const ext = path.extname(relPath).toLowerCase();
   if (!['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py'].includes(ext)) return [];
   const lineCount = text.split(/\r?\n/).length;
   const out = [];
   const nextPage = relPath.endsWith('/page.tsx') && /(^|\/)(app|src\/app|apps\/[^/]+\/src\/app)\//.test(relPath);
-  if (nextPage && lineCount > 200) {
+  if (nextPage && lineCount > settings.next_page_review_lines) {
     out.push(violation({ ruleId: 'responsibility.page.budget', severity: 'warning', relPath, symbol: 'next-page', message: `${lineCount} lines in Next page; review loader/model/view split.`, confidence: 'medium' }));
   }
-  if (hasUseClientDirective(text) && lineCount > 200) {
+  if (hasUseClientDirective(text) && lineCount > settings.client_module_review_lines) {
     out.push(violation({ ruleId: 'responsibility.client.budget', severity: 'warning', relPath, symbol: 'use-client', message: `${lineCount} lines in client module; review hook/adapter/presentation split.`, confidence: 'medium' }));
   }
   const routeLike = /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(relPath) || /route\.(ts|js)$/.test(relPath);
-  if (routeLike && lineCount >= 250) {
+  if (routeLike && lineCount >= settings.route_review_lines) {
     out.push(violation({ ruleId: 'responsibility.route.budget', severity: 'warning', relPath, symbol: 'route', message: `${lineCount} lines in route/controller-like file; review auth/validation/service/response seams.`, confidence: 'medium' }));
   }
   const scriptPipeline = /(^|\/)scripts\/(data|ops|import|imports|backfill|repair|migrate|migration)\//.test(relPath);
-  if (scriptPipeline && lineCount >= 280) {
+  if (scriptPipeline && lineCount >= settings.import_ops_script_review_lines) {
     out.push(violation({ ruleId: 'responsibility.script.budget', severity: 'warning', relPath, symbol: 'script-pipeline', message: `${lineCount} lines in import/ops-style script; review CLI/loader/transform/persist/report seams.`, confidence: 'medium' }));
   }
-  if (ext === '.py' && /(^|\/)(main|.*orchestrator|.*runner|stage_runner)\.py$/.test(relPath) && lineCount >= 600) {
+  if (ext === '.py' && /(^|\/)(main|.*orchestrator|.*runner|stage_runner)\.py$/.test(relPath) && lineCount >= settings.python_orchestrator_review_lines) {
     out.push(violation({ ruleId: 'responsibility.python_orchestrator.budget', severity: 'warning', relPath, symbol: 'python-orchestrator', message: `${lineCount} lines in Python orchestrator/runner; review policy/IO/runtime/notification/result seams.`, confidence: 'medium' }));
   }
   return out;
@@ -394,10 +510,10 @@ function scanStateSafety(relPath, text) {
 function scanAuthzDataIsolation(relPath, text) {
   if (!isRouteLikePath(relPath)) return [];
   const out = [];
-  const hasDbAccess = /\b(prisma\.\w+\.(find|create|update|delete|upsert)|pool\.query|client\.query|db\.|database\.|SELECT|INSERT|UPDATE|DELETE)\b/i.test(text);
-  const hasAuthContext = /\b(auth\s*\(|session|currentUser|getUser|permission|requireUser|requireAuth)\b/i.test(text);
-  const hasScopeHint = /\b(userId|accountId|orgId|tenantId|ownerId|workspaceId|teamId|projectId|where\s*:|filter\s*:)\b/i.test(text);
-  if (hasDbAccess && hasAuthContext && !hasScopeHint) {
+  const hasDbAccess = hasPersistenceAccess(text);
+  const authContextVisible = hasAuthContext(text);
+  const scopeVisible = hasScopeHint(text);
+  if (hasDbAccess && authContextVisible && !scopeVisible && !hasReadHandler(text)) {
     out.push(violation({
       ruleId: 'authz.scope_not_visible',
       severity: 'warning',
@@ -407,9 +523,29 @@ function scanAuthzDataIsolation(relPath, text) {
       confidence: 'low',
     }));
   }
+  if (hasDbAccess && hasReadHandler(text) && !authContextVisible) {
+    out.push(violation({
+      ruleId: 'authz.read_without_auth_context',
+      severity: 'warning',
+      relPath,
+      symbol: 'authz-read',
+      message: 'Read path touches persistence without obvious auth or permission context; confirm whether the route is intentionally public.',
+      confidence: 'low',
+    }));
+  }
+  if (hasDbAccess && hasReadHandler(text) && authContextVisible && !scopeVisible) {
+    out.push(violation({
+      ruleId: 'authz.read_scope_not_visible',
+      severity: 'warning',
+      relPath,
+      symbol: 'authz-read-scope',
+      message: 'Read path uses auth context and persistence but no obvious owner or tenant filter is visible; review data isolation before ship.',
+      confidence: 'low',
+    }));
+  }
   if (hasDbAccess
-    && /\b(export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)|router\.(post|put|patch|delete)|app\.(post|put|patch|delete))\b/i.test(text)
-    && !hasAuthContext) {
+    && hasMutationHandler(text)
+    && !authContextVisible) {
     out.push(violation({
       ruleId: 'authz.mutation_without_auth_context',
       severity: 'warning',
@@ -426,7 +562,7 @@ function scanRuntimeEnvSafety(relPath, text) {
   const out = [];
   const lines = text.split(/\r?\n/);
   lines.forEach((line, index) => {
-    if (/\bprocess\.env\.(?!NODE_ENV\b)[A-Z0-9_]+\b/.test(line) && !/\?\?|\|\||default|safeParse|parseEnv|assertEnv|requiredEnv|validate|schema/i.test(line)) {
+    if (/\bprocess\.env\.(?!NODE_ENV\b|JHSTE_HOOK_ACTIVE\b)[A-Z0-9_]+\b/.test(line) && !/\?\?|\|\||default|safeParse|parseEnv|assertEnv|requiredEnv|validate|schema/i.test(line)) {
       out.push(violation({
         ruleId: 'runtime.env_direct_access',
         severity: 'warning',
@@ -465,8 +601,12 @@ function scanRuntimeEnvSafety(relPath, text) {
 
 function scanWriteSafety(relPath, text) {
   const out = [];
-  const hasWrite = /\b(prisma\.\w+\.(create|update|delete|upsert)|pool\.query|client\.query|db\.|INSERT|UPDATE|DELETE)\b/i.test(text);
-  if (hasWrite
+  const hasWrite = hasPersistenceWrite(text);
+  const writeSafetyPath = isRouteLikePath(relPath)
+    || isScriptPipelinePath(relPath)
+    || /(^|\/)(repositories?|queries|db|database|migrations?)\//i.test(relPath);
+  if (writeSafetyPath
+    && hasWrite
     && /(forEach\s*\(|for\s*\([^)]*;|for\s*\(\s*const\s+.+\s+of\s+|\.map\s*\(|while\s*\()/i.test(text)
     && !/\b(transaction|batch|Promise\.allSettled|idempotenc|dedup|dedupe|upsert|ON CONFLICT|on conflict)\b/i.test(text)) {
     out.push(violation({
@@ -479,7 +619,7 @@ function scanWriteSafety(relPath, text) {
     }));
   }
   if (isRouteLikePath(relPath)
-    && /\b(export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)|router\.(post|put|patch|delete)|app\.(post|put|patch|delete))\b/i.test(text)
+    && hasMutationHandler(text)
     && hasWrite
     && !/\b(idempotenc|dedup|dedupe|upsert|transaction|ON CONFLICT|on conflict)\b/i.test(text)) {
     out.push(violation({
@@ -548,7 +688,183 @@ function scanPerformanceDuplicateFetch(relPath, text) {
   return out;
 }
 
-function scanFile(repoRoot, relPath) {
+function scanSecretLogging(relPath, text) {
+  if (!isSourceCodePath(relPath)) return [];
+  const out = [];
+  const lines = text.split(/\r?\n/);
+  lines.forEach((line, index) => {
+    if (/\b(console\.(log|info|warn|error|debug)|logger\.(info|warn|error|debug)|print)\s*\(/.test(line)
+      && /\b(secret|token|password|authorization|cookie|session|api[_-]?key)\b/i.test(line)) {
+      out.push(violation({
+        ruleId: 'secret.logging',
+        severity: 'error',
+        relPath,
+        line: index + 1,
+        symbol: 'secret-like-log',
+        message: 'Log statement references secret-like data; log a stable request id or redacted reason code instead.',
+        confidence: 'high',
+      }));
+    }
+  });
+  return out;
+}
+
+function scanSqlParameterBinding(relPath, text) {
+  if (!isSourceCodePath(relPath)) return [];
+  const out = [];
+  const rawSqlTemplate = /`[^`]*(SELECT|INSERT|UPDATE|DELETE)[^`]*\$\{[^`]+`/isu;
+  const rawSqlConcat = /(?:query|execute)\s*\(\s*['"][^'"]*(SELECT|INSERT|UPDATE|DELETE)[^'"]*['"]\s*\+/isu;
+  const pythonFStringSql = /f["'][^"']*(SELECT|INSERT|UPDATE|DELETE)[^"']*\{[^"']+["']/isu;
+  if (rawSqlTemplate.test(text) || rawSqlConcat.test(text) || pythonFStringSql.test(text)) {
+    out.push(violation({
+      ruleId: 'sql.raw_interpolation',
+      severity: 'error',
+      relPath,
+      symbol: 'raw-sql-interpolation',
+      message: 'SQL-like string interpolation detected; use placeholders and pass values separately.',
+      confidence: 'high',
+    }));
+  }
+  return out;
+}
+
+function scanPublicSafeError(relPath, text) {
+  if (!isRouteLikePath(relPath)) return [];
+  const out = [];
+  const lines = text.split(/\r?\n/);
+  lines.forEach((line, index) => {
+    if (/\b(Response\.json|NextResponse\.json|res\.json)\b/.test(line)
+      && /\b(stack|error\.message|err\.message|cause|details)\b/i.test(line)) {
+      out.push(violation({
+        ruleId: 'error.public_raw_details',
+        severity: 'warning',
+        relPath,
+        line: index + 1,
+        symbol: 'public-error-details',
+        message: 'Public response appears to include raw error details; map to a stable public code and keep diagnostics internal.',
+        confidence: 'medium',
+      }));
+    }
+  });
+  return out;
+}
+
+function scanDbRowValidation(relPath, text) {
+  if (!isRouteLikePath(relPath)) return [];
+  const out = [];
+  const directStorageResponse = /\b(Response\.json|NextResponse\.json|res\.json)\(\s*await\s+(?:prisma|db|client|pool)\b/su;
+  const rawVariable = /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*await\s+(?:prisma|db|client|pool)\b/su.exec(text);
+  if (directStorageResponse.test(text)
+    || (rawVariable && new RegExp(`\\b(Response\\.json|NextResponse\\.json|res\\.json)\\(\\s*${rawVariable[1]}\\b`).test(text))) {
+    out.push(violation({
+      ruleId: 'database.raw_row_public_response',
+      severity: 'warning',
+      relPath,
+      symbol: 'raw-row-response',
+      message: 'Route appears to return storage-shaped data directly; validate or map rows before public DTO output.',
+      confidence: 'low',
+    }));
+  }
+  return out;
+}
+
+function scanThinApiRoute(relPath, text) {
+  if (!isRouteLikePath(relPath) || !hasPersistenceAccess(text)) return [];
+  return [violation({
+    ruleId: 'route.direct_db_access',
+    severity: 'warning',
+    relPath,
+    symbol: 'route-db-access',
+    message: 'Route/controller appears to contain direct persistence access; review whether auth, validation, usecase, repository, and response seams are thin enough.',
+    confidence: 'low',
+  })];
+}
+
+function scanTypeEscapeAdvisory(relPath, text) {
+  if (!/\.(tsx?|jsx?)$/u.test(relPath)) return [];
+  const out = [];
+  const lines = text.split(/\r?\n/);
+  lines.forEach((line, index) => {
+    if (/\bas\s+any\b|:\s*any\b|@ts-ignore/.test(line)) {
+      out.push(violation({
+        ruleId: 'type.escape',
+        severity: 'warning',
+        relPath,
+        line: index + 1,
+        symbol: 'type-escape',
+        message: 'Broad TypeScript escape detected; localize it or add a boundary parser/type guard where data enters.',
+        confidence: 'medium',
+      }));
+    }
+  });
+  return out;
+}
+
+function scanSideEffectBoundary(relPath, text) {
+  if (!/\.(tsx?|jsx?|mjs|cjs|py)$/u.test(relPath)) return [];
+  if (/function\s+(format|helper|build|make|map)\w*\s*\([^)]*\)\s*{[\s\S]{0,1200}\b(fetch|writeFile|readFile|exec|spawn|setTimeout)\b/.test(text)) {
+    return [violation({
+      ruleId: 'side_effect.hidden_in_helper',
+      severity: 'warning',
+      relPath,
+      symbol: 'hidden-side-effect',
+      message: 'Generic helper appears to perform a side effect; make the side-effect seam visible in name, directory, or dependency injection.',
+      confidence: 'low',
+    })];
+  }
+  return [];
+}
+
+function scanCrawlerProducerBoundary(relPath, text) {
+  if (!isCrawlerProducerPath(relPath) || !hasPersistenceWrite(text)) return [];
+  return [violation({
+    ruleId: 'crawler.producer_direct_persistence',
+    severity: 'warning',
+    relPath,
+    symbol: 'crawler-direct-write',
+    message: 'Crawler/automation producer appears to write directly to persistence; review artifact handoff and consumer-side validation before ship.',
+    confidence: 'low',
+  })];
+}
+
+function scanBroadExceptionAdvisory(relPath, text) {
+  if (!relPath.endsWith('.py')) return [];
+  const out = [];
+  const lines = text.split(/\r?\n/);
+  lines.forEach((line, index) => {
+    if (/^\s*except\s*(?:Exception|BaseException)?\s*(?:as\s+\w+)?\s*:/.test(line) && !/\bpass\b/.test(line)) {
+      out.push(violation({
+        ruleId: 'python.broad_exception',
+        severity: 'warning',
+        relPath,
+        line: index + 1,
+        symbol: 'broad-exception',
+        message: 'Broad Python exception handler detected; prefer specific exceptions or record a clear fallback reason.',
+        confidence: 'low',
+      }));
+    }
+  });
+  return out;
+}
+
+function decorateViolation(item, profile) {
+  const metadata = FINDING_METADATA[item.rule_id] || { family: item.rule_id, pack: 'core', scanner: item.source || 'unknown' };
+  const effectiveMode = effectiveRuleMode(profile, metadata);
+  return {
+    ...item,
+    rule_family: metadata.family,
+    scanner_id: metadata.scanner,
+    effective_mode: effectiveMode,
+  };
+}
+
+function applyProfileModes(violations, profile) {
+  return violations
+    .map((item) => decorateViolation(item, profile))
+    .filter((item) => ACTIVE_PROFILE_MODES.has(item.effective_mode));
+}
+
+function scanFile(repoRoot, relPath, settings) {
   const full = path.join(repoRoot, relPath);
   let text;
   try {
@@ -565,18 +881,28 @@ function scanFile(repoRoot, relPath) {
     };
   }
   return {
-    violations: [
+    violations: applyProfileModes([
       ...scanSilentFailures(relPath, text),
+      ...scanSecretLogging(relPath, text),
       ...scanClientServerBoundary(relPath, text),
       ...scanWorkflowSecurity(relPath, text),
-      ...scanResponsibilityBudget(relPath, text),
+      ...scanFileSizeAdvisory(relPath, text, settings.fileSize),
+      ...scanResponsibilityBudget(relPath, text, settings.responsibilityBudget),
       ...scanStateSafety(relPath, text),
       ...scanAuthzDataIsolation(relPath, text),
       ...scanRuntimeEnvSafety(relPath, text),
       ...scanWriteSafety(relPath, text),
       ...scanApiContractCompatibility(relPath, text),
       ...scanPerformanceDuplicateFetch(relPath, text),
-    ],
+      ...scanSqlParameterBinding(relPath, text),
+      ...scanPublicSafeError(relPath, text),
+      ...scanDbRowValidation(relPath, text),
+      ...scanThinApiRoute(relPath, text),
+      ...scanTypeEscapeAdvisory(relPath, text),
+      ...scanSideEffectBoundary(relPath, text),
+      ...scanCrawlerProducerBoundary(relPath, text),
+      ...scanBroadExceptionAdvisory(relPath, text),
+    ], settings.profile),
     failure: null,
   };
 }
@@ -663,7 +989,9 @@ function printResult(result, format) {
   if (visible.length) {
     console.log('\nViolations:');
     for (const item of visible) {
-      console.log(`- [${item.severity}] ${item.rule_id} ${item.path}:${item.line} — ${item.message}`);
+      const confidence = item.confidence ? ` [${item.confidence}-confidence]` : '';
+      const family = item.rule_family && item.rule_family !== item.rule_id ? ` (${item.rule_family})` : '';
+      console.log(`- [${item.severity}]${confidence} ${item.rule_id}${family} ${item.path}:${item.line} — ${item.message}`);
     }
     if (result.violations.length > visible.length) console.log(`- ... ${result.violations.length - visible.length} more omitted from text output`);
   }
@@ -765,25 +1093,34 @@ async function main() {
   const startedAt = Date.now();
   const args = parseArgs(process.argv.slice(2));
   const repoRoot = findGitRoot(args.repo || process.cwd());
-  const format = String(args.format || 'text');
+  const profileState = loadProfileConfig(repoRoot);
+  const profileErrors = validateProfileConfig(profileState.profile);
+  if (profileErrors.length) failConfig(`Invalid profile ${relativeDisplay(repoRoot, profileState.path)}.`, profileErrors);
+  const format = String(args.format || profileState.profile.guard.default_format || 'text');
   if (!['text', 'json'].includes(format)) failConfig('--format must be text or json.');
   currentFormat = format;
-  const failOn = String(args['fail-on'] || 'none');
+  const failOn = String(args['fail-on'] || profileState.profile.guard.fail_on || 'none');
   if (!['none', 'warning', 'error'].includes(failOn)) failConfig('--fail-on must be none, warning, or error.');
-  const baselineMode = String(args.baseline || 'off');
+  const baselineMode = String(args.baseline || (profileState.profile.baseline.enabled ? 'use' : 'off'));
   if (!['off', 'use', 'update', 'ratchet'].includes(baselineMode)) failConfig(`Unsupported --baseline ${baselineMode}. Use off, use, update, or ratchet.`);
-  const baselinePath = path.resolve(repoRoot, String(args['baseline-path'] || DEFAULT_BASELINE));
+  const baselinePath = path.resolve(repoRoot, String(args['baseline-path'] || profileState.profile.baseline.path || DEFAULT_BASELINE_PATH));
   if (inManagedHook() && baselineMode === 'update') {
     failConfig('Managed hook execution is read-only; --baseline update is not allowed while JHSTE_HOOK_ACTIVE=1.');
   }
   if (baselineMode === 'ratchet' && !fs.existsSync(baselinePath)) {
     failConfig(`--baseline ratchet requires an existing baseline at ${relativeDisplay(repoRoot, baselinePath)}.`);
   }
-  const scope = resolveScopeFiles(repoRoot, args);
+  const scopedArgs = { ...args, scope: args.scope || profileState.profile.guard.default_scope || 'changed' };
+  const scope = resolveScopeFiles(repoRoot, scopedArgs);
   const violations = [];
   const failures = [];
+  const scanSettings = {
+    profile: profileState.profile,
+    fileSize: fileSizeSettings(profileState.profile),
+    responsibilityBudget: responsibilityBudgetSettings(profileState.profile),
+  };
   for (const relPath of scope.files) {
-    const result = scanFile(repoRoot, relPath);
+    const result = scanFile(repoRoot, relPath, scanSettings);
     violations.push(...result.violations);
     if (result.failure) failures.push(result.failure);
   }
@@ -806,6 +1143,7 @@ async function main() {
     fail_on: failOn,
     baseline_mode: baselineMode,
     baseline_path: relativeDisplay(repoRoot, baselinePath),
+    profile_path: profileState.exists ? relativeDisplay(repoRoot, profileState.path) : null,
     duration_ms: Date.now() - startedAt,
     git: scope.git,
   });

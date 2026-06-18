@@ -12,6 +12,14 @@ settings:
   source_file_review_lines: 600
 scan:
   type: line_count
+implementation:
+  guard:
+    status: builtin
+    scanner: scanFileSizeAdvisory
+    confidence: heuristic
+    finding_ids:
+      - file_size.warning
+      - file_size.review
 recommendation:
   changed_files: false
   baseline_supported: true

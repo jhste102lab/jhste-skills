@@ -9,6 +9,14 @@ applies_to:
   paths: [src, app, apps, packages]
 scan:
   patterns: ["!.", "fetch(", "useQuery(", "isLoading", "error"]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanStateSafety
+    confidence: heuristic
+    finding_ids:
+      - state.non_null_assertion
+      - state.async_ui_missing_fallback
 recommendation:
   changed_files: true
   baseline_supported: true

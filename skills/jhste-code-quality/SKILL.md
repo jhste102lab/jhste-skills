@@ -9,6 +9,7 @@ Use repo-local instructions first. Treat this skill as shared advisory guidance 
 
 ## Checkpoints
 
+- For non-trivial changes, apply `jhste-engineering-judgment` before writing code.
 - Validate external input before trusting it.
 - Do not hide failures; return an error, log a redacted warning, emit an event, or document an intentional fallback.
 - Do not log secrets, tokens, passwords, cookies, authorization headers, sessions, or raw sensitive payloads.
@@ -19,6 +20,7 @@ Use repo-local instructions first. Treat this skill as shared advisory guidance 
 ## References
 
 - `references/code-quality.md`
+- `../jhste-engineering-judgment/SKILL.md`
 - `../../rules/core/no_silent_failure.yaml`
 - `../../rules/core/no_secret_logging.yaml`
 - `../../rules/core/external_input_validation.yaml`

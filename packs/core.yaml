@@ -4,6 +4,7 @@ default_mode: advisory
 rules:
   - rules/core/no_silent_failure.yaml
   - rules/core/no_secret_logging.yaml
+  - rules/core/workflow_security.yaml
   - rules/core/file_size_advisory.yaml
   - rules/core/responsibility_budget.yaml
   - rules/core/external_input_validation.yaml
@@ -14,3 +15,4 @@ rules:
   - rules/core/write_safety_idempotency.yaml
   - rules/core/api_contract_compatibility.yaml
   - rules/core/performance_duplicate_fetch.yaml
+  - rules/python/broad_exception_advisory.yaml

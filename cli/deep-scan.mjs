@@ -9,6 +9,13 @@ import {
   parseArgs,
   relativeDisplay,
 } from './shared.mjs';
+import {
+  DEFAULT_FILE_SIZE,
+  DEFAULT_RESPONSIBILITY_BUDGET,
+  fileSizeSettings,
+  loadProfileConfig,
+  responsibilityBudgetSettings,
+} from './profile.mjs';
 
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py', '.sql', '.md', '.mdx', '.json']);
 const TEXT_EXTENSIONS = new Set([...SOURCE_EXTENSIONS, '.yaml', '.yml', '.toml']);
@@ -36,11 +43,8 @@ const EXCLUDED_FILE_NAMES = new Set([
 ]);
 const SECRET_FILE_RE = /(^|\/)(\.env(\..*)?|.*\.(pem|key|p12|pfx|crt)|id_rsa|id_ed25519)$/i;
 const MAX_FILE_BYTES = 1024 * 1024;
-const PAGE_RESPONSIBILITY_LINES = 200;
-const CLIENT_RESPONSIBILITY_LINES = 200;
-const ROUTE_RESPONSIBILITY_LINES = 250;
-const SCRIPT_RESPONSIBILITY_LINES = 280;
-const PYTHON_ORCHESTRATOR_LINES = 600;
+let responsibilityThresholds = { ...DEFAULT_RESPONSIBILITY_BUDGET };
+let fileSizeThresholds = { ...DEFAULT_FILE_SIZE };
 
 function readGitignoreRoots(repoRoot) {
   const gitignore = path.join(repoRoot, '.gitignore');
@@ -168,7 +172,7 @@ function matchedResponsibilityHints(text, hintGroups) {
 }
 
 function scanResponsibilityBudget(file, text, lineCount, findings) {
-  if (isNextPage(file) && lineCount > PAGE_RESPONSIBILITY_LINES) {
+  if (isNextPage(file) && lineCount > responsibilityThresholds.next_page_review_lines) {
     candidate(
       findings.responsibilityBudget,
       'responsibility budget candidate',
@@ -179,7 +183,7 @@ function scanResponsibilityBudget(file, text, lineCount, findings) {
     );
   }
 
-  if (hasUseClientDirective(text) && lineCount > CLIENT_RESPONSIBILITY_LINES) {
+  if (hasUseClientDirective(text) && lineCount > responsibilityThresholds.client_module_review_lines) {
     candidate(
       findings.responsibilityBudget,
       'responsibility budget candidate',
@@ -191,7 +195,7 @@ function scanResponsibilityBudget(file, text, lineCount, findings) {
   }
 
   const routeLike = /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(file.rel) || /route\.(ts|js)$/.test(file.rel);
-  if (routeLike && lineCount >= ROUTE_RESPONSIBILITY_LINES) {
+  if (routeLike && lineCount >= responsibilityThresholds.route_review_lines) {
     candidate(
       findings.responsibilityBudget,
       'responsibility budget candidate',
@@ -202,7 +206,7 @@ function scanResponsibilityBudget(file, text, lineCount, findings) {
     );
   }
 
-  if (isScriptPipeline(file) && lineCount >= SCRIPT_RESPONSIBILITY_LINES) {
+  if (isScriptPipeline(file) && lineCount >= responsibilityThresholds.import_ops_script_review_lines) {
     candidate(
       findings.responsibilityBudget,
       'responsibility budget candidate',
@@ -213,7 +217,7 @@ function scanResponsibilityBudget(file, text, lineCount, findings) {
     );
   }
 
-  if (isPythonOrchestrator(file) && lineCount >= PYTHON_ORCHESTRATOR_LINES) {
+  if (isPythonOrchestrator(file) && lineCount >= responsibilityThresholds.python_orchestrator_review_lines) {
     candidate(
       findings.responsibilityBudget,
       'responsibility budget candidate',
@@ -360,8 +364,8 @@ function scanFile(file, text, findings) {
   const lines = text.split(/\r?\n/);
   const lineCount = lines.length;
   const isSource = ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py'].includes(file.ext);
-  if (isSource && lineCount >= 400) {
-    candidate(findings.largeFiles, 'large file', file, 1, `${lineCount} lines`, lineCount >= 600 ? 'review' : 'warning');
+  if (isSource && lineCount >= fileSizeThresholds.source_file_warning_lines) {
+    candidate(findings.largeFiles, 'large file', file, 1, `${lineCount} lines`, lineCount >= fileSizeThresholds.source_file_review_lines ? 'review' : 'warning');
   }
 
   lines.forEach((lineText, index) => {
@@ -388,7 +392,7 @@ function scanFile(file, text, findings) {
   if (routeLike && /(prisma|sql`|SELECT|INSERT|UPDATE|DELETE|db\.|database)/i.test(text)) {
     candidate(findings.dbInRoutes, 'DB/API seam candidate', file, 1, 'route/controller appears to contain direct database access');
   }
-  if (routeLike && lineCount >= ROUTE_RESPONSIBILITY_LINES) {
+  if (routeLike && lineCount >= responsibilityThresholds.route_review_lines) {
     candidate(findings.routeResponsibility, 'route responsibility candidate', file, 1, `${lineCount} lines in route/controller-like file`);
   }
   if (hasRuntimeImportFromClient(text)) {
@@ -571,17 +575,21 @@ rules:
     mode: changed-files
   no_secret_logging:
     mode: changed-files
+  workflow_security:
+    mode: advisory
   file_size_advisory:
     mode: advisory
-    source_file_warning_lines: 400
-    source_file_review_lines: 600
+    source_file_warning_lines: ${fileSizeThresholds.source_file_warning_lines}
+    source_file_review_lines: ${fileSizeThresholds.source_file_review_lines}
   responsibility_budget:
     mode: advisory
-    next_page_review_lines: ${PAGE_RESPONSIBILITY_LINES}
-    client_module_review_lines: ${CLIENT_RESPONSIBILITY_LINES}
-    route_review_lines: ${ROUTE_RESPONSIBILITY_LINES}
-    import_ops_script_review_lines: ${SCRIPT_RESPONSIBILITY_LINES}
-    python_orchestrator_review_lines: ${PYTHON_ORCHESTRATOR_LINES}
+    next_page_review_lines: ${responsibilityThresholds.next_page_review_lines}
+    client_module_review_lines: ${responsibilityThresholds.client_module_review_lines}
+    route_review_lines: ${responsibilityThresholds.route_review_lines}
+    import_ops_script_review_lines: ${responsibilityThresholds.import_ops_script_review_lines}
+    python_orchestrator_review_lines: ${responsibilityThresholds.python_orchestrator_review_lines}
+  external_input_validation:
+    mode: advisory
   null_state_safety:
     mode: advisory
   authz_data_isolation:
@@ -594,8 +602,24 @@ rules:
     mode: advisory
   performance_duplicate_fetch:
     mode: advisory
+  public_safe_error:
+    mode: advisory
+  sql_parameter_binding:
+    mode: ${databaseMode}
+  db_row_validation:
+    mode: ${databaseMode}
   type_escape_advisory:
     mode: advisory
+  thin_api_route:
+    mode: ${apiMode}
+  component_responsibility:
+    mode: ${stack.react || stack.nextjs ? 'advisory' : 'off'}
+  side_effect_boundary:
+    mode: advisory
+  broad_exception_advisory:
+    mode: ${stack.python ? 'advisory' : 'off'}
+  crawler_producer_boundary:
+    mode: ${crawlerMode}
 baseline:
   enabled: false
   candidate_report: .jhste/deep-scan-report.md
@@ -608,6 +632,9 @@ strict:
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const repoRoot = findGitRoot(args.repo || process.cwd());
+  const profileState = loadProfileConfig(repoRoot);
+  responsibilityThresholds = responsibilityBudgetSettings(profileState.profile);
+  fileSizeThresholds = fileSizeSettings(profileState.profile);
   const { files, skipped } = collectFiles(repoRoot);
   const stack = detectStack(repoRoot, files);
   const instructions = detectInstructions(repoRoot);

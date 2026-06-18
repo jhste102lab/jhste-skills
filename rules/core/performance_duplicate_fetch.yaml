@@ -9,6 +9,14 @@ applies_to:
   paths: [src, app, apps, packages]
 scan:
   keywords: [fetch, axios, useQuery, useEffect, map, reduce]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanPerformanceDuplicateFetch
+    confidence: heuristic
+    finding_ids:
+      - performance.multiple_fetch_sources
+      - performance.fetch_in_effect
 recommendation:
   changed_files: true
   baseline_supported: true

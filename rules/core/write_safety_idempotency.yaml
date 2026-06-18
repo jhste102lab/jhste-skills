@@ -9,6 +9,14 @@ applies_to:
   paths: [src, app, apps, packages, scripts]
 scan:
   keywords: [create, update, delete, insert, patch, post, upsert, transaction, idempotency]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanWriteSafety
+    confidence: heuristic
+    finding_ids:
+      - write.loop_without_transaction
+      - write.mutation_retry_safety
 recommendation:
   changed_files: true
   baseline_supported: true

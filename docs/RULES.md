@@ -1,6 +1,6 @@
 # Rule and profile model
 
-Rules are metadata in the first version. They are used by skills, profile recommendations, and future optional guards. They are not enabled as a default strict checker.
+Rules are metadata plus implementation declarations. They are used by skills, profile recommendations, built-in guard scanners, and optional profile commands. They are not enabled as a default strict checker.
 
 ## Modes
 
@@ -31,7 +31,11 @@ Rule metadata lives in `rules/`. Pack files live in `packs/`. The example profil
 - Exit codes are fixed: `0` pass, `1` rule violation failure, `2` guard runtime/scope/scan failure, `3` profile/config error.
 - Baseline mode is explicit: `off`, `use`, `update`, or `ratchet`.
 
-Violation fingerprints are based on rule id, normalized path, and semantic symbol. They intentionally avoid line number and message text so line moves or clearer wording do not churn the baseline.
+Violation fingerprints are based on finding id, normalized path, and semantic symbol. They intentionally avoid line number and message text so line moves or clearer wording do not churn the baseline. JSON output includes `rule_id` for the concrete finding and `rule_family` for the profile-controlled metadata rule.
+
+Built-in scanners read `.jhste/profile.yaml` for pack/rule modes and supported thresholds. `mode: off` disables matching finding families, and responsibility/file-size thresholds come from the profile when present. Text output shows confidence markers such as `[low-confidence]` so heuristic findings are not mistaken for proof.
+
+Each rule metadata file declares `implementation.guard.status` as `builtin` or `metadata_only`. A rule existing in metadata is not the same as a rule being automatically enforced.
 
 Profile command runner is disabled unless `--run-profile-commands` is passed. A nonzero repo-local command is reported as a profile-sourced violation. Command execution failures are guard runtime failures, and malformed command configuration is a config failure. Commands should declare `name`, `run`, optional `severity`, and optional `timeout_seconds`.
 

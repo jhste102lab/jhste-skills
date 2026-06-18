@@ -9,6 +9,13 @@ applies_to:
   paths: [src, apps, packages, scripts]
 scan:
   keywords: [fetch, writeFile, readFile, exec, spawn, sleep, setTimeout, browser, page]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanSideEffectBoundary
+    confidence: heuristic
+    finding_ids:
+      - side_effect.hidden_in_helper
 recommendation:
   changed_files: true
   baseline_supported: true

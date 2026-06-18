@@ -9,6 +9,16 @@ applies_to:
   paths: [src, app, apps, packages]
 scan:
   keywords: [auth, session, currentUser, permission, userId, orgId, accountId, ownerId]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanAuthzDataIsolation
+    confidence: heuristic
+    finding_ids:
+      - authz.scope_not_visible
+      - authz.read_scope_not_visible
+      - authz.mutation_without_auth_context
+      - authz.read_without_auth_context
 recommendation:
   changed_files: true
   baseline_supported: true

@@ -28,6 +28,10 @@ Key principles (see [LANGUAGE.md](LANGUAGE.md) for the full list):
 
 This skill is _informed_ by the project's domain model. The domain language gives names to good seams; ADRs record decisions the skill should not re-litigate.
 
+## Runtime adapter note
+
+If the current agent does not support subagents, local file opening, or OS-specific open commands, continue with inline exploration and write or report a markdown/HTML artifact path instead of failing the task.
+
 ## Process
 
 ### 1. Explore

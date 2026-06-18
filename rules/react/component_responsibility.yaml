@@ -9,6 +9,13 @@ applies_to:
   paths: [src, apps, packages]
 scan:
   path_hints: [component, components, app]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanClientServerBoundary
+    confidence: heuristic
+    finding_ids:
+      - boundary.import.server_in_client
 recommendation:
   changed_files: true
   baseline_supported: false

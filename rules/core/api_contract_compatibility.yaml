@@ -9,6 +9,14 @@ applies_to:
   paths: [src, app, apps, packages]
 scan:
   keywords: [request.json, req.body, params, searchParams, schema, safeParse, validate]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanApiContractCompatibility
+    confidence: heuristic
+    finding_ids:
+      - contract.boundary_without_schema
+      - contract.raw_storage_response
 recommendation:
   changed_files: true
   baseline_supported: true

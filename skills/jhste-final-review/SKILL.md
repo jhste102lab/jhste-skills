@@ -27,3 +27,4 @@ Use this skill after non-trivial code changes and before reporting completion. R
 ## References
 
 - `references/final-review.md`
+- `../jhste-engineering-judgment/SKILL.md`

@@ -9,6 +9,13 @@ applies_to:
   paths: [src, apps, packages, scripts]
 scan:
   patterns: ["SELECT", "INSERT", "UPDATE", "DELETE", "${", "f\""]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanSqlParameterBinding
+    confidence: heuristic
+    finding_ids:
+      - sql.raw_interpolation
 recommendation:
   changed_files: true
   baseline_supported: true

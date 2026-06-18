@@ -9,6 +9,13 @@ applies_to:
   paths: [app, pages, src]
 scan:
   path_hints: [api, route, controller]
+implementation:
+  guard:
+    status: builtin
+    scanner: scanThinApiRoute
+    confidence: heuristic
+    finding_ids:
+      - route.direct_db_access
 recommendation:
   changed_files: true
   baseline_supported: true

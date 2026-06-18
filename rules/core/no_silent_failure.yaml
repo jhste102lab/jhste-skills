@@ -12,6 +12,16 @@ scan:
     - "catch {}"
     - ".catch(() => {})"
     - "except Exception: pass"
+implementation:
+  guard:
+    status: builtin
+    scanner: scanSilentFailures
+    confidence: heuristic
+    finding_ids:
+      - silent.catch.empty
+      - silent.promise_catch.empty
+      - silent.python_except.pass
+      - silent.catch.fallback_no_reason
 recommendation:
   changed_files: true
   baseline_supported: true

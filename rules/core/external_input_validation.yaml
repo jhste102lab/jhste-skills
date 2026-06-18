@@ -9,6 +9,10 @@ applies_to:
   paths: [src, apps, packages, scripts]
 scan:
   boundary_hints: [request, payload, params, env, file, response]
+implementation:
+  guard:
+    status: metadata_only
+    confidence: none
 recommendation:
   changed_files: true
   baseline_supported: false

@@ -30,7 +30,11 @@ rules:
     mode: advisory
   no_secret_logging:
     mode: advisory
+  workflow_security:
+    mode: advisory
   external_input_validation:
+    mode: advisory
+  side_effect_boundary:
     mode: advisory
   null_state_safety:
     mode: advisory
@@ -44,7 +48,19 @@ rules:
     mode: advisory
   performance_duplicate_fetch:
     mode: advisory
-  db_api_boundary:
+  public_safe_error:
+    mode: advisory
+  sql_parameter_binding:
+    mode: advisory
+  db_row_validation:
+    mode: advisory
+  thin_api_route:
+    mode: advisory
+  component_responsibility:
+    mode: advisory
+  type_escape_advisory:
+    mode: advisory
+  broad_exception_advisory:
     mode: advisory
   crawler_producer_boundary:
     mode: advisory
