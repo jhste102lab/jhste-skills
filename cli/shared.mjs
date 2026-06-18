@@ -7,6 +7,9 @@ import readline from 'node:readline/promises';
 
 export const KIT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+export const BRIDGE_START = '<!-- jhste-skills:start -->';
+export const BRIDGE_END = '<!-- jhste-skills:end -->';
+
 export const BRIDGE_BLOCK = `## Agent skills
 This repo uses jhste skills as shared guidance.
 Repo-local instructions in this file remain authoritative.
@@ -17,6 +20,10 @@ Report guard warnings/errors; do not treat guard runtime/config failures as vali
 Before declaring non-trivial code work complete, use the \`jhste-final-review\` skill.
 Skip final review for docs-only, comment-only, formatting-only, or trivial rename-only changes.
 Do not enter an unbounded fix/review loop; stop after at most two fix + re-review cycles and report remaining risks.`;
+
+export const MANAGED_BRIDGE_BLOCK = `${BRIDGE_START}
+${BRIDGE_BLOCK}
+${BRIDGE_END}`;
 
 export const DEFAULT_PROFILE = `version: 1
 mode: advisory
@@ -107,6 +114,19 @@ export function findGitRoot(startPath) {
     return out || resolved;
   } catch {
     return resolved;
+  }
+}
+
+export function findGitRootInfo(startPath) {
+  const resolved = path.resolve(startPath || process.cwd());
+  try {
+    const out = execFileSync('git', ['-C', resolved, 'rev-parse', '--show-toplevel'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+    return { isGitRepo: true, repoRoot: out || resolved, startPath: resolved };
+  } catch {
+    return { isGitRepo: false, repoRoot: null, startPath: resolved };
   }
 }
 

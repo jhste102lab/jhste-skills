@@ -8,7 +8,7 @@ This kit does **not** replace existing repository instructions. Repo-local `AGEN
 
 - Installs selected skills into a kit-managed skill directory.
 - Creates `.jhste/profile.yaml` in the current git repository when one does not already exist.
-- Adds a short bridge block to `AGENTS.md` or `CLAUDE.md` only when the file already exists and the bridge is missing.
+- Adds or refreshes a marker-managed bridge block in `AGENTS.md` or `CLAUDE.md` when project guidance is enabled.
 - Keeps enforcement advisory by default.
 
 ## What the quick install still avoids
@@ -29,13 +29,36 @@ npx jhste-skills install
 
 Non-interactive runs fail closed unless `--yes` (or `-y`) is explicit, so CI/scripts must opt in before the installer changes files.
 
+Install modes:
+
+```text
+Minimal  - installs the basic skills only; no project files or hooks
+Normal   - recommended default; basic skills + project profile/bridge + advisory pre-commit hook
+Full     - installs all safe managed features; asks interactively how automatic checks should behave
+Custom   - asks effect-oriented questions so you can choose the setup
+```
+
+`Full` really installs the whole managed feature set: all skills, project profile/bridge, advisory pre-commit and pre-push hooks, and deep scan by default. It still preserves the safety contract: it does not overwrite non-managed hooks, source files, CI, `package.json`, or lockfiles, and it does not enable strict mode. In interactive Full mode, only the enforcement behavior is asked: warnings only, block at commit time, or block at commit and push time. `--yes` uses warnings-only unless `--hooks blocking` is explicit.
+
+To attach another repository after installing:
+
+```bash
+cd /path/to/another-repo
+jhste-skills connect
+```
+
+`connect` requires a git repository and reuses the existing skills install. If required skills are missing, pass `--install-missing` explicitly or run `jhste-skills install` first.
+
 Useful local-development commands:
 
 ```bash
 node cli/install.mjs --yes --repo /path/to/repo
+node cli/install.mjs --yes --mode minimal --repo /path/to/repo
+node cli/install.mjs --yes --mode full --repo /path/to/repo
 node cli/install.mjs --yes --repo /path/to/repo --skip-hooks
 node cli/install.mjs --yes --repo /path/to/repo --hooks blocking
 node cli/install.mjs --yes --repo /path/to/repo --skill-set all
+node cli/connect.mjs --yes --repo /path/to/repo --install-missing
 node cli/deep-scan.mjs --repo /path/to/repo
 node cli/guard.mjs --repo /path/to/repo --scope changed --format text --fail-on error
 node cli/hooks.mjs install --repo /path/to/repo --mode advisory
@@ -46,14 +69,14 @@ node cli/baseline.mjs --repo /path/to/repo
 The install prompts are intentionally small:
 
 ```text
-추천 설정으로 설치합니다.
-- 이 PC 전체에서 skills 사용
-- 현재 repo에도 가볍게 연결
-- 기존 코드는 막지 않음
-- 앞으로 AI가 바꾸는 파일 중심으로 규칙 참고
-- CI, package.json은 건드리지 않음
-- 자동 guard hook은 advisory로 기본 설치
-진행할까요? [Enter=예 / n=아니오 / c=직접 설정]
+설치 방식을 선택하세요.
+
+1) Minimal - 가장 가볍게 설치합니다
+2) Normal  - 추천 설정으로 설치합니다
+3) Full    - 안전하게 가능한 모든 기능을 설치합니다
+4) Custom  - 직접 선택합니다
+
+선택 [Enter=Normal / q=취소]:
 ```
 
 ## Recommended rollout

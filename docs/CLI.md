@@ -6,7 +6,9 @@
 
 ```bash
 npx jhste-skills install
-node cli/install.mjs --yes --repo /path/to/repo
+node cli/install.mjs --yes --mode normal --repo /path/to/repo
+node cli/install.mjs --yes --mode minimal --repo /path/to/repo
+node cli/install.mjs --yes --mode full --repo /path/to/repo
 node cli/install.mjs --yes --repo /path/to/repo --skip-hooks
 node cli/install.mjs --yes --repo /path/to/repo --hooks blocking
 node cli/install.mjs --yes --repo /path/to/repo --skill-set core|vendor|all
@@ -14,16 +16,56 @@ node cli/install.mjs --yes --repo /path/to/repo --skill-set core|vendor|all
 
 Default behavior:
 
-Install enables advisory hook automation by default. In interactive mode, Enter keeps advisory hooks, `b` installs blocking hooks, and `n` skips hooks. Non-interactive installs fail closed with exit `3` unless `--yes` or `-y` is explicit; with that opt-in they use advisory hooks unless `--skip-hooks` or `--hooks blocking` is explicit.
+Install mode defaults to `normal`. Non-interactive installs fail closed with exit `3` unless `--yes` or `-y` is explicit; with that opt-in they use the selected preset, print the plan summary, and skip only the confirmation prompt.
 
+Modes:
 
-- one main setup prompt, plus a short hook choice in interactive mode;
+- `minimal`: basic/core skills only; no repo profile, bridge, hook, or deep scan.
+- `normal`: basic/core skills, repo profile/bridge when a git repo is available, and advisory pre-commit hook.
+- `full`: all skills, repo profile/bridge, advisory pre-commit and pre-push hooks, and deep scan by default. Interactive Full asks only whether automatic checks should warn, block at commit time, or block at commit and push time.
+- `custom`: interactive-only effect-oriented wizard.
+
+Safety and compatibility:
+
 - selected skills copied to a kit-managed skill directory; default `--skill-set core` installs only jhste core skills, while `vendor` and `all` are explicit opt-ins for vendored workflow skills;
 - `.jhste/profile.yaml` created with `mode: advisory` when missing;
-- existing profile is not overwritten unless `--force` is explicit;
-- `AGENTS.md` and `CLAUDE.md` bridge blocks are appended only when the file exists and the exact block is missing;
-- CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install;
+- existing profile is not overwritten unless `--force` is explicit; `--force` refreshes only jhste-managed outputs and does not overwrite user source, CI, package files, lockfiles, or non-managed hooks;
+- `AGENTS.md` and `CLAUDE.md` bridge blocks use `<!-- jhste-skills:start -->` / `<!-- jhste-skills:end -->` markers; only that managed block is updated on later runs;
+- CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default in Normal, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install;
 - installed bridge/profile guidance tells agents to run `jhste-final-review` before declaring non-trivial code work complete, while skipping docs-only, comment-only, formatting-only, and trivial rename-only changes.
+
+Repo detection:
+
+- inside a git repo, Normal/Full apply both skills and repo connection;
+- outside a git repo without `--repo`, install falls back to skills-only and reports that no current project was detected;
+- `--repo <path>` must point inside a git repo for modes that connect a project.
+
+Non-interactive rules:
+
+- no TTY and no `--yes`: exit `3` before changes;
+- `--yes` and no `--mode`: Normal;
+- `--yes --mode custom`: exit `3`;
+- explicit CLI flags override presets, except safety-contract violations are refused;
+- `--skip-hooks` and `--hooks` remain mutually exclusive.
+
+## `connect`
+
+`connect` attaches an existing jhste-skills installation to the current git repository.
+
+```bash
+jhste-skills connect
+jhste-skills connect --mode normal
+jhste-skills connect --mode full
+jhste-skills connect --mode normal --install-missing
+```
+
+Safety contract:
+
+- `connect` requires a git repository and fails before changes outside one;
+- `connect --mode minimal` is invalid because connect always means project connection;
+- by default, `connect` reuses existing skills and does not silently change the global skills directory;
+- missing required skills fail with an actionable message in `--yes` mode unless `--install-missing` is explicit;
+- repo profile, bridge blocks, and hooks follow the same managed-output safety rules as `install`.
 
 ## `deep-scan`
 

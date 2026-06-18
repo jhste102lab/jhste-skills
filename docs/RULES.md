@@ -48,7 +48,7 @@ Each rule metadata file declares `implementation.guard.status` as one of `builti
 
 Profile command runner is disabled unless `--run-profile-commands` is passed. A nonzero repo-local command is reported as a profile-sourced violation. Command execution failures are guard runtime failures, and malformed command configuration is a config failure. Commands should declare `name`, `run`, optional `severity`, and optional `timeout_seconds`.
 
-Default install adds a managed advisory `pre-commit` hook unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install. Managed hooks default to advisory mode, refuse to overwrite non-managed hooks, set `JHSTE_HOOK_ACTIVE=1` to skip nested runs, and remain read-only by refusing `--baseline update` and `--run-profile-commands` while the hook sentinel is active.
+Normal install adds a managed advisory `pre-commit` hook unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install. Full install adds managed advisory `pre-commit` and `pre-push` hooks by default and asks interactively before using blocking behavior. Managed hooks default to advisory mode, refuse to overwrite non-managed hooks, set `JHSTE_HOOK_ACTIVE=1` to skip nested runs, and remain read-only by refusing `--baseline update` and `--run-profile-commands` while the hook sentinel is active.
 
 Repo-specific policy should stay in repo-local guards or `.jhste/profile.yaml` declarations. Shared rules are defaults and templates, not the authority over a repository.
 

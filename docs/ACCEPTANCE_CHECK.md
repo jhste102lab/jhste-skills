@@ -18,7 +18,7 @@ Core skills implemented:
 
 ## Fast setup
 
-`cli/install.mjs` implements the one-question recommended setup, creates `.jhste/profile.yaml`, keeps mode advisory, appends bridge blocks idempotently, and does not touch target CI, `package.json`, or lockfiles. Hook automation installs a managed advisory pre-commit hook by default, with `--skip-hooks` as opt-out and blocking mode as explicit opt-in. Installed bridge/profile guidance points agents at `jhste-engineering-judgment` before non-trivial code changes and `jhste-final-review` before non-trivial code work is declared complete.
+`cli/install.mjs` implements mode-based setup (`Minimal`, `Normal`, `Full`, `Custom`), creates `.jhste/profile.yaml` when project connection is enabled, keeps mode advisory by default, uses marker-managed bridge blocks idempotently, and does not touch target CI, `package.json`, lockfiles, or source code. Hook automation installs a managed advisory pre-commit hook in Normal and advisory pre-commit/pre-push hooks in Full, with `--skip-hooks` as opt-out and blocking mode as explicit opt-in. `cli/connect.mjs` connects additional git repositories to an existing install without silently mutating global skills unless `--install-missing` is explicit. Installed bridge/profile guidance points agents at `jhste-engineering-judgment` before non-trivial code changes and `jhste-final-review` before non-trivial code work is declared complete.
 
 ## Deep scan
 
@@ -34,7 +34,7 @@ Rule modes are documented in `docs/RULES.md`, example profile defaults to adviso
 
 ## Conflict handling
 
-`docs/CONFLICT_RESOLUTION.md` and installer behavior preserve existing repo instructions, skip existing differing profiles/skills by default, and make bridge insertion idempotent.
+`docs/CONFLICT_RESOLUTION.md` and installer behavior preserve existing repo instructions, skip existing differing profiles/skills by default, make bridge insertion marker-managed and idempotent, and refuse to overwrite non-managed hooks even in Full mode or with `--force`.
 
 ## Verification commands
 

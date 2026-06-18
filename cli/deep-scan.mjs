@@ -16,7 +16,7 @@ import {
   loadProfileConfig,
   responsibilityBudgetSettings,
 } from './profile.mjs';
-import { externalInputValidationFindings } from './guard/scanners/external-input.mjs';
+import { scanText as scanSharedGuardText } from './guard/scanners/index.mjs';
 
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py', '.sql', '.md', '.mdx', '.json']);
 const TEXT_EXTENSIONS = new Set([...SOURCE_EXTENSIONS, '.yaml', '.yml', '.toml']);
@@ -130,12 +130,71 @@ function candidate(list, kind, file, line, detail, severity = 'advisory') {
   list.push({ kind, file: file.rel, line, detail, severity });
 }
 
-function hasUseClientDirective(text) {
-  return /^\s*(?:"use client"|'use client')\s*;?/u.test(text);
+const SHARED_SCANNER_BUCKETS = new Map([
+  ['no_silent_failure', 'silentFailures'],
+  ['broad_exception_advisory', 'silentFailures'],
+  ['no_secret_logging', 'secretLogging'],
+  ['file_size_advisory', 'largeFiles'],
+  ['responsibility_budget', 'responsibilityBudget'],
+  ['component_responsibility', 'clientServerSeam'],
+  ['external_input_validation', 'externalInput'],
+  ['null_state_safety', 'stateSafety'],
+  ['authz_data_isolation', 'authzIsolation'],
+  ['build_runtime_env_safety', 'runtimeEnv'],
+  ['write_safety_idempotency', 'writeSafety'],
+  ['api_contract_compatibility', 'apiContract'],
+  ['public_safe_error', 'apiContract'],
+  ['db_row_validation', 'apiContract'],
+  ['performance_duplicate_fetch', 'performanceDuplication'],
+  ['sql_parameter_binding', 'rawSql'],
+  ['thin_api_route', 'dbInRoutes'],
+  ['type_escape_advisory', 'typeEscapes'],
+  ['side_effect_boundary', 'hiddenSideEffects'],
+  ['crawler_producer_boundary', 'hiddenSideEffects'],
+]);
+
+function deepScanSeverity(finding) {
+  if (finding.rule_id === 'file_size.review' || finding.severity === 'error') return 'review';
+  if (finding.severity === 'warning') return 'warning';
+  return 'advisory';
 }
 
-function isNextPage(file) {
-  return file.rel.endsWith('/page.tsx') && /(^|\/)(app|src\/app|apps\/[^/]+\/src\/app)\//.test(file.rel);
+function addSharedScannerCandidates(file, text, findings) {
+  const sharedFindings = scanSharedGuardText(file.rel, text, {
+    applyProfile: false,
+    fileSize: fileSizeThresholds,
+    responsibilityBudget: responsibilityThresholds,
+  });
+  const seen = new Set();
+  for (const finding of sharedFindings) {
+    const bucket = SHARED_SCANNER_BUCKETS.get(finding.rule_family);
+    if (!bucket || !findings[bucket]) continue;
+    const key = `${bucket}:${finding.rule_id}:${finding.line}:${finding.message}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    candidate(
+      findings[bucket],
+      `${finding.rule_family} candidate`,
+      file,
+      finding.line || 1,
+      finding.message,
+      deepScanSeverity(finding),
+    );
+    if (finding.rule_id === 'responsibility.route.budget') {
+      candidate(
+        findings.routeResponsibility,
+        `${finding.rule_family} candidate`,
+        file,
+        finding.line || 1,
+        finding.message,
+        deepScanSeverity(finding),
+      );
+    }
+  }
+}
+
+function hasUseClientDirective(text) {
+  return /^\s*(?:"use client"|'use client')\s*;?/u.test(text);
 }
 
 function isScriptPipeline(file) {
@@ -143,91 +202,10 @@ function isScriptPipeline(file) {
     && /\.(ts|tsx|js|jsx|mjs|cjs|py)$/.test(file.rel);
 }
 
-function isPythonOrchestrator(file) {
-  return file.ext === '.py' && /(^|\/)(main|.*orchestrator|.*runner|stage_runner)\.py$/.test(file.rel);
-}
-
-function isRouteLike(file) {
-  return /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(file.rel) || /route\.(ts|js)$/.test(file.rel);
-}
-
-function hasRuntimeImportFromClient(text) {
-  if (!hasUseClientDirective(text)) return false;
-  const runtimeImport = /^\s*import\s+(?!type\b)[^;\n]*\sfrom\s+['"]([^'"]+)['"]/gmu;
-  for (const match of text.matchAll(runtimeImport)) {
-    const source = match[1] || '';
-    if (
-      /^(fs|path|crypto|child_process|server-only|next\/headers|next\/cookies|next\/server)$/.test(source)
-      || /(^|\/)(server|db|database|repositories?|prisma|postgres)(\/|$)/i.test(source)
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
 function matchedResponsibilityHints(text, hintGroups) {
   return hintGroups
     .filter((group) => group.patterns.some((pattern) => pattern.test(text)))
     .map((group) => group.label);
-}
-
-function scanResponsibilityBudget(file, text, lineCount, findings) {
-  if (isNextPage(file) && lineCount > responsibilityThresholds.next_page_review_lines) {
-    candidate(
-      findings.responsibilityBudget,
-      'responsibility budget candidate',
-      file,
-      1,
-      `${lineCount} lines in Next page; consider moving loading/model code to a loader and UI to route-local view/components`,
-      'review',
-    );
-  }
-
-  if (hasUseClientDirective(text) && lineCount > responsibilityThresholds.client_module_review_lines) {
-    candidate(
-      findings.responsibilityBudget,
-      'responsibility budget candidate',
-      file,
-      1,
-      `${lineCount} lines in client module; consider splitting state/API/storage hooks from leaf and presentation components`,
-      'review',
-    );
-  }
-
-  const routeLike = /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(file.rel) || /route\.(ts|js)$/.test(file.rel);
-  if (routeLike && lineCount >= responsibilityThresholds.route_review_lines) {
-    candidate(
-      findings.responsibilityBudget,
-      'responsibility budget candidate',
-      file,
-      1,
-      `${lineCount} lines in route/controller-like file; keep auth, validation, domain work, persistence, and response formatting in clear seams`,
-      'review',
-    );
-  }
-
-  if (isScriptPipeline(file) && lineCount >= responsibilityThresholds.import_ops_script_review_lines) {
-    candidate(
-      findings.responsibilityBudget,
-      'responsibility budget candidate',
-      file,
-      1,
-      `${lineCount} lines in import/ops-style script; consider separating CLI parse, artifact loading, transform plan, persistence, and reporting`,
-      'review',
-    );
-  }
-
-  if (isPythonOrchestrator(file) && lineCount >= responsibilityThresholds.python_orchestrator_review_lines) {
-    candidate(
-      findings.responsibilityBudget,
-      'responsibility budget candidate',
-      file,
-      1,
-      `${lineCount} lines in Python orchestrator/runner; consider splitting policy, IO, runtime services, notification, and result contract seams`,
-      'review',
-    );
-  }
 }
 
 function scanMixedResponsibilities(file, text, findings) {
@@ -293,121 +271,8 @@ function scanMixedResponsibilities(file, text, findings) {
   }
 }
 
-function scanFinalReviewFamilies(file, text, findings) {
-  const lines = text.split(/\r?\n/);
-
-  if (/\.(tsx?|jsx?)$/.test(file.rel)) {
-    if (/\b[A-Za-z_$][\w$]*!\s*(?:\.|\[|\()/.test(text)) {
-      candidate(findings.stateSafety, 'null/state safety candidate', file, 1, 'non-null assertion detected on a likely UI path; review null and empty-state handling', 'warning');
-    }
-    if ((hasUseClientDirective(text) || /page\.(tsx|jsx)$/.test(file.rel))
-      && /\b(useQuery|useSuspenseQuery|fetch\s*\(|axios\.)\b/.test(text)
-      && !/\b(isLoading|loading|isError|error|notFound|empty|Empty|skeleton|placeholder)\b/.test(text)) {
-      candidate(findings.stateSafety, 'null/state safety candidate', file, 1, 'async UI path has data-loading hints but no obvious loading, empty, or error fallback', 'warning');
-    }
-    const fetchCount = [...text.matchAll(/\b(fetch\s*\(|axios\.|useQuery\s*\(|useSuspenseQuery\s*\()/g)].length;
-    if (fetchCount >= 2) {
-      candidate(findings.performanceDuplication, 'performance duplicate-fetch candidate', file, 1, `file appears to trigger ${fetchCount} fetch paths; review duplicate requests or split caches`, 'warning');
-    }
-    if (hasUseClientDirective(text) && /useEffect\s*\([\s\S]{0,500}\b(fetch\s*\(|axios\.)/su.test(text)) {
-      candidate(findings.performanceDuplication, 'performance duplicate-fetch candidate', file, 1, 'client module fetches inside useEffect; review cached loader or shared data hook alternatives', 'warning');
-    }
-  }
-
-  if (isRouteLike(file)) {
-    const hasDbAccess = /\b(prisma\.\w+\.(find|create|update|delete|upsert)|pool\.query|client\.query|db\.|database\.|SELECT|INSERT|UPDATE|DELETE)\b/i.test(text);
-    const hasAuthContext = /\b(auth\s*\(|session|currentUser|getUser|permission|requireUser|requireAuth)\b/i.test(text);
-    const hasScopeHint = /\b(userId|accountId|orgId|tenantId|ownerId|workspaceId|teamId|projectId|where\s*:|filter\s*:)\b/i.test(text);
-    if (hasDbAccess && hasAuthContext && !hasScopeHint) {
-      candidate(findings.authzIsolation, 'auth/data isolation candidate', file, 1, 'route uses auth context and persistence but no obvious owner or tenant filter is visible', 'warning');
-    }
-    if (hasDbAccess
-      && /\b(export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)|router\.(post|put|patch|delete)|app\.(post|put|patch|delete))\b/i.test(text)
-      && !hasAuthContext) {
-      candidate(findings.authzIsolation, 'auth/data isolation candidate', file, 1, 'mutation path touches persistence without obvious auth or permission context', 'warning');
-    }
-    if (/\b(request\.json\(|req\.body\b|params\.[A-Za-z_$]|\bsearchParams\.get\(|new URLSearchParams\b)/.test(text)
-      && !/\b(safeParse|parseAsync|schema|z\.object|validate|validator|assert)\b/.test(text)) {
-      candidate(findings.apiContract, 'API contract candidate', file, 1, 'route reads request body, params, or search params without an obvious schema or validator', 'warning');
-    }
-    if (/\b(Response\.json|NextResponse\.json|res\.json)\(\s*await\s+(?:prisma|db|client|pool)|\breturn\s+(?:await\s+)?(?:prisma|db|client|pool)\./.test(text)) {
-      candidate(findings.apiContract, 'API contract candidate', file, 1, 'route appears to expose storage-shaped data directly; review DTO mapping and caller compatibility', 'warning');
-    }
-    if (hasDbAccess
-      && /\b(export\s+async\s+function\s+(POST|PUT|PATCH|DELETE)|router\.(post|put|patch|delete)|app\.(post|put|patch|delete))\b/i.test(text)
-      && !/\b(idempotenc|dedup|dedupe|upsert|transaction|ON CONFLICT|on conflict)\b/i.test(text)) {
-      candidate(findings.writeSafety, 'write safety candidate', file, 1, 'mutation route has no obvious idempotency, dedupe, or transaction marker', 'warning');
-    }
-  }
-
-  if ((isRouteLike(file) || isScriptPipeline(file))
-    && /\b(prisma\.\w+\.(create|update|delete|upsert)|pool\.query|client\.query|db\.|INSERT|UPDATE|DELETE)\b/i.test(text)
-    && /(forEach\s*\(|for\s*\([^)]*;|for\s*\(\s*const\s+.+\s+of\s+|\.map\s*\(|while\s*\()/i.test(text)
-    && !/\b(transaction|batch|Promise\.allSettled|idempotenc|dedup|dedupe|upsert|ON CONFLICT|on conflict)\b/i.test(text)) {
-    candidate(findings.writeSafety, 'write safety candidate', file, 1, 'repeated writes appear inside a loop without an obvious transaction, batch, or dedupe strategy', 'warning');
-  }
-
-  lines.forEach((lineText, index) => {
-    const lineNo = index + 1;
-    if (/\bprocess\.env\.(?!NODE_ENV\b)[A-Z0-9_]+\b/.test(lineText) && !/\?\?|\|\||default|safeParse|parseEnv|assertEnv|requiredEnv|validate|schema/i.test(lineText)) {
-      candidate(findings.runtimeEnv, 'runtime/env safety candidate', file, lineNo, 'env var is read directly without an obvious validation or fallback path', 'warning');
-    }
-    if (/\bimport\.meta\.env\.(?!MODE\b|DEV\b|PROD\b|SSR\b)[A-Z0-9_]+\b/.test(lineText) && !/\?\?|\|\||default|safeParse|validate|schema/i.test(lineText)) {
-      candidate(findings.runtimeEnv, 'runtime/env safety candidate', file, lineNo, 'client env var is read directly without an obvious fallback or validation', 'warning');
-    }
-    if (/\bos\.getenv\(['"][A-Z0-9_]+['"]\)/.test(lineText) && !/\bor\b|\bif\b|default|validate|schema/i.test(lineText)) {
-      candidate(findings.runtimeEnv, 'runtime/env safety candidate', file, lineNo, 'Python env lookup has no obvious fallback or validation', 'warning');
-    }
-  });
-}
-
 function scanFile(file, text, findings) {
-  const lines = text.split(/\r?\n/);
-  const lineCount = lines.length;
-  const isSource = ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py'].includes(file.ext);
-  if (isSource && lineCount >= fileSizeThresholds.source_file_warning_lines) {
-    candidate(findings.largeFiles, 'large file', file, 1, `${lineCount} lines`, lineCount >= fileSizeThresholds.source_file_review_lines ? 'review' : 'warning');
-  }
-
-  lines.forEach((lineText, index) => {
-    const lineNo = index + 1;
-    if (/catch\s*(\([^)]*\))?\s*{\s*}/.test(lineText) || /\.catch\s*\(\s*(async\s*)?\(?\s*[^)]*\)?\s*=>\s*{\s*}\s*\)/.test(lineText)) {
-      candidate(findings.silentFailures, 'silent failure candidate', file, lineNo, 'empty JavaScript/TypeScript catch or promise rejection handler');
-    }
-    if (/except\s+(Exception|BaseException)\s*:\s*pass\b/.test(lineText) || /^\s*except\s*:\s*pass\b/.test(lineText)) {
-      candidate(findings.silentFailures, 'silent failure candidate', file, lineNo, 'broad Python exception handler with pass');
-    }
-    if (/\bas\s+any\b|:\s*any\b|@ts-ignore/.test(lineText)) {
-      candidate(findings.typeEscapes, 'type escape candidate', file, lineNo, 'broad TypeScript escape');
-    }
-    if (/console\.(log|warn|error)|logger\.(info|warn|error|debug)|print\(/.test(lineText) && /secret|token|password|authorization|cookie|session/i.test(lineText)) {
-      candidate(findings.secretLogging, 'secret-like logging candidate', file, lineNo, 'redacted line contains sensitive keyword');
-    }
-  });
-
-  if (/`[^`]*(?:SELECT\s+[\s\S]{0,120}\s+FROM|INSERT\s+INTO|UPDATE\s+[A-Za-z_][\w.]*\s+SET|DELETE\s+FROM)[^`]*\$\{[^`]+`/is.test(text)
-    || /f["'][^"']*(?:SELECT\s+[\s\S]{0,120}\s+FROM|INSERT\s+INTO|UPDATE\s+[A-Za-z_][\w.]*\s+SET|DELETE\s+FROM)[^"']*\{[^"']+["']/is.test(text)) {
-    candidate(findings.rawSql, 'raw SQL interpolation candidate', file, 1, 'SQL-like string interpolation detected');
-  }
-
-  const routeLike = /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(file.rel) || /route\.(ts|js)$/.test(file.rel);
-  if (routeLike && /(prisma|sql`|SELECT|INSERT|UPDATE|DELETE|db\.|database)/i.test(text)) {
-    candidate(findings.dbInRoutes, 'DB/API seam candidate', file, 1, 'route/controller appears to contain direct database access');
-  }
-  if (routeLike && lineCount >= responsibilityThresholds.route_review_lines) {
-    candidate(findings.routeResponsibility, 'route responsibility candidate', file, 1, `${lineCount} lines in route/controller-like file`);
-  }
-  if (hasRuntimeImportFromClient(text)) {
-    candidate(findings.clientServerSeam, 'client/server seam candidate', file, 1, 'client file imports a server-like module');
-  }
-  if (/function\s+(format|helper|build|make|map)\w*\s*\([^)]*\)\s*{[\s\S]{0,1200}\b(fetch|writeFile|readFile|exec|spawn|setTimeout)\b/.test(text)) {
-    candidate(findings.hiddenSideEffects, 'hidden side-effect candidate', file, 1, 'generic helper appears to perform side effects');
-  }
-  for (const finding of externalInputValidationFindings(file.rel, text)) {
-    candidate(findings.externalInput, 'external input validation candidate', file, 1, finding.message, 'warning');
-  }
-
-  scanResponsibilityBudget(file, text, lineCount, findings);
+  addSharedScannerCandidates(file, text, findings);
   scanMixedResponsibilities(file, text, findings);
 }
 
@@ -436,7 +301,6 @@ function scanFiles(files) {
     try {
       const text = fs.readFileSync(file.full, 'utf8');
       scanFile(file, text, findings);
-      scanFinalReviewFamilies(file, text, findings);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       candidate(

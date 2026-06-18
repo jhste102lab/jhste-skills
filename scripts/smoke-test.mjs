@@ -188,6 +188,110 @@ const allSkillDirs = skillDirs(allSkillsDir);
 if (allSkillDirs.length !== 21) fail(`--skill-set all should copy 21 skills, got ${allSkillDirs.length}`);
 if (!allSkillDirs.includes('jhste-final-review') || !allSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set all missing core or vendored skill');
 
+const customYesRepo = path.join(tmp, 'custom-yes-repo');
+const customYesSkills = path.join(tmp, 'custom-yes-skills');
+fs.mkdirSync(customYesRepo, { recursive: true });
+run('git', ['init'], { cwd: customYesRepo });
+const customYesInstall = runAny(process.execPath, [path.join(root, 'cli/install.mjs'), '--mode', 'custom', '--yes', '--repo', customYesRepo, '--skills-dir', customYesSkills], { cwd: customYesRepo });
+if (customYesInstall.status !== 3) fail(`install --mode custom --yes should exit 3, got ${customYesInstall.status}`);
+if (fs.existsSync(path.join(customYesRepo, '.jhste'))) fail('install --mode custom --yes created repo files');
+if (fs.existsSync(customYesSkills)) fail('install --mode custom --yes created skills');
+
+const minimalRepo = path.join(tmp, 'minimal-repo');
+const minimalSkillsDir = path.join(tmp, 'minimal-skills');
+fs.mkdirSync(minimalRepo, { recursive: true });
+run('git', ['init'], { cwd: minimalRepo });
+fs.writeFileSync(path.join(minimalRepo, 'AGENTS.md'), '# Minimal repo\n');
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--mode', 'minimal', '--yes', '--repo', minimalRepo, '--skills-dir', minimalSkillsDir, '--skip-deep-scan'], { cwd: minimalRepo });
+const minimalSkillDirs = skillDirs(minimalSkillsDir);
+if (minimalSkillDirs.length !== 7) fail(`--mode minimal should copy 7 core skills, got ${minimalSkillDirs.length}`);
+if (fs.existsSync(path.join(minimalRepo, '.jhste'))) fail('--mode minimal created .jhste');
+if (fs.existsSync(path.join(minimalRepo, '.git', 'hooks', 'pre-commit'))) fail('--mode minimal created pre-commit hook');
+if (fs.readFileSync(path.join(minimalRepo, 'AGENTS.md'), 'utf8') !== '# Minimal repo\n') fail('--mode minimal modified AGENTS.md');
+
+const minimalHookRepo = path.join(tmp, 'minimal-hook-repo');
+const minimalHookSkillsDir = path.join(tmp, 'minimal-hook-skills');
+fs.mkdirSync(minimalHookRepo, { recursive: true });
+run('git', ['init'], { cwd: minimalHookRepo });
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--mode', 'minimal', '--hooks', 'advisory', '--yes', '--repo', minimalHookRepo, '--skills-dir', minimalHookSkillsDir, '--skip-deep-scan'], { cwd: minimalHookRepo });
+if (!fs.existsSync(path.join(minimalHookRepo, '.git', 'hooks', 'pre-commit'))) fail('--mode minimal --hooks advisory did not install explicit hook');
+if (fs.existsSync(path.join(minimalHookRepo, '.jhste'))) fail('--mode minimal --hooks advisory should not create profile');
+
+const fullModeRepo = path.join(tmp, 'full-mode-repo');
+const fullModeSkillsDir = path.join(tmp, 'full-mode-skills');
+fs.mkdirSync(fullModeRepo, { recursive: true });
+run('git', ['init'], { cwd: fullModeRepo });
+fs.writeFileSync(path.join(fullModeRepo, 'AGENTS.md'), '# Full mode repo\n');
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--mode', 'full', '--yes', '--repo', fullModeRepo, '--skills-dir', fullModeSkillsDir, '--skip-deep-scan'], { cwd: fullModeRepo });
+const fullModeSkillDirs = skillDirs(fullModeSkillsDir);
+if (fullModeSkillDirs.length !== 21) fail(`--mode full should copy 21 skills, got ${fullModeSkillDirs.length}`);
+const fullPreCommit = path.join(fullModeRepo, '.git', 'hooks', 'pre-commit');
+const fullPrePush = path.join(fullModeRepo, '.git', 'hooks', 'pre-push');
+if (!fs.existsSync(fullPreCommit) || !fs.existsSync(fullPrePush)) fail('--mode full did not install pre-commit and pre-push');
+if (!fs.readFileSync(fullPreCommit, 'utf8').includes('mode=advisory')) fail('--mode full pre-commit is not advisory by default');
+if (!fs.readFileSync(fullPrePush, 'utf8').includes('mode=advisory')) fail('--mode full pre-push is not advisory by default');
+if (!fs.readFileSync(path.join(fullModeRepo, 'AGENTS.md'), 'utf8').includes('jhste-skills:start')) fail('--mode full bridge missing managed marker');
+
+const fullBlockingRepo = path.join(tmp, 'full-blocking-repo');
+const fullBlockingSkillsDir = path.join(tmp, 'full-blocking-skills');
+fs.mkdirSync(fullBlockingRepo, { recursive: true });
+run('git', ['init'], { cwd: fullBlockingRepo });
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--mode', 'full', '--hooks', 'blocking', '--yes', '--repo', fullBlockingRepo, '--skills-dir', fullBlockingSkillsDir, '--skip-deep-scan'], { cwd: fullBlockingRepo });
+if (!fs.readFileSync(path.join(fullBlockingRepo, '.git', 'hooks', 'pre-commit'), 'utf8').includes('mode=blocking')) fail('--mode full --hooks blocking pre-commit not blocking');
+if (!fs.readFileSync(path.join(fullBlockingRepo, '.git', 'hooks', 'pre-push'), 'utf8').includes('mode=blocking')) fail('--mode full --hooks blocking pre-push not blocking');
+
+const fullExistingHookRepo = path.join(tmp, 'full-existing-hook-repo');
+const fullExistingHookSkillsDir = path.join(tmp, 'full-existing-hook-skills');
+fs.mkdirSync(fullExistingHookRepo, { recursive: true });
+run('git', ['init'], { cwd: fullExistingHookRepo });
+const fullExistingPreCommit = path.join(fullExistingHookRepo, '.git', 'hooks', 'pre-commit');
+fs.writeFileSync(fullExistingPreCommit, '#!/usr/bin/env sh\necho existing\n', { mode: 0o755 });
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--mode', 'full', '--yes', '--repo', fullExistingHookRepo, '--skills-dir', fullExistingHookSkillsDir, '--skip-deep-scan'], { cwd: fullExistingHookRepo });
+if (!fs.readFileSync(fullExistingPreCommit, 'utf8').includes('echo existing')) fail('--mode full overwrote non-managed pre-commit');
+if (!fs.existsSync(path.join(fullExistingHookRepo, '.git', 'hooks', 'pre-push'))) fail('--mode full did not install pre-push when pre-commit was non-managed');
+const fullBlockingExistingHook = runAny(process.execPath, [path.join(root, 'cli/install.mjs'), '--mode', 'full', '--hooks', 'blocking', '--yes', '--repo', fullExistingHookRepo, '--skills-dir', fullExistingHookSkillsDir, '--skip-deep-scan'], { cwd: fullExistingHookRepo });
+if (fullBlockingExistingHook.status !== 3) fail(`--mode full --hooks blocking with non-managed pre-commit should exit 3, got ${fullBlockingExistingHook.status}`);
+if (!fs.readFileSync(fullExistingPreCommit, 'utf8').includes('echo existing')) fail('--mode full --hooks blocking overwrote non-managed pre-commit');
+
+const nonGitCwd = path.join(tmp, 'non-git-cwd');
+const nonGitCwdSkills = path.join(tmp, 'non-git-cwd-skills');
+fs.mkdirSync(nonGitCwd, { recursive: true });
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--skills-dir', nonGitCwdSkills, '--skip-deep-scan'], { cwd: nonGitCwd });
+if (fs.existsSync(path.join(nonGitCwd, '.jhste'))) fail('install outside git repo created .jhste');
+if (skillDirs(nonGitCwdSkills).length !== 7) fail('install outside git repo did not install core skills');
+
+const explicitNonGitRepo = path.join(tmp, 'explicit-non-git-repo');
+const explicitNonGitSkills = path.join(tmp, 'explicit-non-git-skills');
+fs.mkdirSync(explicitNonGitRepo, { recursive: true });
+const explicitNonGitInstall = runAny(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', explicitNonGitRepo, '--skills-dir', explicitNonGitSkills, '--skip-deep-scan'], { cwd: explicitNonGitRepo });
+if (explicitNonGitInstall.status !== 3) fail(`install --repo non-git should exit 3, got ${explicitNonGitInstall.status}`);
+if (fs.existsSync(path.join(explicitNonGitRepo, '.jhste'))) fail('install --repo non-git created .jhste');
+if (fs.existsSync(explicitNonGitSkills)) fail('install --repo non-git created skills');
+
+const connectNoRepo = path.join(tmp, 'connect-no-repo');
+fs.mkdirSync(connectNoRepo, { recursive: true });
+const connectNoRepoResult = runAny(process.execPath, [path.join(root, 'cli/connect.mjs'), '--yes', '--repo', connectNoRepo, '--skills-dir', skillsDir, '--skip-deep-scan'], { cwd: connectNoRepo });
+if (connectNoRepoResult.status !== 3) fail(`connect outside git repo should exit 3, got ${connectNoRepoResult.status}`);
+if (fs.existsSync(path.join(connectNoRepo, '.jhste'))) fail('connect outside git repo created .jhste');
+
+const connectMinimalRepo = path.join(tmp, 'connect-minimal-repo');
+fs.mkdirSync(connectMinimalRepo, { recursive: true });
+run('git', ['init'], { cwd: connectMinimalRepo });
+const connectMinimal = runAny(process.execPath, [path.join(root, 'cli/connect.mjs'), '--mode', 'minimal', '--yes', '--repo', connectMinimalRepo, '--skills-dir', skillsDir, '--skip-deep-scan'], { cwd: connectMinimalRepo });
+if (connectMinimal.status !== 3) fail(`connect --mode minimal should exit 3, got ${connectMinimal.status}`);
+if (fs.existsSync(path.join(connectMinimalRepo, '.jhste'))) fail('connect --mode minimal created .jhste');
+
+const connectMissingRepo = path.join(tmp, 'connect-missing-repo');
+const connectMissingSkills = path.join(tmp, 'connect-missing-skills');
+fs.mkdirSync(connectMissingRepo, { recursive: true });
+run('git', ['init'], { cwd: connectMissingRepo });
+const connectMissing = runAny(process.execPath, [path.join(root, 'cli/connect.mjs'), '--mode', 'normal', '--yes', '--repo', connectMissingRepo, '--skills-dir', connectMissingSkills, '--skip-deep-scan'], { cwd: connectMissingRepo });
+if (connectMissing.status !== 3) fail(`connect missing skills should exit 3, got ${connectMissing.status}`);
+if (fs.existsSync(path.join(connectMissingRepo, '.jhste'))) fail('connect missing skills created .jhste');
+run(process.execPath, [path.join(root, 'cli/connect.mjs'), '--mode', 'normal', '--yes', '--repo', connectMissingRepo, '--skills-dir', connectMissingSkills, '--skip-deep-scan', '--install-missing'], { cwd: connectMissingRepo });
+if (skillDirs(connectMissingSkills).length !== 7) fail('connect --install-missing did not install core skills');
+if (!fs.existsSync(path.join(connectMissingRepo, '.jhste', 'profile.yaml'))) fail('connect --install-missing did not create profile');
+
 const skipHookRepo = path.join(tmp, 'skip-hook-repo');
 fs.mkdirSync(skipHookRepo, { recursive: true });
 run('git', ['init'], { cwd: skipHookRepo });
@@ -219,6 +323,7 @@ if (hashFile(path.join(hookRepo, 'package.json')) !== hookPackageHashBefore) fai
 const agentsAfterFirst = fs.readFileSync(path.join(repo, 'AGENTS.md'), 'utf8');
 const bridgeCount = (agentsAfterFirst.match(/Repo-local instructions in this file remain authoritative\./g) || []).length;
 if (bridgeCount !== 1) fail('bridge block was not inserted exactly once');
+if ((agentsAfterFirst.match(/jhste-skills:start/g) || []).length !== 1 || (agentsAfterFirst.match(/jhste-skills:end/g) || []).length !== 1) fail('bridge block missing managed markers');
 if (!agentsAfterFirst.includes('jhste-final-review')) fail('bridge block missing final review guidance');
 
 fs.appendFileSync(profilePath, '# keep-existing-profile-marker\n');
@@ -269,7 +374,12 @@ if (!guardResult.violations.some(item => item.rule_id === 'runtime.env_direct_ac
 if (!guardResult.violations.some(item => item.rule_id === 'write.mutation_retry_safety')) fail('guard did not report write safety');
 if (!guardResult.violations.some(item => item.rule_id === 'contract.boundary_without_schema')) fail('guard did not report API contract compatibility');
 if (!guardResult.violations.some(item => item.rule_id === 'performance.multiple_fetch_sources')) fail('guard did not report performance duplication');
-if (!guardResult.violations.some(item => item.rule_id === 'input.request_body_direct_use' && item.path.includes('src/app/api/profile/route.ts'))) fail('guard did not report shared external input candidate');
+const sharedExternalInputPath = 'src/app/api/profile/route.ts:1';
+const guardSharedExternalInput = guardResult.violations.some(item => item.rule_id === 'input.request_body_direct_use' && item.path.includes('src/app/api/profile/route.ts'));
+const deepScanSharedExternalInput = report.includes(sharedExternalInputPath);
+if (!guardSharedExternalInput) fail('guard did not report shared external input candidate');
+if (!deepScanSharedExternalInput) fail('deep scan did not report shared external input candidate');
+if (!guardSharedExternalInput || !deepScanSharedExternalInput) fail('guard and deep-scan did not agree on shared external input scanner family');
 if (!guardResult.violations.some(item => item.category === 'heuristic_candidate' && item.why_not_proof)) fail('guard JSON did not expose heuristic finding interpretation');
 const failingGuard = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json', '--fail-on', 'error'], { cwd: repo });
 if (failingGuard.status !== 1) fail(`guard --fail-on error should exit 1, got ${failingGuard.status}`);
@@ -330,4 +440,4 @@ if (refusedHook.status !== 3) fail(`hooks install should refuse non-managed hook
 if (!fs.readFileSync(preCommit, 'utf8').includes('echo existing')) fail('hooks install overwrote non-managed hook');
 if (hashFile(path.join(repo, 'package.json')) !== packageHashBefore) fail('hooks modified target package.json');
 
-console.log(`smoke-test passed in ${elapsed}ms: install default advisory hook, bridge idempotency, overwrite protection, deep scan read-only behavior, and guard contract verified.`);
+console.log(`smoke-test passed in ${elapsed}ms: install/connect modes, hook safety, bridge idempotency, overwrite protection, deep scan read-only behavior, and guard contract verified.`);
