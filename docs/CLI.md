@@ -9,15 +9,16 @@ npx jhste-skills install
 node cli/install.mjs --yes --repo /path/to/repo
 node cli/install.mjs --yes --repo /path/to/repo --skip-hooks
 node cli/install.mjs --yes --repo /path/to/repo --hooks blocking
+node cli/install.mjs --yes --repo /path/to/repo --skill-set core|vendor|all
 ```
 
 Default behavior:
 
-Install enables advisory hook automation by default. In interactive mode, Enter keeps advisory hooks, `b` installs blocking hooks, and `n` skips hooks. Non-interactive installs also use advisory hooks unless `--skip-hooks` or `--hooks blocking` is explicit.
+Install enables advisory hook automation by default. In interactive mode, Enter keeps advisory hooks, `b` installs blocking hooks, and `n` skips hooks. Non-interactive installs fail closed with exit `3` unless `--yes` or `-y` is explicit; with that opt-in they use advisory hooks unless `--skip-hooks` or `--hooks blocking` is explicit.
 
 
 - one main setup prompt, plus a short hook choice in interactive mode;
-- selected skills copied to a kit-managed skill directory;
+- selected skills copied to a kit-managed skill directory; default `--skill-set core` installs only jhste core skills, while `vendor` and `all` are explicit opt-ins for vendored workflow skills;
 - `.jhste/profile.yaml` created with `mode: advisory` when missing;
 - existing profile is not overwritten unless `--force` is explicit;
 - `AGENTS.md` and `CLAUDE.md` bridge blocks are appended only when the file exists and the exact block is missing;
@@ -51,7 +52,7 @@ Stable contract:
 - `--scope`: one of `changed`, `staged`, `all`, `files-from`. `changed` means committed diff from base/head plus unstaged, staged, and untracked files; `staged` means staged files only.
 - `--format`: `text` for humans or schema-versioned `json` for AI/hooks/CI.
 - `--fail-on`: `none`, `warning`, or `error`.
-- `--baseline`: `off`, `use`, `update`, or `ratchet`. `ratchet` requires an existing baseline. `update` is refused when guard runtime failures occur.
+- `--baseline`: `off`, `use`, `update`, or `ratchet`. `ratchet` requires an existing baseline. `update` is refused when guard runtime failures occur. Baseline-matched findings encountered in the selected scope remain visible as remediation queue items rather than being treated as a pass.
 - exit `0`: pass; exit `1`: violations met `--fail-on` or ratchet found new issues; exit `2`: guard runtime/scope/scan failure; exit `3`: config/profile error.
 
 The JSON output starts with:
@@ -72,6 +73,8 @@ The JSON output starts with:
 ```
 
 Guard failures are not validation success. AI agents should report exit `2` or `3` separately from rule violations.
+Each JSON violation includes `confidence`, `category`, and `why_not_proof`; `heuristic_candidate` findings are review prompts, not proof of a bug.
+Profile `changed-files` findings are inactive for `--scope all`; `strict` defaults to `scope=all` and `fail_on=error`; `baseline-new-only` defaults to baseline `ratchet`.
 
 Managed hook executions are read-only. While `JHSTE_HOOK_ACTIVE=1`, `guard` refuses `--baseline update` and `--run-profile-commands`.
 
@@ -103,4 +106,4 @@ Safety contract:
 
 ## `baseline`
 
-`baseline` creates or updates `.jhste/baseline.json` through `guard --scope all --baseline update`. Baseline creation does not enable strict mode. The file stores stable guard fingerprints so existing debt can be separated from new violations.
+`baseline` creates or updates `.jhste/baseline.json` through `guard --scope all --baseline update`. Baseline creation does not enable strict mode. The file is a remediation queue with fingerprint, first/last seen, reason, and optional owner/expiry/fix-tracking fields; matched findings encountered in a selected guard scope are still shown until fixed.

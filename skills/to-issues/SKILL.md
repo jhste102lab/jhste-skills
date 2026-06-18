@@ -3,6 +3,14 @@ name: to-issues
 description: Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices. Use when user wants to convert a plan into issues, create implementation tickets, or break down work into issues.
 ---
 
+## jhste compatibility
+
+- Repo-local instructions remain authoritative.
+- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
+- File, repo, command, issue, PR, or other external side effects require explicit user approval unless the user already requested that side effect.
+
+
 # To Issues
 
 Break a plan into independently-grabbable issues using vertical slices (tracer bullets).

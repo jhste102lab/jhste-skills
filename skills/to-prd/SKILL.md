@@ -3,6 +3,14 @@ name: to-prd
 description: Turn the current conversation context into a PRD and publish it to the project issue tracker. Use when user wants to create a PRD from the current context.
 ---
 
+## jhste compatibility
+
+- Repo-local instructions remain authoritative.
+- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
+- File, repo, command, issue, PR, or other external side effects require explicit user approval unless the user already requested that side effect.
+
+
 This skill takes the current conversation context and codebase understanding and produces a PRD. Do NOT interview the user — just synthesize what you already know.
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup-matt-pocock-skills` if not.

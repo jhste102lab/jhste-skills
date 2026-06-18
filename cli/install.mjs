@@ -26,6 +26,127 @@ const PROMPT = `추천 설정으로 설치합니다.
 - 자동 guard hook은 advisory로 기본 설치
 진행할까요? [Enter=예 / n=아니오 / c=직접 설정] `;
 
+const EXIT_CONFIG_FAILURE = 3;
+const BOOLEAN_OPTIONS = new Set(['yes', 'force', 'skip-hooks', 'no-bridge', 'skip-deep-scan']);
+const VALUE_OPTIONS = new Set(['repo', 'skills-dir', 'hooks', 'skill-set']);
+const HELP_OPTIONS = new Set(['help', 'h']);
+const INSTALL_OPTIONS = new Set([...BOOLEAN_OPTIONS, ...VALUE_OPTIONS, ...HELP_OPTIONS]);
+
+function usage() {
+  console.log(`jhste-skills install
+
+Usage:
+  jhste-skills install [--yes] [--repo <path>] [--skills-dir <path>]
+  jhste-skills install --yes [--skill-set core|vendor|all] [--skip-hooks | --hooks advisory|blocking]
+
+Notes:
+  Non-interactive installs require explicit --yes or -y.
+  The default skill set is core.
+  --skip-hooks and --hooks are mutually exclusive.
+`);
+}
+
+function hasOption(args, key) {
+  return Object.prototype.hasOwnProperty.call(args, key);
+}
+
+function readBooleanOption(args, key, errors) {
+  if (!hasOption(args, key)) return false;
+  if (args[key] !== true) errors.push(`--${key} does not take a value.`);
+  return args[key] === true;
+}
+
+function readPathOption(args, key, errors) {
+  if (!hasOption(args, key)) return undefined;
+  const value = args[key];
+  if (value === true || String(value).trim() === '') {
+    errors.push(`--${key} requires a path value.`);
+    return undefined;
+  }
+  return String(value);
+}
+
+function normalizeInstallOptions(args, { cwd, nonInteractive }) {
+  if (args.help || args.h) return { help: true, errors: [] };
+
+  const errors = [];
+  for (const key of Object.keys(args)) {
+    if (key !== '_' && !INSTALL_OPTIONS.has(key)) errors.push(`unknown option --${key}.`);
+  }
+  if (args._.length > 0) errors.push(`unexpected positional argument: ${args._[0]}`);
+
+  const yes = readBooleanOption(args, 'yes', errors);
+  const force = readBooleanOption(args, 'force', errors);
+  const skipHooks = readBooleanOption(args, 'skip-hooks', errors);
+  const noBridge = readBooleanOption(args, 'no-bridge', errors);
+  const skipDeepScan = readBooleanOption(args, 'skip-deep-scan', errors);
+  const repoInput = readPathOption(args, 'repo', errors);
+  const skillsDirInput = readPathOption(args, 'skills-dir', errors);
+  const skillSetInput = hasOption(args, 'skill-set') ? String(args['skill-set']).toLowerCase() : 'core';
+  const explicitHooks = hasOption(args, 'hooks');
+
+  if (skipHooks && explicitHooks) errors.push('--skip-hooks and --hooks are mutually exclusive.');
+  const skillSetAliases = new Map([
+    ['core', 'core'],
+    ['core-only', 'core'],
+    ['vendor', 'vendor'],
+    ['vendor-only', 'vendor'],
+    ['all', 'all'],
+  ]);
+  const skillSet = skillSetAliases.get(skillSetInput);
+  if (!skillSet) errors.push('--skill-set must be core, vendor, or all.');
+
+  let hooksMode = skipHooks ? '' : 'advisory';
+  if (explicitHooks) {
+    if (args.hooks === true) {
+      hooksMode = 'advisory';
+    } else {
+      const requestedHooksMode = String(args.hooks || '').toLowerCase();
+      hooksMode = requestedHooksMode === 'true' ? 'advisory' : requestedHooksMode;
+      if (!['advisory', 'blocking'].includes(hooksMode)) {
+        errors.push('--hooks must be advisory or blocking.');
+      }
+    }
+  }
+
+  const repoStart = path.resolve(repoInput || cwd);
+  if (repoInput) {
+    try {
+      if (!fs.statSync(repoStart).isDirectory()) errors.push(`--repo must be a directory: ${repoInput}`);
+    } catch {
+      errors.push(`--repo path does not exist: ${repoInput}`);
+    }
+  }
+
+  const skillsDir = path.resolve(skillsDirInput || path.join(os.homedir(), '.jhste', 'skills'));
+  if (fs.existsSync(skillsDir) && !fs.statSync(skillsDir).isDirectory()) {
+    errors.push(`--skills-dir must be a directory: ${skillsDirInput || skillsDir}`);
+  }
+
+  if (nonInteractive && !yes) {
+    errors.push('non-interactive install requires explicit --yes or -y; refusing to change files.');
+  }
+
+  return {
+    errors,
+    explicitHooks,
+    force,
+    hooksMode,
+    noBridge,
+    promptForHooks: !skipHooks && !explicitHooks && !nonInteractive,
+    repoStart,
+    skillSet,
+    skillsDir,
+    skipDeepScan,
+    yes,
+  };
+}
+
+function printConfigErrors(errors) {
+  for (const error of errors) console.error(`jhste-skills install: ${error}`);
+  process.exitCode = EXIT_CONFIG_FAILURE;
+}
+
 function writeProfile(repoRoot, { force = false } = {}) {
   const profilePath = path.join(repoRoot, '.jhste', 'profile.yaml');
   if (fs.existsSync(profilePath) && !force) {
@@ -50,10 +171,24 @@ function maybeAppendBridge(repoRoot, fileName) {
   return { status: 'appended', path: target };
 }
 
-function installSkills(skillsDir, { force = false } = {}) {
+function vendoredSkillNames() {
+  const allowlistPath = path.join(KIT_ROOT, 'vendor', 'matt-pocock', 'allowlist.json');
+  return new Set(JSON.parse(fs.readFileSync(allowlistPath, 'utf8')));
+}
+
+function skillNamesForSet(skillSet) {
+  const sourceRoot = path.join(KIT_ROOT, 'skills');
+  const all = listDirectories(sourceRoot);
+  const vendored = vendoredSkillNames();
+  if (skillSet === 'all') return all;
+  if (skillSet === 'vendor') return all.filter((name) => vendored.has(name));
+  return all.filter((name) => !vendored.has(name));
+}
+
+function installSkills(skillsDir, { force = false, skillSet = 'core' } = {}) {
   const sourceRoot = path.join(KIT_ROOT, 'skills');
   ensureDir(skillsDir);
-  return listDirectories(sourceRoot).map((name) => {
+  return skillNamesForSet(skillSet).map((name) => {
     return copyDirSafe(path.join(sourceRoot, name), path.join(skillsDir, name), { force });
   });
 }
@@ -68,13 +203,14 @@ function warnHookSkipped(mode) {
   console.log('  필요하면 `jhste-skills hooks doctor`로 상태를 확인하세요.');
 }
 
-function printInstallResult({ repoRoot, skillsDir, skillResults, profileResult, bridgeResults }) {
+function printInstallResult({ repoRoot, skillsDir, skillSet, skillResults, profileResult, bridgeResults }) {
   const skillSummary = skillResults.reduce((acc, result) => {
     acc[result.status] = (acc[result.status] || 0) + 1;
     return acc;
   }, {});
   console.log('\n설치가 끝났습니다.');
   console.log(`- Skills directory: ${skillsDir}`);
+  console.log(`- Skill set: ${skillSet}`);
   console.log(`- Skills: ${Object.entries(skillSummary).map(([k, v]) => `${k}=${v}`).join(', ') || 'none'}`);
   console.log(`- Current repo: ${repoRoot}`);
   console.log(`- Profile: ${profileResult.status} (${path.relative(repoRoot, profileResult.path)})`);
@@ -94,13 +230,21 @@ function printInstallResult({ repoRoot, skillsDir, skillResults, profileResult, 
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const repoRoot = findGitRoot(args.repo || process.cwd());
-  const skillsDir = path.resolve(String(args['skills-dir'] || path.join(os.homedir(), '.jhste', 'skills')));
-  const force = Boolean(args.force);
   const nonInteractive = !process.stdin.isTTY;
+  const options = normalizeInstallOptions(args, { cwd: process.cwd(), nonInteractive });
+  if (options.help) {
+    usage();
+    return;
+  }
+  if (options.errors.length > 0) {
+    printConfigErrors(options.errors);
+    return;
+  }
+
+  const repoRoot = findGitRoot(options.repoStart);
   let answer = '';
 
-  if (!args.yes && !nonInteractive) {
+  if (!options.yes && !nonInteractive) {
     answer = await ask(PROMPT);
   }
 
@@ -116,17 +260,8 @@ async function main() {
     if (custom.toLowerCase() === 'r') adapterMode = 'repo-only';
   }
 
-  const skillResults = adapterMode === 'repo-only' ? [] : installSkills(skillsDir, { force });
-  const profileResult = writeProfile(repoRoot, { force });
-  const bridgeResults = args['no-bridge'] ? [] : ['AGENTS.md', 'CLAUDE.md'].map((file) => maybeAppendBridge(repoRoot, file));
-
-  printInstallResult({ repoRoot, skillsDir, skillResults, profileResult, bridgeResults });
-
-  const explicitHooks = Boolean(args.hooks);
-  let hooksMode = args['skip-hooks'] ? '' : 'advisory';
-  if (explicitHooks) hooksMode = String(args.hooks);
-  if (hooksMode === 'true') hooksMode = 'advisory';
-  if (!args['skip-hooks'] && !explicitHooks && !nonInteractive) {
+  let hooksMode = options.hooksMode;
+  if (options.promptForHooks) {
     const hooks = await ask(`
 커밋할 때 guard를 자동 실행합니다. 기본값은 advisory입니다.
 - Enter/advisory: 문제를 보여주지만 커밋은 막지 않음
@@ -138,15 +273,17 @@ async function main() {
     if (normalizedHooks === 'b' || normalizedHooks === 'blocking') hooksMode = 'blocking';
     if (normalizedHooks === 'a' || normalizedHooks === 'advisory') hooksMode = 'advisory';
   }
+
+  const skillResults = adapterMode === 'repo-only' ? [] : installSkills(options.skillsDir, { force: options.force, skillSet: options.skillSet });
+  const profileResult = writeProfile(repoRoot, { force: options.force });
+  const bridgeResults = options.noBridge ? [] : ['AGENTS.md', 'CLAUDE.md'].map((file) => maybeAppendBridge(repoRoot, file));
+
+  printInstallResult({ repoRoot, skillsDir: options.skillsDir, skillSet: options.skillSet, skillResults, profileResult, bridgeResults });
+
   if (hooksMode) {
-    if (!['advisory', 'blocking'].includes(hooksMode)) {
-      console.error('--hooks must be advisory or blocking.');
-      process.exitCode = 3;
-      return;
-    }
     const hookStatus = installHooks(repoRoot, hooksMode);
     if (hookStatus !== 0) {
-      if (explicitHooks || hooksMode === 'blocking') {
+      if (options.explicitHooks || hooksMode === 'blocking') {
         process.exitCode = hookStatus;
         return;
       }
@@ -154,7 +291,7 @@ async function main() {
     }
   }
 
-  if (!args['skip-deep-scan'] && !nonInteractive) {
+  if (!options.skipDeepScan && !nonInteractive) {
     const scan = await ask(`\n더 정확히 맞추려면 현재 repo를 깊게 점검할 수 있습니다.
 대략 2~8분 걸리고, 코드는 수정하지 않습니다.
 확인하는 것:

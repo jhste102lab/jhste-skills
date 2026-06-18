@@ -27,12 +27,15 @@ This kit does **not** replace existing repository instructions. Repo-local `AGEN
 npx jhste-skills install
 ```
 
+Non-interactive runs fail closed unless `--yes` (or `-y`) is explicit, so CI/scripts must opt in before the installer changes files.
+
 Useful local-development commands:
 
 ```bash
 node cli/install.mjs --yes --repo /path/to/repo
 node cli/install.mjs --yes --repo /path/to/repo --skip-hooks
 node cli/install.mjs --yes --repo /path/to/repo --hooks blocking
+node cli/install.mjs --yes --repo /path/to/repo --skill-set all
 node cli/deep-scan.mjs --repo /path/to/repo
 node cli/guard.mjs --repo /path/to/repo --scope changed --format text --fail-on error
 node cli/hooks.mjs install --repo /path/to/repo --mode advisory
@@ -77,6 +80,8 @@ examples/profile.yaml   Default advisory profile example
 ```
 
 ## Included core skills
+
+Quick install defaults to the core skill set to keep setup safe-by-default. Use `--skill-set all` to include vendored workflow skills, or `--skill-set vendor` to install only the vendored set. Vendored skills are useful, but may suggest documentation, issue-tracker, or vocabulary workflows; their jhste compatibility preamble keeps repo-local instructions authoritative and requires explicit approval for side effects.
 
 - `setup`
 - `jhste-engineering-judgment`

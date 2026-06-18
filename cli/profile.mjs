@@ -2,6 +2,30 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 export const PROFILE_MODES = new Set(['off', 'advisory', 'changed-files', 'baseline-new-only', 'strict']);
+export const KNOWN_PACK_IDS = new Set(['core', 'web', 'api', 'database', 'crawler']);
+export const KNOWN_RULE_IDS = new Set([
+  'api_contract_compatibility',
+  'authz_data_isolation',
+  'broad_exception_advisory',
+  'build_runtime_env_safety',
+  'component_responsibility',
+  'crawler_producer_boundary',
+  'db_row_validation',
+  'external_input_validation',
+  'file_size_advisory',
+  'no_secret_logging',
+  'no_silent_failure',
+  'null_state_safety',
+  'performance_duplicate_fetch',
+  'public_safe_error',
+  'responsibility_budget',
+  'side_effect_boundary',
+  'sql_parameter_binding',
+  'thin_api_route',
+  'type_escape_advisory',
+  'workflow_security',
+  'write_safety_idempotency',
+]);
 export const DEFAULT_PROFILE_MODE = 'advisory';
 export const DEFAULT_BASELINE_PATH = '.jhste/baseline.json';
 export const DEFAULT_RESPONSIBILITY_BUDGET = Object.freeze({
@@ -15,6 +39,9 @@ export const DEFAULT_FILE_SIZE = Object.freeze({
   source_file_warning_lines: 400,
   source_file_review_lines: 600,
 });
+
+const TOP_LEVEL_SECTIONS = new Set(['version', 'mode', 'installed_at', 'adapters', 'packs', 'rules', 'baseline', 'guard', 'deep_scan', 'workflow', 'strict', 'commands']);
+const DOCUMENTATION_ONLY_SECTIONS = new Set(['adapters', 'deep_scan', 'workflow', 'strict']);
 
 function stripInlineComment(raw) {
   let quote = '';
@@ -50,20 +77,36 @@ function assignSectionValue(target, key, value) {
   target[key] = parseScalar(value);
 }
 
-export function parseProfileText(text) {
-  const profile = {
+function defaultProfile() {
+  return {
+    version: null,
     mode: DEFAULT_PROFILE_MODE,
+    installed_at: null,
+    adapters: {},
     packs: {},
     rules: {},
     baseline: {},
     guard: {},
+    deep_scan: {},
+    workflow: {},
+    strict: {},
+    commands: [],
+    parse_errors: [],
   };
+}
+
+export function parseProfileText(text) {
+  const profile = defaultProfile();
   let section = '';
   let currentPack = '';
   let currentRule = '';
+  let currentCommand = null;
+  let guardNested = '';
 
-  for (const rawLine of String(text || '').split(/\r?\n/)) {
-    const line = stripInlineComment(rawLine);
+  const lines = String(text || '').split(/\r?\n/);
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const lineNumber = lineIndex + 1;
+    const line = stripInlineComment(lines[lineIndex]);
     if (!line.trim()) continue;
 
     const top = /^(\w[\w-]*):\s*(.*?)\s*$/.exec(line);
@@ -71,7 +114,21 @@ export function parseProfileText(text) {
       section = top[1];
       currentPack = '';
       currentRule = '';
+      currentCommand = null;
+      guardNested = '';
+      if (!TOP_LEVEL_SECTIONS.has(section)) {
+        profile.parse_errors.push(`Unsupported top-level profile section ${section} at line ${lineNumber}`);
+        continue;
+      }
+      if (section === 'version' && top[2]) profile.version = parseScalar(top[2]);
       if (section === 'mode' && top[2]) profile.mode = String(parseScalar(top[2]));
+      if (section === 'installed_at' && top[2]) profile.installed_at = String(parseScalar(top[2]));
+      continue;
+    }
+
+    if (DOCUMENTATION_ONLY_SECTIONS.has(section)) {
+      const setting = /^\s{2}([A-Za-z0-9_-]+):\s*(.*?)\s*$/.exec(line);
+      if (setting && setting[2]) assignSectionValue(profile[section], setting[1], setting[2]);
       continue;
     }
 
@@ -84,6 +141,7 @@ export function parseProfileText(text) {
       }
       const setting = /^\s{4}([A-Za-z0-9_-]+):\s*(.+?)\s*$/.exec(line);
       if (setting && currentPack) assignSectionValue(profile.packs[currentPack], setting[1], setting[2]);
+      else profile.parse_errors.push(`Unsupported packs profile syntax at line ${lineNumber}`);
       continue;
     }
 
@@ -96,19 +154,55 @@ export function parseProfileText(text) {
       }
       const setting = /^\s{4}([A-Za-z0-9_-]+):\s*(.+?)\s*$/.exec(line);
       if (setting && currentRule) assignSectionValue(profile.rules[currentRule], setting[1], setting[2]);
+      else profile.parse_errors.push(`Unsupported rules profile syntax at line ${lineNumber}`);
       continue;
     }
 
     if (section === 'baseline') {
       const setting = /^\s{2}([A-Za-z0-9_-]+):\s*(.+?)\s*$/.exec(line);
       if (setting) assignSectionValue(profile.baseline, setting[1], setting[2]);
+      else profile.parse_errors.push(`Unsupported baseline profile syntax at line ${lineNumber}`);
       continue;
     }
 
     if (section === 'guard') {
+      const nested = /^\s{2}([A-Za-z0-9_-]+):\s*$/.exec(line);
+      if (nested) {
+        guardNested = nested[1];
+        profile.guard[guardNested] ||= {};
+        continue;
+      }
+      const nestedSetting = /^\s{4}([A-Za-z0-9_-]+):\s*(.+?)\s*$/.exec(line);
+      if (nestedSetting && guardNested) {
+        assignSectionValue(profile.guard[guardNested], nestedSetting[1], nestedSetting[2]);
+        continue;
+      }
       const setting = /^\s{2}([A-Za-z0-9_-]+):\s*(.+?)\s*$/.exec(line);
       if (setting) assignSectionValue(profile.guard, setting[1], setting[2]);
+      else profile.parse_errors.push(`Unsupported guard profile syntax at line ${lineNumber}`);
+      continue;
     }
+
+    if (section === 'commands') {
+      const command = /^\s{2}-\s+name:\s*(.+?)\s*$/.exec(line);
+      if (command) {
+        currentCommand = { name: unquote(command[1]), run: '', severity: 'error', timeoutSeconds: 120 };
+        profile.commands.push(currentCommand);
+        continue;
+      }
+      const setting = /^\s{4}([A-Za-z0-9_-]+):\s*(.+?)\s*$/.exec(line);
+      if (setting && currentCommand) {
+        const key = setting[1];
+        const value = parseScalar(setting[2]);
+        if (key === 'timeout_seconds') currentCommand.timeoutSeconds = Number(value);
+        else currentCommand[key] = value;
+        continue;
+      }
+      profile.parse_errors.push(`Unsupported commands profile syntax at line ${lineNumber}`);
+      continue;
+    }
+
+    profile.parse_errors.push(`Unsupported profile indentation or section at line ${lineNumber}`);
   }
 
   return profile;
@@ -127,13 +221,22 @@ export function loadProfileConfig(repoRoot) {
 }
 
 export function validateProfileConfig(profile) {
-  const errors = [];
+  const errors = [...(profile.parse_errors || [])];
   if (profile.mode && !PROFILE_MODES.has(profile.mode)) errors.push(`Unsupported root profile mode: ${profile.mode}`);
   for (const [pack, config] of Object.entries(profile.packs || {})) {
+    if (!KNOWN_PACK_IDS.has(pack)) errors.push(`Unknown pack id in profile: ${pack}`);
     if (config.mode && !PROFILE_MODES.has(config.mode)) errors.push(`Unsupported pack mode for ${pack}: ${config.mode}`);
   }
   for (const [rule, config] of Object.entries(profile.rules || {})) {
+    if (!KNOWN_RULE_IDS.has(rule)) errors.push(`Unknown rule family id in profile: ${rule}`);
     if (config.mode && !PROFILE_MODES.has(config.mode)) errors.push(`Unsupported rule mode for ${rule}: ${config.mode}`);
+  }
+  for (const command of profile.commands || []) {
+    if (!command.name || !command.run) errors.push('Each profile command needs name and run fields.');
+    if (command.severity && !['info', 'warning', 'error'].includes(command.severity)) errors.push(`Profile command ${command.name || 'unnamed'} has unsupported severity ${command.severity}.`);
+    if (!Number.isFinite(command.timeoutSeconds) || command.timeoutSeconds <= 0 || command.timeoutSeconds > 1800) {
+      errors.push(`Profile command ${command.name || 'unnamed'} has invalid timeout_seconds; use 1..1800.`);
+    }
   }
   return errors;
 }

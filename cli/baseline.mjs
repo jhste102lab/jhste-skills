@@ -8,7 +8,7 @@ async function main() {
   const repoRoot = findGitRoot(args.repo || process.cwd());
   const baselinePath = path.join(repoRoot, '.jhste', 'baseline.json');
   console.log('Baseline is optional and does not enable strict mode by itself.');
-  console.log('It stores stable guard fingerprints so existing debt can be separated from new issues.');
+  console.log('It is a remediation queue: encountered baseline issues remain visible until fixed or explicitly tracked.');
   const autoYes = Boolean(args.yes) || !process.stdin.isTTY;
   const answer = autoYes ? 'y' : await ask(`Create/update ${relativeDisplay(repoRoot, baselinePath)} from guard --scope all? [y/N] `);
   if (answer.toLowerCase() !== 'y') {

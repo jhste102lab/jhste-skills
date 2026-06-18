@@ -8,9 +8,9 @@ Rules are metadata plus implementation declarations. They are used by skills, pr
 |---|---|
 | `off` | Rule is not used. |
 | `advisory` | Rule is guidance only. This is the default. |
-| `changed-files` | Rule applies to files changed by the current work after user approval. |
-| `baseline-new-only` | Existing accepted debt is ignored; new issues can be blocked by future guard tooling. |
-| `strict` | Whole-repository enforcement. Requires explicit opt-in. |
+| `changed-files` | Rule applies to changed/staged/file-list scopes after user approval; it is inactive for `guard --scope all`. |
+| `baseline-new-only` | Uses baseline ratchet semantics by default: encountered baseline debt is shown as existing, and new findings require remediation. |
+| `strict` | Whole-repository enforcement by default with `fail_on: error` unless explicitly overridden to another enforcing threshold. Requires explicit opt-in. |
 
 Merge order:
 
@@ -31,11 +31,20 @@ Rule metadata lives in `rules/`. Pack files live in `packs/`. The example profil
 - Exit codes are fixed: `0` pass, `1` rule violation failure, `2` guard runtime/scope/scan failure, `3` profile/config error.
 - Baseline mode is explicit: `off`, `use`, `update`, or `ratchet`.
 
-Violation fingerprints are based on finding id, normalized path, and semantic symbol. They intentionally avoid line number and message text so line moves or clearer wording do not churn the baseline. JSON output includes `rule_id` for the concrete finding and `rule_family` for the profile-controlled metadata rule.
+Violation fingerprints are based on finding id, normalized path, and a shape-hashed occurrence key. The occurrence key includes location/symbol shape so repeated findings in the same file do not accidentally share a broad baseline fingerprint; secret-related occurrence keys are hashes and do not expose raw values. JSON output includes `rule_id` for the concrete finding and `rule_family` for the profile-controlled metadata rule.
 
-Built-in scanners read `.jhste/profile.yaml` for pack/rule modes and supported thresholds. `mode: off` disables matching finding families, and responsibility/file-size thresholds come from the profile when present. Text output shows confidence markers such as `[low-confidence]` so heuristic findings are not mistaken for proof.
+Built-in scanners read `.jhste/profile.yaml` for root, pack/rule modes, and supported thresholds. The generated profile keeps only threshold settings under rules so root mode is not shadowed by redundant nested `advisory` entries. `mode: off` disables matching finding families, and responsibility/file-size thresholds come from the profile when present. Text output shows confidence markers such as `[low-confidence]` so heuristic findings are not mistaken for proof.
 
-Each rule metadata file declares `implementation.guard.status` as `builtin` or `metadata_only`. A rule existing in metadata is not the same as a rule being automatically enforced.
+Each rule metadata file declares `implementation.guard.status` as one of `builtin`, `metadata_only`, `deep_scan_only`, or `profile_command`. A rule existing in metadata is not the same as a rule being automatically enforced.
+
+## Guard coverage table
+
+| Coverage class | Status value | Current examples | How to interpret |
+|---|---|---|---|
+| Built-in heuristic scanner | `builtin` | silent failure, secret logging, external input validation candidates, workflow security, file size/responsibility budget, null/state, auth/data isolation, runtime env, write safety, API contract, performance, SQL, DB row, thin route, type escape, side-effect, crawler, broad Python exception | Guard emits pattern-based findings with confidence/category metadata; review context before treating heuristic candidates as proof. External input validation coverage is intentionally partial and low-confidence. |
+| Metadata-only / human-review required | `metadata_only` | none currently | Skills and rule docs describe the concern, but guard does not yet have built-in scanner coverage. Do not claim automated coverage for metadata-only rules. |
+| Deep-scan-only | `deep_scan_only` | Reserved for future repo-wide analysis rules | Findings, if introduced, come from opt-in deep scan rather than commit-time guard. |
+| Profile-command sourced | `profile_command` | Reserved for repo-local command-backed rules | Repo-local profile commands can report violations when `--run-profile-commands` is explicitly enabled. |
 
 Profile command runner is disabled unless `--run-profile-commands` is passed. A nonzero repo-local command is reported as a profile-sourced violation. Command execution failures are guard runtime failures, and malformed command configuration is a config failure. Commands should declare `name`, `run`, optional `severity`, and optional `timeout_seconds`.
 

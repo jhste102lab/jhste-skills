@@ -3,6 +3,14 @@ name: codebase-design
 description: Shared vocabulary for designing deep modules. Use when the user wants to design or improve a module's interface, find deepening opportunities, decide where a seam goes, make code more testable or AI-navigable, or when another skill needs the deep-module vocabulary.
 ---
 
+## jhste compatibility
+
+- Repo-local instructions remain authoritative.
+- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
+- File, repo, command, issue, PR, or other external side effects require explicit user approval unless the user already requested that side effect.
+
+
 # Codebase Design
 
 Design **deep modules**: a lot of behaviour behind a small interface, placed at a clean seam, testable through that interface. Use this language and these principles wherever code is being designed or restructured. The aim is leverage for callers, locality for maintainers, and testability for everyone.

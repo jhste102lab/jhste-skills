@@ -3,74 +3,22 @@ mode: advisory
 adapters:
   codex: auto
   claude: auto
-packs:
-  core:
-    mode: advisory
-  web:
-    mode: advisory
-  api:
-    mode: advisory
-  database:
-    mode: advisory
-  crawler:
-    mode: advisory
 rules:
   file_size_advisory:
-    mode: advisory
     source_file_warning_lines: 400
     source_file_review_lines: 600
   responsibility_budget:
-    mode: advisory
     next_page_review_lines: 200
     client_module_review_lines: 200
     route_review_lines: 250
     import_ops_script_review_lines: 280
     python_orchestrator_review_lines: 600
-  no_silent_failure:
-    mode: advisory
-  no_secret_logging:
-    mode: advisory
-  workflow_security:
-    mode: advisory
-  external_input_validation:
-    mode: advisory
-  side_effect_boundary:
-    mode: advisory
-  null_state_safety:
-    mode: advisory
-  authz_data_isolation:
-    mode: advisory
-  build_runtime_env_safety:
-    mode: advisory
-  write_safety_idempotency:
-    mode: advisory
-  api_contract_compatibility:
-    mode: advisory
-  performance_duplicate_fetch:
-    mode: advisory
-  public_safe_error:
-    mode: advisory
-  sql_parameter_binding:
-    mode: advisory
-  db_row_validation:
-    mode: advisory
-  thin_api_route:
-    mode: advisory
-  component_responsibility:
-    mode: advisory
-  type_escape_advisory:
-    mode: advisory
-  broad_exception_advisory:
-    mode: advisory
-  crawler_producer_boundary:
-    mode: advisory
 baseline:
   enabled: false
   path: .jhste/baseline.json
 guard:
   default_scope: changed
   default_format: text
-  fail_on: none
   exit_codes:
     pass: 0
     violation_failure: 1

@@ -4,6 +4,14 @@ description: Compact the current conversation into a handoff document for anothe
 argument-hint: "What will the next session be used for?"
 ---
 
+## jhste compatibility
+
+- Repo-local instructions remain authoritative.
+- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
+- File, repo, command, issue, PR, or other external side effects require explicit user approval unless the user already requested that side effect.
+
+
 Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save to the temporary directory of the user's OS - not the current workspace.
 
 Include a "suggested skills" section in the document, which suggests skills that the agent should invoke.

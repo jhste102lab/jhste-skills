@@ -25,10 +25,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "npm run docs:check && npm run vendor:check && npm run public-safety:check && npm run guard-fixtures:test && npm run smoke:test",
+    "test": "npm run docs:check && npm run vendor:check && npm run public-safety:check && npm run public-safety-fixtures:test && npm run profile-fixtures:test && npm run guard-fixtures:test && npm run smoke:test",
     "docs:check": "node scripts/docs-check.mjs",
     "vendor:check": "node scripts/vendor-check.mjs",
     "public-safety:check": "node scripts/public-safety-check.mjs",
+    "public-safety-fixtures:test": "node scripts/public-safety-fixtures-test.mjs",
+    "profile-fixtures:test": "node scripts/profile-fixtures-test.mjs",
     "guard-fixtures:test": "node scripts/guard-fixtures-test.mjs",
     "smoke:test": "node scripts/smoke-test.mjs"
   },

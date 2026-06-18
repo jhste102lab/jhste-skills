@@ -44,6 +44,8 @@ const required = [
   'cli/install.mjs',
   'cli/deep-scan.mjs',
   'cli/guard.mjs',
+  'cli/guard/registry.mjs',
+  'cli/guard/scanners/external-input.mjs',
   'cli/hooks.mjs',
   'cli/tune.mjs',
   'cli/baseline.mjs',
@@ -103,6 +105,10 @@ function implementationStatus(text) {
   return /^implementation:\n(?:[\s\S]*?)^\s{4}status:\s*(\S+)/m.exec(text)?.[1] || '';
 }
 
+function implementationScanner(text) {
+  return /^implementation:\n(?:[\s\S]*?)^\s{4}scanner:\s*(\S+)/m.exec(text)?.[1] || '';
+}
+
 function implementationFindings(text) {
   const lines = text.split(/\r?\n/);
   const start = lines.findIndex((line) => /^\s{4}finding_ids:\s*$/.test(line));
@@ -128,6 +134,11 @@ function sectionRefsFromSkill(skillText) {
   return [...new Set(refs)];
 }
 
+function isContainedIn(child, parent) {
+  const relative = path.relative(parent, child);
+  return relative === '' || (!!relative && !relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
 for (const rel of required) {
   if (!fs.existsSync(path.join(root, rel))) fail(`missing ${rel}`);
 }
@@ -140,6 +151,7 @@ for (const rel of ruleFiles) {
   const id = yamlField(text, 'id');
   const pack = yamlField(text, 'pack');
   const status = implementationStatus(text);
+  const scanner = implementationScanner(text);
   const findings = implementationFindings(text);
   if (!id) fail(`${rel} missing id`);
   if (ruleById.has(id)) fail(`duplicate rule id ${id} in ${rel} and ${rulePathById.get(id)}`);
@@ -147,7 +159,8 @@ for (const rel of ruleFiles) {
   if (!status) fail(`${rel} missing implementation.guard.status`);
   if (!['builtin', 'metadata_only', 'deep_scan_only', 'profile_command'].includes(status)) fail(`${rel} has unsupported implementation.guard.status ${status}`);
   if (status === 'builtin' && findings.length === 0) fail(`${rel} builtin implementation needs finding_ids`);
-  ruleById.set(id, { rel, pack, status, findings });
+  if (status === 'builtin' && !scanner) fail(`${rel} builtin implementation needs scanner`);
+  ruleById.set(id, { rel, pack, status, scanner, findings });
   rulePathById.set(id, rel);
 }
 
@@ -186,7 +199,7 @@ for (const skillPath of walk(path.join(root, 'skills'), (file) => path.basename(
     const cleanRef = ref.split('#')[0];
     if (!cleanRef || /^https?:/.test(cleanRef)) continue;
     const resolved = path.resolve(baseDir, cleanRef);
-    if (!resolved.startsWith(path.join(root, 'skills')) && !resolved.startsWith(path.join(root, 'rules'))) fail(`${rel} reference escapes allowed roots: ${ref}`);
+    if (!isContainedIn(resolved, path.join(root, 'skills')) && !isContainedIn(resolved, path.join(root, 'rules'))) fail(`${rel} reference escapes allowed roots: ${ref}`);
     if (!fs.existsSync(resolved)) fail(`${rel} references missing path ${ref}`);
     const referencedRule = relPath(resolved);
     if (referencedRule.startsWith('rules/') && !includedRulePaths.has(referencedRule)) fail(`${rel} references rule not included in a pack: ${ref}`);
@@ -201,14 +214,29 @@ for (const match of profileRuleSection.matchAll(/^\s{2}([A-Za-z0-9_.-]+):\s*$/gm
   if (!ruleById.has(match[1])) fail(`example profile references unknown rule ${match[1]}`);
 }
 
-const guardText = read('cli/guard.mjs');
-for (const match of guardText.matchAll(/^\s*'([^']+)':\s*\{\s*family:\s*'([^']+)'/gm)) {
+const guardText = `${read('cli/guard.mjs')}\n${read('cli/guard/registry.mjs')}`;
+const guardFindingById = new Map();
+for (const match of guardText.matchAll(/^\s*'([^']+)':\s*\{\s*family:\s*'([^']+)'\s*,\s*pack:\s*'[^']+'\s*,\s*scanner:\s*'([^']+)'/gm)) {
   const finding = match[1];
   const family = match[2];
+  const scanner = match[3];
   const rule = ruleById.get(family);
+  if (guardFindingById.has(finding)) fail(`guard metadata has duplicate finding id ${finding}`);
+  guardFindingById.set(finding, { family, scanner });
   if (!rule) fail(`guard scanner family missing rule metadata: ${family}`);
   if (rule.status === 'metadata_only') fail(`guard scanner family ${family} points to metadata_only rule`);
   if (!rule.findings.includes(finding)) fail(`guard finding ${finding} is missing from ${rule.rel} implementation finding_ids`);
+  if (rule.scanner && scanner !== rule.scanner) fail(`guard finding ${finding} uses scanner ${scanner}, expected ${rule.scanner} from ${rule.rel}`);
+}
+
+for (const [ruleId, rule] of ruleById.entries()) {
+  if (rule.status !== 'builtin') continue;
+  for (const finding of rule.findings) {
+    const guard = guardFindingById.get(finding);
+    if (!guard) fail(`${rule.rel} builtin finding ${finding} is missing from guard metadata`);
+    if (guard.family !== ruleId) fail(`guard finding ${finding} maps to ${guard.family}, expected ${ruleId}`);
+    if (guard.scanner !== rule.scanner) fail(`guard finding ${finding} scanner ${guard.scanner} does not match ${rule.rel} scanner ${rule.scanner}`);
+  }
 }
 
 const bridgeText = 'Repo-local instructions in this file remain authoritative.';

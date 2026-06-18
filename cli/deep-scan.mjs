@@ -16,6 +16,7 @@ import {
   loadProfileConfig,
   responsibilityBudgetSettings,
 } from './profile.mjs';
+import { externalInputValidationFindings } from './guard/scanners/external-input.mjs';
 
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py', '.sql', '.md', '.mdx', '.json']);
 const TEXT_EXTENSIONS = new Set([...SOURCE_EXTENSIONS, '.yaml', '.yml', '.toml']);
@@ -384,7 +385,8 @@ function scanFile(file, text, findings) {
     }
   });
 
-  if (/`[^`]*(SELECT|INSERT|UPDATE|DELETE)[^`]*\$\{[^`]+`/is.test(text) || /f["'][^"']*(SELECT|INSERT|UPDATE|DELETE)[^"']*\{[^"']+["']/is.test(text)) {
+  if (/`[^`]*(?:SELECT\s+[\s\S]{0,120}\s+FROM|INSERT\s+INTO|UPDATE\s+[A-Za-z_][\w.]*\s+SET|DELETE\s+FROM)[^`]*\$\{[^`]+`/is.test(text)
+    || /f["'][^"']*(?:SELECT\s+[\s\S]{0,120}\s+FROM|INSERT\s+INTO|UPDATE\s+[A-Za-z_][\w.]*\s+SET|DELETE\s+FROM)[^"']*\{[^"']+["']/is.test(text)) {
     candidate(findings.rawSql, 'raw SQL interpolation candidate', file, 1, 'SQL-like string interpolation detected');
   }
 
@@ -400,6 +402,9 @@ function scanFile(file, text, findings) {
   }
   if (/function\s+(format|helper|build|make|map)\w*\s*\([^)]*\)\s*{[\s\S]{0,1200}\b(fetch|writeFile|readFile|exec|spawn|setTimeout)\b/.test(text)) {
     candidate(findings.hiddenSideEffects, 'hidden side-effect candidate', file, 1, 'generic helper appears to perform side effects');
+  }
+  for (const finding of externalInputValidationFindings(file.rel, text)) {
+    candidate(findings.externalInput, 'external input validation candidate', file, 1, finding.message, 'warning');
   }
 
   scanResponsibilityBudget(file, text, lineCount, findings);
@@ -424,6 +429,7 @@ function scanFiles(files) {
     writeSafety: [],
     apiContract: [],
     performanceDuplication: [],
+    externalInput: [],
     scanWarnings: [],
   };
   for (const file of files) {
@@ -527,6 +533,8 @@ ${tableRows(findings.writeSafety)}
 ${tableRows(findings.apiContract)}
 ### Existing performance duplication candidates
 ${tableRows(findings.performanceDuplication)}
+### Existing external input validation candidates
+${tableRows(findings.externalInput)}
 ### Secret-like logging candidates
 ${tableRows(findings.secretLogging)}
 ### Scan warnings
@@ -540,6 +548,7 @@ ${tableRows(findings.scanWarnings)}
 ## Skipped file summary
 - Excluded generated/vendor/build/dependency folders, lockfiles, large files, binary-like extensions, and secret/env-like files.
 - Skipped entries recorded: ${skipped.length}
+- External input validation candidates: ${findings.externalInput.length}
 - Per-file scan warnings: ${findings.scanWarnings.length}
 
 ## Risks

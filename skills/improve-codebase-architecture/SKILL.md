@@ -3,6 +3,14 @@ name: improve-codebase-architecture
 description: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable.
 ---
 
+## jhste compatibility
+
+- Repo-local instructions remain authoritative.
+- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
+- File, repo, command, issue, PR, or other external side effects require explicit user approval unless the user already requested that side effect.
+
+
 # Improve Codebase Architecture
 
 Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.

@@ -2,10 +2,43 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ask, ensureDir, findGitRoot, parseArgs, readIfExists, relativeDisplay } from './shared.mjs';
+import { parseProfileText, validateProfileConfig } from './profile.mjs';
 
 function extractSection(text, heading) {
-  const re = new RegExp(`^${heading}:\\n([\\s\\S]*?)(?=^\\S|$)`, 'm');
-  return text.match(re)?.[0] ?? '';
+  const lines = String(text || '').split(/\r?\n/);
+  const start = lines.findIndex((line) => line === `${heading}:`);
+  if (start === -1) return '';
+  const out = [lines[start]];
+  for (const line of lines.slice(start + 1)) {
+    if (/^\S/.test(line)) break;
+    out.push(line);
+  }
+  return `${out.join('\n').replace(/\s*$/, '')}\n`;
+}
+
+function removeSection(text, heading) {
+  const lines = String(text || '').split(/\r?\n/);
+  const out = [];
+  for (let index = 0; index < lines.length;) {
+    if (lines[index] === `${heading}:`) {
+      index += 1;
+      while (index < lines.length && (lines[index] === '' || /^\s/.test(lines[index]))) index += 1;
+      continue;
+    }
+    out.push(lines[index]);
+    index += 1;
+  }
+  return out.join('\n').replace(/\s*$/, '\n');
+}
+
+function validateProfileText(label, text) {
+  const profile = parseProfileText(text);
+  const errors = validateProfileConfig(profile);
+  if (errors.length) {
+    console.error(`${label} profile is invalid:`);
+    for (const error of errors) console.error(`- ${error}`);
+    process.exit(3);
+  }
 }
 
 function hasStrictEnabled(text) {
@@ -42,10 +75,18 @@ async function main() {
   }
 
   const base = current || `version: 1\nmode: advisory\n`;
-  const tuned = `${base.replace(/\s*$/, '\n')}
-# jhste tune applied from .jhste/profile.recommended.yaml
-# Review the recommended file for details before enabling stricter modes.
-${extractSection(recommended, 'packs')}${extractSection(recommended, 'rules')}${extractSection(recommended, 'baseline')}`;
+  validateProfileText('Current', base);
+  validateProfileText('Recommended', recommended);
+  let tuned = base.replace(/\s*$/, '\n');
+  for (const heading of ['packs', 'rules', 'baseline']) {
+    const section = extractSection(recommended, heading);
+    if (!section) continue;
+    tuned = removeSection(tuned, heading);
+    tuned = `${tuned.replace(/\s*$/, '\n')}${section.replace(/\s*$/, '\n')}`;
+  }
+  if (!tuned.includes('# jhste tune applied from .jhste/profile.recommended.yaml')) {
+    tuned = `${tuned.replace(/\s*$/, '\n')}# jhste tune applied from .jhste/profile.recommended.yaml\n# Review the recommended file for details before enabling stricter modes.\n`;
+  }
   ensureDir(path.dirname(profilePath));
   fs.writeFileSync(profilePath, tuned);
   console.log(`Updated ${relativeDisplay(repoRoot, profilePath)} with non-strict recommendations.`);

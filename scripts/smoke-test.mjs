@@ -50,6 +50,20 @@ function hashDir(dir) {
   return hash.digest('hex');
 }
 
+function skillDirs(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+}
+
+function assertNoInstallSideEffects({ repo, skillsDir, agentsBefore, label }) {
+  if (fs.existsSync(path.join(repo, '.jhste'))) fail(`${label} created .jhste`);
+  if (fs.existsSync(skillsDir)) fail(`${label} touched skills directory`);
+  if (fs.readFileSync(path.join(repo, 'AGENTS.md'), 'utf8') !== agentsBefore) fail(`${label} modified AGENTS.md`);
+  if (fs.existsSync(path.join(repo, '.git', 'hooks', 'pre-commit'))) fail(`${label} created pre-commit hook`);
+}
+
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'jhste-skills-smoke-'));
 const repo = path.join(tmp, 'repo');
 const skillsDir = path.join(tmp, 'home-skills');
@@ -62,6 +76,7 @@ fs.mkdirSync(path.join(repo, 'src'), { recursive: true });
 fs.mkdirSync(path.join(repo, 'src', 'app', 'dashboard'), { recursive: true });
 fs.mkdirSync(path.join(repo, 'src', 'app', 'orders'), { recursive: true });
 fs.mkdirSync(path.join(repo, 'src', 'app', 'api', 'orders'), { recursive: true });
+fs.mkdirSync(path.join(repo, 'src', 'app', 'api', 'profile'), { recursive: true });
 const emptyCatchFixture = 'catch ' + '{}';
 fs.writeFileSync(path.join(repo, 'src', 'route.ts'), `export async function GET() {\n  try {\n    return Response.json({ ok: true });\n  } ${emptyCatchFixture}\n}\n`);
 fs.writeFileSync(
@@ -76,6 +91,58 @@ fs.writeFileSync(
   path.join(repo, 'src', 'app', 'api', 'orders', 'route.ts'),
   `export async function POST(request) {\n  const session = await auth();\n  const body = await request.json();\n  const order = await prisma.order.update({ data: body });\n  return Response.json(order);\n}\n`,
 );
+fs.writeFileSync(
+  path.join(repo, 'src', 'app', 'api', 'profile', 'route.ts'),
+  `export async function POST(request) {\n  const body = await request.json();\n  return Response.json(await service.createProfile(body));\n}\n`,
+);
+
+const nonInteractiveRepo = path.join(tmp, 'noninteractive-repo');
+const nonInteractiveSkills = path.join(tmp, 'noninteractive-skills');
+fs.mkdirSync(nonInteractiveRepo, { recursive: true });
+run('git', ['init'], { cwd: nonInteractiveRepo });
+fs.writeFileSync(path.join(nonInteractiveRepo, 'AGENTS.md'), '# Non-interactive repo\n');
+const nonInteractiveAgentsBefore = fs.readFileSync(path.join(nonInteractiveRepo, 'AGENTS.md'), 'utf8');
+const refusedNonInteractive = runAny(process.execPath, [
+  path.join(root, 'cli/install.mjs'),
+  '--repo',
+  nonInteractiveRepo,
+  '--skills-dir',
+  nonInteractiveSkills,
+  '--skip-hooks',
+  '--skip-deep-scan',
+], { cwd: nonInteractiveRepo, input: '' });
+if (refusedNonInteractive.status !== 3) fail(`non-interactive install without --yes should exit 3, got ${refusedNonInteractive.status}`);
+assertNoInstallSideEffects({
+  repo: nonInteractiveRepo,
+  skillsDir: nonInteractiveSkills,
+  agentsBefore: nonInteractiveAgentsBefore,
+  label: 'non-interactive install without --yes',
+});
+
+const invalidHookRepo = path.join(tmp, 'invalid-hook-repo');
+const invalidHookSkills = path.join(tmp, 'invalid-hook-skills');
+fs.mkdirSync(invalidHookRepo, { recursive: true });
+run('git', ['init'], { cwd: invalidHookRepo });
+fs.writeFileSync(path.join(invalidHookRepo, 'AGENTS.md'), '# Invalid hook repo\n');
+const invalidHookAgentsBefore = fs.readFileSync(path.join(invalidHookRepo, 'AGENTS.md'), 'utf8');
+const invalidHookInstall = runAny(process.execPath, [
+  path.join(root, 'cli/install.mjs'),
+  '--yes',
+  '--repo',
+  invalidHookRepo,
+  '--skills-dir',
+  invalidHookSkills,
+  '--hooks',
+  'typo',
+  '--skip-deep-scan',
+], { cwd: invalidHookRepo });
+if (invalidHookInstall.status !== 3) fail(`install --hooks typo should exit 3, got ${invalidHookInstall.status}`);
+assertNoInstallSideEffects({
+  repo: invalidHookRepo,
+  skillsDir: invalidHookSkills,
+  agentsBefore: invalidHookAgentsBefore,
+  label: 'install --hooks typo',
+});
 
 const packageHashBefore = hashFile(path.join(repo, 'package.json'));
 const lockHashBefore = hashFile(path.join(repo, 'package-lock.json'));
@@ -96,6 +163,30 @@ const defaultPreCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
 if (!fs.existsSync(defaultPreCommit)) fail('install did not create default advisory pre-commit hook');
 if (!fs.readFileSync(defaultPreCommit, 'utf8').includes('mode=advisory')) fail('default pre-commit hook is not advisory');
 if (!fs.existsSync(path.join(skillsDir, 'jhste-final-review', 'SKILL.md'))) fail('install did not copy jhste-final-review skill');
+const defaultSkillDirs = skillDirs(skillsDir);
+if (defaultSkillDirs.length !== 7) fail(`default install should copy 7 core skills, got ${defaultSkillDirs.length}`);
+if (defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should not copy vendored workflow skills');
+
+const vendorRepo = path.join(tmp, 'vendor-skill-repo');
+const vendorSkillsDir = path.join(tmp, 'vendor-skills');
+fs.mkdirSync(vendorRepo, { recursive: true });
+run('git', ['init'], { cwd: vendorRepo });
+fs.writeFileSync(path.join(vendorRepo, 'AGENTS.md'), '# Vendor skill repo\n');
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', vendorRepo, '--skills-dir', vendorSkillsDir, '--skip-deep-scan', '--skip-hooks', '--skill-set', 'vendor'], { cwd: vendorRepo });
+const vendorSkillDirs = skillDirs(vendorSkillsDir);
+if (vendorSkillDirs.length !== 14) fail(`--skill-set vendor should copy 14 skills, got ${vendorSkillDirs.length}`);
+if (!vendorSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set vendor did not copy expected vendored skill');
+if (vendorSkillDirs.includes('jhste-final-review')) fail('--skill-set vendor copied core skill');
+
+const allRepo = path.join(tmp, 'all-skill-repo');
+const allSkillsDir = path.join(tmp, 'all-skills');
+fs.mkdirSync(allRepo, { recursive: true });
+run('git', ['init'], { cwd: allRepo });
+fs.writeFileSync(path.join(allRepo, 'AGENTS.md'), '# All skill repo\n');
+run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', allRepo, '--skills-dir', allSkillsDir, '--skip-deep-scan', '--skip-hooks', '--skill-set', 'all'], { cwd: allRepo });
+const allSkillDirs = skillDirs(allSkillsDir);
+if (allSkillDirs.length !== 21) fail(`--skill-set all should copy 21 skills, got ${allSkillDirs.length}`);
+if (!allSkillDirs.includes('jhste-final-review') || !allSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set all missing core or vendored skill');
 
 const skipHookRepo = path.join(tmp, 'skip-hook-repo');
 fs.mkdirSync(skipHookRepo, { recursive: true });
@@ -146,6 +237,8 @@ if (!fs.existsSync(path.join(repo, '.jhste', 'profile.recommended.yaml'))) fail(
 const report = fs.readFileSync(path.join(repo, '.jhste', 'deep-scan-report.md'), 'utf8');
 if (!report.includes('Existing responsibility budget candidates')) fail('responsibility budget report section missing');
 if (!report.includes('src/app/dashboard/page.tsx:1')) fail('Next page responsibility budget candidate missing');
+if (!report.includes('Existing external input validation candidates')) fail('deep scan report missing external input section');
+if (!report.includes('src/app/api/profile/route.ts:1')) fail('deep scan did not report shared external input candidate');
 for (const heading of [
   'Existing null/state safety candidates',
   'Existing auth/data isolation candidates',
@@ -176,6 +269,8 @@ if (!guardResult.violations.some(item => item.rule_id === 'runtime.env_direct_ac
 if (!guardResult.violations.some(item => item.rule_id === 'write.mutation_retry_safety')) fail('guard did not report write safety');
 if (!guardResult.violations.some(item => item.rule_id === 'contract.boundary_without_schema')) fail('guard did not report API contract compatibility');
 if (!guardResult.violations.some(item => item.rule_id === 'performance.multiple_fetch_sources')) fail('guard did not report performance duplication');
+if (!guardResult.violations.some(item => item.rule_id === 'input.request_body_direct_use' && item.path.includes('src/app/api/profile/route.ts'))) fail('guard did not report shared external input candidate');
+if (!guardResult.violations.some(item => item.category === 'heuristic_candidate' && item.why_not_proof)) fail('guard JSON did not expose heuristic finding interpretation');
 const failingGuard = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json', '--fail-on', 'error'], { cwd: repo });
 if (failingGuard.status !== 1) fail(`guard --fail-on error should exit 1, got ${failingGuard.status}`);
 const missingRatchet = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'ratchet', '--baseline-path', '.jhste/missing-baseline.json', '--format', 'json'], { cwd: repo });
@@ -190,13 +285,31 @@ const hookBaselineUpdate = runAny(process.execPath, [path.join(root, 'cli/guard.
   cwd: repo,
   env: { ...process.env, JHSTE_HOOK_ACTIVE: '1' },
 });
-if (hookBaselineUpdate.status !== 3) fail(`guard baseline update inside managed hook should exit 3, got ${hookBaselineUpdate.status}`);
+if (hookBaselineUpdate.status !== 3) fail(`guard baseline write inside managed hook should exit 3, got ${hookBaselineUpdate.status}`);
 const baselineUse = JSON.parse(run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'use', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout);
 if (baselineUse.summary.suppressed < 1) fail('guard baseline use did not suppress known violations');
 
-fs.appendFileSync(profilePath, '\ncommands:\n  - name: local-check\n    run: node -e "process.exit(1)"\n    timeout_seconds: 5\n');
-const profileGuard = JSON.parse(runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--run-profile-commands', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout);
+const fakeOpenAiKey = 'sk-' + 'A'.repeat(24);
+const fakeGithubToken = 'gh' + 'p_' + 'B'.repeat(36);
+const fakeGenericSecret = 'C'.repeat(16);
+const secretLikeOutput = [
+  fakeOpenAiKey,
+  fakeGithubToken,
+  `token=${fakeGenericSecret}`,
+  `password=${fakeGenericSecret}`,
+  `api_key=${fakeGenericSecret}`,
+  `authorization=${fakeGenericSecret}`,
+  `cookie=${fakeGenericSecret}`,
+  `session=${fakeGenericSecret}`,
+].join(' ');
+fs.appendFileSync(profilePath, `\ncommands:\n  - name: local-check\n    run: printf '%s' '${secretLikeOutput}'; exit 1\n    timeout_seconds: 5\n`);
+const profileGuardRaw = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--run-profile-commands', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout;
+const profileGuard = JSON.parse(profileGuardRaw);
 if (!profileGuard.violations.some(item => item.rule_id === 'profile.command.local-check' && item.source === 'profile')) fail('profile command failure was not reported as profile violation');
+for (const rawSecret of [fakeOpenAiKey, fakeGithubToken, fakeGenericSecret]) {
+  if (profileGuardRaw.includes(rawSecret)) fail('profile command output exposed secret-like value');
+}
+if (!profileGuardRaw.includes('[REDACTED_')) fail('profile command output did not include redaction marker');
 const hookProfileGuard = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--run-profile-commands', '--format', 'json', '--fail-on', 'error'], {
   cwd: repo,
   env: { ...process.env, JHSTE_HOOK_ACTIVE: '1' },

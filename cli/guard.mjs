@@ -4,6 +4,8 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { KIT_ROOT, findGitRoot, nowIso, parseArgs, relativeDisplay } from './shared.mjs';
+import { FINDING_METADATA } from './guard/registry.mjs';
+import { externalInputValidationFindings } from './guard/scanners/external-input.mjs';
 import {
   DEFAULT_BASELINE_PATH,
   effectiveRuleMode,
@@ -25,47 +27,6 @@ const DEFAULT_COMMAND_TIMEOUT_MS = 120000;
 const PROFILE_OUTPUT_LIMIT = 4000;
 const ACTIVE_PROFILE_MODES = new Set(['advisory', 'changed-files', 'baseline-new-only', 'strict']);
 let currentFormat = 'text';
-
-const FINDING_METADATA = {
-  'silent.catch.empty': { family: 'no_silent_failure', pack: 'core', scanner: 'scanSilentFailures' },
-  'silent.promise_catch.empty': { family: 'no_silent_failure', pack: 'core', scanner: 'scanSilentFailures' },
-  'silent.python_except.pass': { family: 'no_silent_failure', pack: 'core', scanner: 'scanSilentFailures' },
-  'silent.catch.fallback_no_reason': { family: 'no_silent_failure', pack: 'core', scanner: 'scanSilentFailures' },
-  'secret.logging': { family: 'no_secret_logging', pack: 'core', scanner: 'scanSecretLogging' },
-  'file_size.warning': { family: 'file_size_advisory', pack: 'core', scanner: 'scanFileSizeAdvisory' },
-  'file_size.review': { family: 'file_size_advisory', pack: 'core', scanner: 'scanFileSizeAdvisory' },
-  'boundary.import.server_in_client': { family: 'component_responsibility', pack: 'web', scanner: 'scanClientServerBoundary' },
-  'workflow.input_interpolation.run': { family: 'workflow_security', pack: 'core', scanner: 'scanWorkflowSecurity' },
-  'workflow.action.unpinned': { family: 'workflow_security', pack: 'core', scanner: 'scanWorkflowSecurity' },
-  'responsibility.page.budget': { family: 'responsibility_budget', pack: 'core', scanner: 'scanResponsibilityBudget' },
-  'responsibility.client.budget': { family: 'responsibility_budget', pack: 'core', scanner: 'scanResponsibilityBudget' },
-  'responsibility.route.budget': { family: 'responsibility_budget', pack: 'core', scanner: 'scanResponsibilityBudget' },
-  'responsibility.script.budget': { family: 'responsibility_budget', pack: 'core', scanner: 'scanResponsibilityBudget' },
-  'responsibility.python_orchestrator.budget': { family: 'responsibility_budget', pack: 'core', scanner: 'scanResponsibilityBudget' },
-  'state.non_null_assertion': { family: 'null_state_safety', pack: 'core', scanner: 'scanStateSafety' },
-  'state.async_ui_missing_fallback': { family: 'null_state_safety', pack: 'core', scanner: 'scanStateSafety' },
-  'authz.scope_not_visible': { family: 'authz_data_isolation', pack: 'core', scanner: 'scanAuthzDataIsolation' },
-  'authz.read_scope_not_visible': { family: 'authz_data_isolation', pack: 'core', scanner: 'scanAuthzDataIsolation' },
-  'authz.mutation_without_auth_context': { family: 'authz_data_isolation', pack: 'core', scanner: 'scanAuthzDataIsolation' },
-  'authz.read_without_auth_context': { family: 'authz_data_isolation', pack: 'core', scanner: 'scanAuthzDataIsolation' },
-  'runtime.env_direct_access': { family: 'build_runtime_env_safety', pack: 'core', scanner: 'scanRuntimeEnvSafety' },
-  'runtime.import_meta_env_direct_access': { family: 'build_runtime_env_safety', pack: 'core', scanner: 'scanRuntimeEnvSafety' },
-  'runtime.getenv_direct_access': { family: 'build_runtime_env_safety', pack: 'core', scanner: 'scanRuntimeEnvSafety' },
-  'write.loop_without_transaction': { family: 'write_safety_idempotency', pack: 'core', scanner: 'scanWriteSafety' },
-  'write.mutation_retry_safety': { family: 'write_safety_idempotency', pack: 'core', scanner: 'scanWriteSafety' },
-  'contract.boundary_without_schema': { family: 'api_contract_compatibility', pack: 'core', scanner: 'scanApiContractCompatibility' },
-  'contract.raw_storage_response': { family: 'api_contract_compatibility', pack: 'core', scanner: 'scanApiContractCompatibility' },
-  'performance.multiple_fetch_sources': { family: 'performance_duplicate_fetch', pack: 'core', scanner: 'scanPerformanceDuplicateFetch' },
-  'performance.fetch_in_effect': { family: 'performance_duplicate_fetch', pack: 'core', scanner: 'scanPerformanceDuplicateFetch' },
-  'sql.raw_interpolation': { family: 'sql_parameter_binding', pack: 'database', scanner: 'scanSqlParameterBinding' },
-  'error.public_raw_details': { family: 'public_safe_error', pack: 'api', scanner: 'scanPublicSafeError' },
-  'database.raw_row_public_response': { family: 'db_row_validation', pack: 'database', scanner: 'scanDbRowValidation' },
-  'route.direct_db_access': { family: 'thin_api_route', pack: 'api', scanner: 'scanThinApiRoute' },
-  'type.escape': { family: 'type_escape_advisory', pack: 'web', scanner: 'scanTypeEscapeAdvisory' },
-  'side_effect.hidden_in_helper': { family: 'side_effect_boundary', pack: 'core', scanner: 'scanSideEffectBoundary' },
-  'crawler.producer_direct_persistence': { family: 'crawler_producer_boundary', pack: 'crawler', scanner: 'scanCrawlerProducerBoundary' },
-  'python.broad_exception': { family: 'broad_exception_advisory', pack: 'core', scanner: 'scanBroadExceptionAdvisory' },
-};
 
 function inManagedHook() {
   return process.env.JHSTE_HOOK_ACTIVE === '1';
@@ -298,12 +259,19 @@ function countMatches(text, pattern) {
   return [...text.matchAll(pattern)].length;
 }
 
-function fingerprintFor(ruleId, relPath, symbol) {
-  const stable = `${ruleId}|${normalizePath(relPath)}|${symbol || ''}`;
+function occurrenceKeyFor(ruleId, relPath, symbol, line) {
+  const stable = `${ruleId}|${normalizePath(relPath)}|${line || 1}|${symbol || ''}`;
+  return crypto.createHash('sha1').update(stable).digest('hex').slice(0, 16);
+}
+
+function fingerprintFor(ruleId, relPath, occurrenceKey) {
+  const stable = `${ruleId}|${normalizePath(relPath)}|${occurrenceKey}`;
   return crypto.createHash('sha1').update(stable).digest('hex');
 }
 
-function violation({ ruleId, severity, relPath, line = 1, symbol = '', message, source = 'builtin', confidence = 'medium' }) {
+function violation({ ruleId, severity, relPath, line = 1, symbol = '', message, source = 'builtin', confidence = 'medium', relatedKey = '' }) {
+  const isHeuristic = confidence !== 'high';
+  const occurrenceKey = occurrenceKeyFor(ruleId, relPath, symbol, line);
   return {
     rule_id: ruleId,
     severity,
@@ -311,9 +279,13 @@ function violation({ ruleId, severity, relPath, line = 1, symbol = '', message, 
     line,
     symbol,
     message,
-    fingerprint: fingerprintFor(ruleId, relPath, symbol),
+    occurrence_key: occurrenceKey,
+    fingerprint: fingerprintFor(ruleId, relPath, occurrenceKey),
     source,
     confidence,
+    category: isHeuristic ? 'heuristic_candidate' : 'proof_like',
+    why_not_proof: isHeuristic ? 'Pattern-based scanner result; confirm against code context before treating as proof.' : null,
+    related_key: relatedKey || null,
   };
 }
 
@@ -423,6 +395,11 @@ function scanWorkflowSecurity(relPath, text) {
     }
   });
   return out;
+}
+
+function scanExternalInputValidation(relPath, text) {
+  if (!isSourceCodePath(relPath)) return [];
+  return externalInputValidationFindings(relPath, text).map((item) => violation(item));
 }
 
 function scanFileSizeAdvisory(relPath, text, settings) {
@@ -656,6 +633,7 @@ function scanApiContractCompatibility(relPath, text) {
       symbol: 'raw-storage-response',
       message: 'Route appears to expose storage-shaped data directly; review DTO mapping and caller compatibility before ship.',
       confidence: 'low',
+      relatedKey: 'raw-storage-response',
     }));
   }
   return out;
@@ -695,14 +673,20 @@ function scanSecretLogging(relPath, text) {
   lines.forEach((line, index) => {
     if (/\b(console\.(log|info|warn|error|debug)|logger\.(info|warn|error|debug)|print)\s*\(/.test(line)
       && /\b(secret|token|password|authorization|cookie|session|api[_-]?key)\b/i.test(line)) {
+      const withoutStrings = line.replace(/(['"`])(?:\\.|(?!\1).)*\1/gu, '');
+      const hasSecretIdentifier = /\b[A-Za-z_$][\w$]*(secret|token|password|authorization|cookie|session|apiKey|api_key)[\w$]*\b/i.test(withoutStrings)
+        || /\b(secret|token|password|authorization|cookie|session|api[_-]?key)[A-Za-z_$][\w$]*\b/i.test(withoutStrings);
+      const stringOnly = !hasSecretIdentifier;
       out.push(violation({
         ruleId: 'secret.logging',
-        severity: 'error',
+        severity: stringOnly ? 'warning' : 'error',
         relPath,
         line: index + 1,
         symbol: 'secret-like-log',
-        message: 'Log statement references secret-like data; log a stable request id or redacted reason code instead.',
-        confidence: 'high',
+        message: stringOnly
+          ? 'Log message contains secret-like wording; confirm it does not include secret values.'
+          : 'Log statement references secret-like data; log a stable request id or redacted reason code instead.',
+        confidence: stringOnly ? 'low' : 'high',
       }));
     }
   });
@@ -712,17 +696,25 @@ function scanSecretLogging(relPath, text) {
 function scanSqlParameterBinding(relPath, text) {
   if (!isSourceCodePath(relPath)) return [];
   const out = [];
-  const rawSqlTemplate = /`[^`]*(SELECT|INSERT|UPDATE|DELETE)[^`]*\$\{[^`]+`/isu;
-  const rawSqlConcat = /(?:query|execute)\s*\(\s*['"][^'"]*(SELECT|INSERT|UPDATE|DELETE)[^'"]*['"]\s*\+/isu;
-  const pythonFStringSql = /f["'][^"']*(SELECT|INSERT|UPDATE|DELETE)[^"']*\{[^"']+["']/isu;
-  if (rawSqlTemplate.test(text) || rawSqlConcat.test(text) || pythonFStringSql.test(text)) {
+  const rawSqlTemplate = /(?:(\b(?:sql|Prisma\.sql|db\.sql|pgSql))\s*)?`[^`]*(?:SELECT\s+[\s\S]{0,120}\s+FROM|INSERT\s+INTO|UPDATE\s+[A-Za-z_][\w.]*\s+SET|DELETE\s+FROM)[^`]*\$\{[^`]+`/gis;
+  const rawSqlConcat = /(?:query|execute)\s*\(\s*['"][^'"]*(?:SELECT\s+[\s\S]{0,120}\s+FROM|INSERT\s+INTO|UPDATE\s+[A-Za-z_][\w.]*\s+SET|DELETE\s+FROM)[^'"]*['"]\s*\+/isu;
+  const pythonFStringSql = /f["'][^"']*(?:SELECT\s+[\s\S]{0,120}\s+FROM|INSERT\s+INTO|UPDATE\s+[A-Za-z_][\w.]*\s+SET|DELETE\s+FROM)[^"']*\{[^"']+["']/isu;
+  const unsafeTemplate = [...text.matchAll(rawSqlTemplate)].some((match) => !match[1]);
+  const assembledQueryNames = new Set();
+  for (const match of text.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:`[^`]*(?:SELECT\s+[\s\S]{0,120}\s+FROM|INSERT\s+INTO|UPDATE\s+[A-Za-z_][\w.]*\s+SET|DELETE\s+FROM)[^`]*\$\{[^`]+`|['"][^'"]*(?:SELECT\s+[\s\S]{0,120}\s+FROM|INSERT\s+INTO|UPDATE\s+[A-Za-z_][\w.]*\s+SET|DELETE\s+FROM)[^'"]*['"]\s*\+)/gis)) {
+    assembledQueryNames.add(match[1]);
+  }
+  const assembledQueryExecuted = [...assembledQueryNames].some((name) => new RegExp(`\\b(?:query|execute)\\s*\\(\\s*${name}\\b`).test(text));
+  if (unsafeTemplate || rawSqlConcat.test(text) || pythonFStringSql.test(text) || assembledQueryExecuted) {
     out.push(violation({
       ruleId: 'sql.raw_interpolation',
-      severity: 'error',
+      severity: assembledQueryExecuted && !unsafeTemplate ? 'warning' : 'error',
       relPath,
-      symbol: 'raw-sql-interpolation',
-      message: 'SQL-like string interpolation detected; use placeholders and pass values separately.',
-      confidence: 'high',
+      symbol: assembledQueryExecuted ? 'assembled-query-interpolation' : 'raw-sql-interpolation',
+      message: assembledQueryExecuted
+        ? 'SQL-like query string appears assembled before execution; verify placeholders are used instead of raw interpolation.'
+        : 'SQL-like string interpolation detected; use placeholders and pass values separately.',
+      confidence: assembledQueryExecuted && !unsafeTemplate ? 'medium' : 'high',
     }));
   }
   return out;
@@ -753,9 +745,10 @@ function scanDbRowValidation(relPath, text) {
   if (!isRouteLikePath(relPath)) return [];
   const out = [];
   const directStorageResponse = /\b(Response\.json|NextResponse\.json|res\.json)\(\s*await\s+(?:prisma|db|client|pool)\b/su;
-  const rawVariable = /\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*await\s+(?:prisma|db|client|pool)\b/su.exec(text);
-  if (directStorageResponse.test(text)
-    || (rawVariable && new RegExp(`\\b(Response\\.json|NextResponse\\.json|res\\.json)\\(\\s*${rawVariable[1]}\\b`).test(text))) {
+  const rawVariables = [...text.matchAll(/\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*await\s+(?:prisma|db|client|pool)\b/gsu)].map((match) => match[1]);
+  const responseExpressions = [...text.matchAll(/\b(?:Response\.json|NextResponse\.json|res\.json)\(([\s\S]{0,300})\)/gu)].map((match) => match[1] || '');
+  const rawVariableReturned = rawVariables.some((name) => responseExpressions.some((expr) => new RegExp(`\\b${name}\\b`).test(expr)));
+  if (directStorageResponse.test(text) || rawVariableReturned) {
     out.push(violation({
       ruleId: 'database.raw_row_public_response',
       severity: 'warning',
@@ -763,6 +756,7 @@ function scanDbRowValidation(relPath, text) {
       symbol: 'raw-row-response',
       message: 'Route appears to return storage-shaped data directly; validate or map rows before public DTO output.',
       confidence: 'low',
+      relatedKey: 'raw-storage-response',
     }));
   }
   return out;
@@ -858,10 +852,22 @@ function decorateViolation(item, profile) {
   };
 }
 
-function applyProfileModes(violations, profile) {
+function profileUsesMode(profile, mode) {
+  if (profile?.mode === mode) return true;
+  if (Object.values(profile?.packs || {}).some((config) => config?.mode === mode)) return true;
+  if (Object.values(profile?.rules || {}).some((config) => config?.mode === mode)) return true;
+  return false;
+}
+
+function isModeActiveForScope(mode, scope) {
+  if (mode === 'changed-files' && scope === 'all') return false;
+  return ACTIVE_PROFILE_MODES.has(mode);
+}
+
+function applyProfileModes(violations, profile, { scope } = {}) {
   return violations
     .map((item) => decorateViolation(item, profile))
-    .filter((item) => ACTIVE_PROFILE_MODES.has(item.effective_mode));
+    .filter((item) => isModeActiveForScope(item.effective_mode, scope));
 }
 
 function scanFile(repoRoot, relPath, settings) {
@@ -886,6 +892,7 @@ function scanFile(repoRoot, relPath, settings) {
       ...scanSecretLogging(relPath, text),
       ...scanClientServerBoundary(relPath, text),
       ...scanWorkflowSecurity(relPath, text),
+      ...scanExternalInputValidation(relPath, text),
       ...scanFileSizeAdvisory(relPath, text, settings.fileSize),
       ...scanResponsibilityBudget(relPath, text, settings.responsibilityBudget),
       ...scanStateSafety(relPath, text),
@@ -902,7 +909,7 @@ function scanFile(repoRoot, relPath, settings) {
       ...scanSideEffectBoundary(relPath, text),
       ...scanCrawlerProducerBoundary(relPath, text),
       ...scanBroadExceptionAdvisory(relPath, text),
-    ], settings.profile),
+    ], settings.profile, { scope: settings.scope }),
     failure: null,
   };
 }
@@ -919,25 +926,47 @@ function loadBaseline(repoRoot, baselinePath) {
   return new Map();
 }
 
-function writeBaseline(baselinePath, violations) {
+function writeBaseline(baselinePath, violations, existingBaseline = new Map()) {
   fs.mkdirSync(path.dirname(baselinePath), { recursive: true });
   const now = nowIso();
-  const rows = violations.map((item) => ({
-    fingerprint: item.fingerprint,
-    rule_id: item.rule_id,
-    path: item.path,
-    severity: item.severity,
-    first_seen: now,
-    last_seen: now,
-    reason: 'accepted baseline debt; review before enforcing',
-  }));
+  const rowsByFingerprint = new Map();
+  for (const item of violations) {
+    const existing = existingBaseline.get(item.fingerprint) || {};
+    rowsByFingerprint.set(item.fingerprint, {
+      fingerprint: item.fingerprint,
+      occurrence_key: item.occurrence_key,
+      rule_id: item.rule_id,
+      path: item.path,
+      severity: item.severity,
+      first_seen: existing.first_seen || now,
+      last_seen: now,
+      reason: existing.reason || 'remediation queue item; fix or explicitly keep tracking before enforcing',
+      owner: existing.owner || null,
+      expires_at: existing.expires_at || null,
+      fix_tracking: existing.fix_tracking || null,
+    });
+  }
+  const rows = [...rowsByFingerprint.values()];
   fs.writeFileSync(baselinePath, `${JSON.stringify({ version: 1, created_at: now, updated_at: now, violations: rows }, null, 2)}\n`);
 }
 
 function applyBaseline(violations, baselineMap, mode) {
   if (!['off', 'use', 'update', 'ratchet'].includes(mode)) failConfig(`Unsupported --baseline ${mode}. Use off, use, update, or ratchet.`);
   if (mode === 'off' || mode === 'update') return violations.map((item) => ({ ...item, baseline_status: 'unmanaged' }));
-  return violations.map((item) => ({ ...item, baseline_status: baselineMap.has(item.fingerprint) ? 'matched' : 'new' }));
+  return violations.map((item) => {
+    const baseline = baselineMap.get(item.fingerprint);
+    if (!baseline) return { ...item, baseline_status: 'new' };
+    return {
+      ...item,
+      baseline_status: 'matched',
+      baseline_reason: baseline.reason || '',
+      baseline_first_seen: baseline.first_seen || null,
+      baseline_last_seen: baseline.last_seen || null,
+      baseline_owner: baseline.owner || null,
+      baseline_expires_at: baseline.expires_at || null,
+      baseline_fix_tracking: baseline.fix_tracking || null,
+    };
+  });
 }
 
 function summarize(violations, failures = []) {
@@ -985,20 +1014,42 @@ function printResult(result, format) {
     console.log('\nGuard failures:');
     for (const failure of result.failures) console.log(`- [${failure.code}] ${failure.message}${failure.details?.length ? ` (${failure.details.join('; ')})` : ''}`);
   }
-  const visible = result.violations.filter((item) => item.baseline_status !== 'matched').slice(0, 80);
+  const active = result.violations.filter((item) => item.baseline_status !== 'matched');
+  const visible = active.slice(0, 80);
   if (visible.length) {
     console.log('\nViolations:');
     for (const item of visible) {
       const confidence = item.confidence ? ` [${item.confidence}-confidence]` : '';
       const family = item.rule_family && item.rule_family !== item.rule_id ? ` (${item.rule_family})` : '';
-      console.log(`- [${item.severity}]${confidence} ${item.rule_id}${family} ${item.path}:${item.line} — ${item.message}`);
+      const related = item.related_key ? ` [related: ${item.related_key}]` : '';
+      console.log(`- [${item.severity}]${confidence} ${item.rule_id}${family} ${item.path}:${item.line}${related} — ${item.message}`);
     }
-    if (result.violations.length > visible.length) console.log(`- ... ${result.violations.length - visible.length} more omitted from text output`);
+    if (active.length > visible.length) console.log(`- ... ${active.length - visible.length} more omitted from text output`);
+  }
+  const matched = result.violations.filter((item) => item.baseline_status === 'matched');
+  if (matched.length) {
+    console.log('\nExisting baseline issues encountered (remediation queue; not a pass):');
+    for (const item of matched.slice(0, 40)) {
+      const family = item.rule_family && item.rule_family !== item.rule_id ? ` (${item.rule_family})` : '';
+      const reason = item.baseline_reason ? ` — ${item.baseline_reason}` : '';
+      console.log(`- [${item.severity}] ${item.rule_id}${family} ${item.path}:${item.line}${reason}`);
+    }
+    if (matched.length > 40) console.log(`- ... ${matched.length - 40} more baseline issues encountered in this scan scope`);
   }
 }
 
+function redactSecretLike(text) {
+  return String(text || '')
+    .replace(/sk-(?:proj-)?[A-Za-z0-9_-]{20,}/g, '[REDACTED_OPENAI_KEY]')
+    .replace(/gh[pousr]_[A-Za-z0-9_]{20,}/g, '[REDACTED_GITHUB_TOKEN]')
+    .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]{12,}/gi, 'Bearer [REDACTED_TOKEN]')
+    .replace(/\bAuthorization\s*:\s*(?:Bearer|Basic)\s+[^\r\n'"]+/gi, 'Authorization: [REDACTED_AUTHORIZATION]')
+    .replace(/\bCookie\s*:\s*[^\r\n]+/gi, 'Cookie: [REDACTED_COOKIE]')
+    .replace(/\b(password|secret|token|api[_-]?key|authorization|cookie|session)\s*[:=]\s*(['"]?)[^\s'"]{8,}\2/gi, '$1=[REDACTED_SECRET]');
+}
+
 function compactOutput(text) {
-  const value = String(text || '').trim();
+  const value = redactSecretLike(text).trim();
   if (value.length <= PROFILE_OUTPUT_LIMIT) return value;
   return `${value.slice(0, PROFILE_OUTPUT_LIMIT)}\n... truncated ${value.length - PROFILE_OUTPUT_LIMIT} chars`;
 }
@@ -1008,45 +1059,10 @@ function safeCommandRuleId(name) {
   return `profile.command.${slug || 'unnamed'}`;
 }
 
-function parseProfileCommands(repoRoot) {
-  const profilePath = path.join(repoRoot, '.jhste', 'profile.yaml');
-  if (!fs.existsSync(profilePath)) return [];
-  const lines = fs.readFileSync(profilePath, 'utf8').split(/\r?\n/);
-  const commands = [];
-  let inCommands = false;
-  let current = null;
-  for (const line of lines) {
-    if (/^commands:\s*$/.test(line)) { inCommands = true; continue; }
-    if (inCommands && /^\S/.test(line) && !/^commands:/.test(line)) break;
-    if (!inCommands) continue;
-    const name = /^\s*-\s+name:\s*(.+?)\s*$/.exec(line);
-    if (name) {
-      current = { name: name[1].replace(/^['"]|['"]$/g, ''), run: '', severity: 'error', timeoutSeconds: 120 };
-      commands.push(current);
-      continue;
-    }
-    const run = /^\s+run:\s*(.+?)\s*$/.exec(line);
-    if (run && current) current.run = run[1].replace(/^['"]|['"]$/g, '');
-    const severity = /^\s+severity:\s*(.+?)\s*$/.exec(line);
-    if (severity && current) current.severity = severity[1].replace(/^['"]|['"]$/g, '');
-    const timeout = /^\s+timeout_seconds:\s*(\d+)\s*$/.exec(line);
-    if (timeout && current) current.timeoutSeconds = Number(timeout[1]);
-  }
-  for (const command of commands) {
-    if (!command.name || !command.run) failConfig('Each profile command needs name and run fields.');
-    if (!SEVERITIES.includes(command.severity)) failConfig(`Profile command ${command.name} has unsupported severity ${command.severity}.`);
-    if (!Number.isFinite(command.timeoutSeconds) || command.timeoutSeconds <= 0 || command.timeoutSeconds > 1800) {
-      failConfig(`Profile command ${command.name} has invalid timeout_seconds; use 1..1800.`);
-    }
-  }
-  return commands;
-}
-
-function runProfileCommands(repoRoot) {
-  const commands = parseProfileCommands(repoRoot);
+function runProfileCommands(repoRoot, commands) {
   const violations = [];
   const failures = [];
-  for (const command of commands) {
+  for (const command of commands || []) {
     const result = spawnSync(command.run, [], {
       cwd: repoRoot,
       shell: true,
@@ -1058,7 +1074,7 @@ function runProfileCommands(repoRoot) {
       failures.push({
         code: 'profile.command.runtime',
         message: `Profile command could not run: ${command.name}`,
-        details: [result.error.message, command.run],
+        details: [redactSecretLike(result.error.message), redactSecretLike(command.run)],
       });
       continue;
     }
@@ -1099,9 +1115,12 @@ async function main() {
   const format = String(args.format || profileState.profile.guard.default_format || 'text');
   if (!['text', 'json'].includes(format)) failConfig('--format must be text or json.');
   currentFormat = format;
-  const failOn = String(args['fail-on'] || profileState.profile.guard.fail_on || 'none');
+  const strictProfile = profileUsesMode(profileState.profile, 'strict');
+  const baselineNewOnlyProfile = profileUsesMode(profileState.profile, 'baseline-new-only');
+  const failOn = String(args['fail-on'] || profileState.profile.guard.fail_on || (strictProfile ? 'error' : 'none'));
   if (!['none', 'warning', 'error'].includes(failOn)) failConfig('--fail-on must be none, warning, or error.');
-  const baselineMode = String(args.baseline || (profileState.profile.baseline.enabled ? 'use' : 'off'));
+  if (strictProfile && failOn === 'none') failConfig('Profile mode strict requires enforcement; set guard.fail_on to error/warning or choose a non-strict mode.');
+  const baselineMode = String(args.baseline || (baselineNewOnlyProfile ? 'ratchet' : (profileState.profile.baseline.enabled ? 'use' : 'off')));
   if (!['off', 'use', 'update', 'ratchet'].includes(baselineMode)) failConfig(`Unsupported --baseline ${baselineMode}. Use off, use, update, or ratchet.`);
   const baselinePath = path.resolve(repoRoot, String(args['baseline-path'] || profileState.profile.baseline.path || DEFAULT_BASELINE_PATH));
   if (inManagedHook() && baselineMode === 'update') {
@@ -1110,12 +1129,13 @@ async function main() {
   if (baselineMode === 'ratchet' && !fs.existsSync(baselinePath)) {
     failConfig(`--baseline ratchet requires an existing baseline at ${relativeDisplay(repoRoot, baselinePath)}.`);
   }
-  const scopedArgs = { ...args, scope: args.scope || profileState.profile.guard.default_scope || 'changed' };
+  const scopedArgs = { ...args, scope: args.scope || (strictProfile ? 'all' : (profileState.profile.guard.default_scope || 'changed')) };
   const scope = resolveScopeFiles(repoRoot, scopedArgs);
   const violations = [];
   const failures = [];
   const scanSettings = {
     profile: profileState.profile,
+    scope: scope.scope,
     fileSize: fileSizeSettings(profileState.profile),
     responsibilityBudget: responsibilityBudgetSettings(profileState.profile),
   };
@@ -1128,12 +1148,12 @@ async function main() {
     if (inManagedHook()) {
       failConfig('Managed hook execution is read-only; --run-profile-commands is not allowed while JHSTE_HOOK_ACTIVE=1.');
     }
-    const profile = runProfileCommands(repoRoot);
+    const profile = runProfileCommands(repoRoot, profileState.profile.commands);
     violations.push(...profile.violations);
     failures.push(...profile.failures);
   }
   const baselineMap = loadBaseline(repoRoot, baselinePath);
-  if (baselineMode === 'update' && failures.length === 0) writeBaseline(baselinePath, violations);
+  if (baselineMode === 'update' && failures.length === 0) writeBaseline(baselinePath, violations, baselineMap);
   const managed = applyBaseline(violations, baselineMap, baselineMode);
   const result = guardResult(managed, failures, {
     tool_version: toolVersion(),

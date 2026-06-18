@@ -11,8 +11,14 @@ scan:
   boundary_hints: [request, payload, params, env, file, response]
 implementation:
   guard:
-    status: metadata_only
-    confidence: none
+    status: builtin
+    scanner: scanExternalInputValidation
+    confidence: heuristic
+    finding_ids:
+      - input.file_parse_unvalidated
+      - input.third_party_json_unvalidated
+      - input.request_body_direct_use
+      - input.env_export_unvalidated
 recommendation:
   changed_files: true
   baseline_supported: false
