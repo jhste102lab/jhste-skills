@@ -12,7 +12,12 @@ Use repo-local instructions first. Treat this skill as shared advisory guidance 
 - For non-trivial changes, apply `jhste-engineering-judgment` before writing code.
 - Validate external input before trusting it.
 - Do not hide failures; return an error, log a redacted warning, emit an event, or document an intentional fallback.
+- Prefer explicit failure, validation, or state modeling over broad fallback paths; fallbacks must be intentional, narrow, observable, and safe.
 - Do not log secrets, tokens, passwords, cookies, authorization headers, sessions, or raw sensitive payloads.
+- Tests should verify observable behavior through the module interface, not implementation details, function-name existence, or incidental strings.
+- Do not stop at happy-path-only coverage for changed behavior; include the most relevant edge, failure, side-effect, idempotency, or regression case.
+- Mock external seams, not internal collaborators you control.
+- Before adding a new helper, type, or shape, check for the existing source of truth.
 - If a hand-written source file grows beyond the profile threshold, consider splitting responsibilities before adding more code.
 - If a page, client module, route/controller, import script, or Python orchestrator crosses a responsibility budget, treat it as a review signal to find the next clean seam.
 - After code changes, prefer `jhste-skills guard --scope changed --format text --fail-on error` when the CLI is available; report warnings and guard runtime/config failures separately.

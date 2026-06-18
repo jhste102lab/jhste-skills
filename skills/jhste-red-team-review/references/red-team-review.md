@@ -14,6 +14,9 @@ Use an objective red-team checklist. Prefer concrete findings over broad praise.
 - Create/update/delete paths do not appear vulnerable to data loss, duplicate writes, or misleading success states.
 - Build, import, env, route, and runtime assumptions that could break deployment are called out when relevant.
 - Performance risks such as duplicate requests, avoidable rerenders, or obviously heavy work on hot paths are called out when relevant.
+- Tests for changed behavior assert observable outcomes through the relevant interface, not implementation details or incidental strings.
+- Changed behavior is not covered only by a happy path when a meaningful edge, failure, side-effect, idempotency, or regression case is relevant.
+- Mocks, if present, sit at external seams rather than internal collaborators owned by the codebase.
 - Temporary patches, hidden dependencies, and risky assumptions are identified explicitly instead of being waved through.
 - Unrelated refactors are not requested unless they sit on the changed execution path and are required for safety.
 - Material follow-up work that should be tracked separately is emitted as an `Issue candidate`, not silently filed or updated.
