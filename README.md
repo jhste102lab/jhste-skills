@@ -86,7 +86,7 @@ examples/profile.yaml   Default advisory profile example
 - `jhste-crawler-automation`
 - `jhste-final-review`
 
-The kit also vendors exactly 10 allowlisted Matt Pocock skills. See [`vendor/matt-pocock/allowlist.json`](vendor/matt-pocock/allowlist.json) and [`vendor/matt-pocock/source-lock.json`](vendor/matt-pocock/source-lock.json).
+The kit also vendors exactly 14 allowlisted Matt Pocock skills. See [`vendor/matt-pocock/allowlist.json`](vendor/matt-pocock/allowlist.json) and [`vendor/matt-pocock/source-lock.json`](vendor/matt-pocock/source-lock.json).
 
 ## Verification
 

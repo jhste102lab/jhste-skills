@@ -15,6 +15,10 @@ const expected = [
   'grill-me',
   'handoff',
   'write-a-skill',
+  'codebase-design',
+  'diagnosing-bugs',
+  'domain-modeling',
+  'grilling',
 ];
 
 function fail(message) {
@@ -28,12 +32,12 @@ function readJson(file) {
 
 const allowlist = readJson('vendor/matt-pocock/allowlist.json');
 if (JSON.stringify(allowlist) !== JSON.stringify(expected)) {
-  fail('allowlist does not match the exact 10 selected skills');
+  fail('allowlist does not match the exact 14 selected skills');
 }
 
 const sourceLock = readJson('vendor/matt-pocock/source-lock.json');
 if (!Array.isArray(sourceLock.skills) || sourceLock.skills.length !== expected.length) {
-  fail('source-lock must contain exactly 10 skills');
+  fail('source-lock must contain exactly 14 skills');
 }
 
 const seen = new Set();

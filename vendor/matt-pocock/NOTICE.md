@@ -1,6 +1,6 @@
 # Matt Pocock skills attribution
 
-This repository vendors exactly the 10 skills listed in `allowlist.json` from [`mattpocock/skills`](https://github.com/mattpocock/skills).
+This repository vendors exactly the 14 skills listed in `allowlist.json` from [`mattpocock/skills`](https://github.com/mattpocock/skills).
 
 - Source lock: `source-lock.json`
 - Upstream license: `LICENSE`

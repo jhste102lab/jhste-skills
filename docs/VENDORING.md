@@ -1,6 +1,6 @@
 # Matt Pocock skill vendoring
 
-The kit vendors exactly 10 allowlisted Matt Pocock skills from [`mattpocock/skills`](https://github.com/mattpocock/skills).
+The kit vendors exactly 14 allowlisted Matt Pocock skills from [`mattpocock/skills`](https://github.com/mattpocock/skills).
 
 Files:
 
