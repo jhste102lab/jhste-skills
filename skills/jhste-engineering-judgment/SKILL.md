@@ -17,6 +17,8 @@ Use before non-trivial code changes. Repo-local instructions and architecture do
 - State the data contract entering and leaving the changed seam.
 - Prefer the smallest change that preserves future extension.
 - If the requested implementation conflicts with repo architecture, say so directly and propose the safer alternative.
+- When inspection discovers a non-trivial follow-up outside the immediate fix, prepare an `Issue candidate` instead of silently creating or updating tracker issues.
+- Ask for explicit approval before any issue tracker side effect unless the user has already authorized issue writes for this exact task.
 - Do not praise, agree, or proceed based on unsupported assumptions.
 - Avoid unrelated refactors unless they are on the changed execution path and required for safety.
 
@@ -34,6 +36,26 @@ For non-trivial code changes, state this before editing:
 8. **Verification plan** — tests, guards, builds, or manual checks to run, plus any checks likely to be skipped.
 
 If a premise was not checked, say **not checked**. Do not write "not found" unless you actually inspected the relevant path.
+
+## Issue candidate protocol
+
+Use this when pre-change inspection finds a material old problem, adjacent risk, or remediation follow-up that should not be fixed in the current scope.
+
+Emit a concise `Issue candidate` block with:
+
+- title;
+- existing issue search terms or likely duplicate issue;
+- affected path(s);
+- evidence inspected;
+- concrete failure mode;
+- impact;
+- confidence, including whether the finding is heuristic;
+- smallest safe fix;
+- acceptance criteria;
+- redaction note for secrets or sensitive data;
+- suggested action: `new issue`, `update existing issue`, or `no issue`.
+
+Do not treat regex or heuristic findings as proof. Do not include raw secrets, tokens, credentials, or private data in the candidate text. If an existing issue likely matches, explain the match evidence and ask before updating it.
 
 ## Shape guidance
 

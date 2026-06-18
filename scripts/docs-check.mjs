@@ -17,6 +17,7 @@ const required = [
   'skills/jhste-db-api-boundary/SKILL.md',
   'skills/jhste-crawler-automation/SKILL.md',
   'skills/jhste-final-review/SKILL.md',
+  'skills/jhste-final-review/references/final-review.md',
   'rules/core/no_silent_failure.yaml',
   'rules/core/no_secret_logging.yaml',
   'rules/core/workflow_security.yaml',
@@ -63,6 +64,17 @@ function fail(message) {
 
 function read(rel) {
   return fs.readFileSync(path.join(root, rel), 'utf8');
+}
+
+function safeParse(rel) {
+  let parsed;
+  try {
+    parsed = JSON.parse(read(rel));
+  } catch (error) {
+    fail(`${rel} must be valid JSON: ${error.message}`);
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) fail(`${rel} must contain a JSON object`);
+  return parsed;
 }
 
 function walk(dir, predicate, out = []) {
@@ -255,15 +267,26 @@ for (const requiredText of ['jhste-engineering-judgment', 'jhste-final-review', 
   if (!rootAgents.includes(requiredText)) fail(`AGENTS.md must mention ${requiredText}`);
 }
 
+const issueCandidateDocs = {
+  'skills/jhste-engineering-judgment/SKILL.md': read('skills/jhste-engineering-judgment/SKILL.md'),
+  'skills/jhste-final-review/SKILL.md': read('skills/jhste-final-review/SKILL.md'),
+  'skills/jhste-final-review/references/final-review.md': read('skills/jhste-final-review/references/final-review.md'),
+};
+for (const [rel, text] of Object.entries(issueCandidateDocs)) {
+  for (const requiredText of ['Issue candidate', 'explicit approval', 'heuristic', 'secret']) {
+    if (!text.toLowerCase().includes(requiredText.toLowerCase())) fail(`${rel} must document issue-candidate ${requiredText} handling`);
+  }
+}
+
 const install = read('cli/install.mjs');
 for (const forbidden of ['.github/workflows', '.git/hooks', 'package-lock.json', 'pnpm-lock.yaml']) {
   if (install.includes(forbidden)) fail(`installer should not target ${forbidden}`);
 }
 if (/writeFileSync\([^\n]+package\.json/.test(install)) fail('installer must not write target package.json');
 
-const pkg = JSON.parse(read('package.json'));
+const pkg = safeParse('package.json');
 for (const script of ['public-safety:check', 'vendor:check', 'docs:check', 'guard-fixtures:test', 'smoke:test']) {
   if (!pkg.scripts?.[script]) fail(`package script missing: ${script}`);
 }
 
-console.log('docs-check passed: structure, profile/rule references, guard metadata links, bridge wording, and scripts are valid.');
+console.log('docs-check passed: structure, profile/rule references, guard metadata links, bridge wording, issue-candidate protocol, and scripts are valid.');

@@ -16,8 +16,31 @@ Use an objective red-team checklist. Prefer concrete findings over broad praise.
 - Performance risks such as duplicate requests, avoidable rerenders, or obviously heavy work on hot paths are called out when relevant.
 - Temporary patches, hidden dependencies, and risky assumptions are identified explicitly instead of being waved through.
 - Unrelated refactors are not requested unless they sit on the changed execution path and are required for safety.
+- Material follow-up work that should be tracked separately is emitted as an `Issue candidate`, not silently filed or updated.
+- Heuristic findings, including regex matches, are labeled as candidates rather than proof.
+- Issue text never includes raw secrets, tokens, credentials, or private data.
 
 Use **not found** only for risks whose relevant paths were inspected. Use **not checked** for anything outside the inspected scope.
+
+## Issue candidate shape
+
+Use an `Issue candidate` only for actionable, non-trivial follow-up work outside the current fix. Prefer no candidate over low-value issue spam.
+
+Include:
+
+- **Title** — concise tracker-ready title.
+- **Existing issue search** — search terms used, or likely matching issue and why it matches.
+- **Affected paths** — files, commands, or docs involved.
+- **Evidence** — what was inspected; state **not checked** for missing coverage.
+- **Failure mode** — concrete behavior that can mislead, fail, or create risk.
+- **Impact** — user, maintainer, safety, or release consequence.
+- **Confidence** — high/medium/low and whether the finding is heuristic.
+- **Smallest safe fix** — minimal likely remediation.
+- **Acceptance criteria** — observable done conditions.
+- **Redaction note** — confirm secrets/private data are omitted.
+- **Suggested action** — `new issue`, `update existing issue`, or `no issue`.
+
+Ask for explicit approval before creating or updating an issue unless the user already authorized that exact tracker side effect.
 
 ## Review shape
 
@@ -25,8 +48,9 @@ Summarize the result in this order:
 
 1. Status: `pass`, `changes required`, or `residual risk`
 2. Findings: short bullets with the concrete problem and impact
-3. Verification: tests, guard output, builds, or other checks that support the conclusion, plus checks not run
-4. Residual risk: what still might be wrong, if anything
+3. Issue candidates: only when separate tracked follow-up is warranted
+4. Verification: tests, guard output, builds, or other checks that support the conclusion, plus checks not run
+5. Residual risk: what still might be wrong, if anything
 
 Every finding should name:
 
