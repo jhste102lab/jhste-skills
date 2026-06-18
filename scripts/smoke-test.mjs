@@ -156,13 +156,13 @@ if (!fs.existsSync(profilePath)) fail('profile was not created');
 const profile = fs.readFileSync(profilePath, 'utf8');
 if (!/^mode: advisory$/m.test(profile)) fail('profile default mode is not advisory');
 if (/mode:\s*strict/.test(profile)) fail('profile enabled strict mode');
-if (!profile.includes('auto_for_non_trivial_code_changes: true')) fail('profile missing final review workflow guidance');
+if (!profile.includes('auto_for_non_trivial_code_changes: true')) fail('profile missing red-team review workflow guidance');
 if (hashFile(path.join(repo, 'package.json')) !== packageHashBefore) fail('install modified target package.json');
 if (hashFile(path.join(repo, 'package-lock.json')) !== lockHashBefore) fail('install modified target lockfile');
 const defaultPreCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
 if (!fs.existsSync(defaultPreCommit)) fail('install did not create default advisory pre-commit hook');
 if (!fs.readFileSync(defaultPreCommit, 'utf8').includes('mode=advisory')) fail('default pre-commit hook is not advisory');
-if (!fs.existsSync(path.join(skillsDir, 'jhste-final-review', 'SKILL.md'))) fail('install did not copy jhste-final-review skill');
+if (!fs.existsSync(path.join(skillsDir, 'jhste-red-team-review', 'SKILL.md'))) fail('install did not copy jhste-red-team-review skill');
 const defaultSkillDirs = skillDirs(skillsDir);
 if (defaultSkillDirs.length !== 7) fail(`default install should copy 7 core skills, got ${defaultSkillDirs.length}`);
 if (defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should not copy vendored workflow skills');
@@ -176,7 +176,7 @@ run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', ve
 const vendorSkillDirs = skillDirs(vendorSkillsDir);
 if (vendorSkillDirs.length !== 14) fail(`--skill-set vendor should copy 14 skills, got ${vendorSkillDirs.length}`);
 if (!vendorSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set vendor did not copy expected vendored skill');
-if (vendorSkillDirs.includes('jhste-final-review')) fail('--skill-set vendor copied core skill');
+if (vendorSkillDirs.includes('jhste-red-team-review')) fail('--skill-set vendor copied core skill');
 
 const allRepo = path.join(tmp, 'all-skill-repo');
 const allSkillsDir = path.join(tmp, 'all-skills');
@@ -186,7 +186,7 @@ fs.writeFileSync(path.join(allRepo, 'AGENTS.md'), '# All skill repo\n');
 run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', allRepo, '--skills-dir', allSkillsDir, '--skip-deep-scan', '--skip-hooks', '--skill-set', 'all'], { cwd: allRepo });
 const allSkillDirs = skillDirs(allSkillsDir);
 if (allSkillDirs.length !== 21) fail(`--skill-set all should copy 21 skills, got ${allSkillDirs.length}`);
-if (!allSkillDirs.includes('jhste-final-review') || !allSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set all missing core or vendored skill');
+if (!allSkillDirs.includes('jhste-red-team-review') || !allSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set all missing core or vendored skill');
 
 const customYesRepo = path.join(tmp, 'custom-yes-repo');
 const customYesSkills = path.join(tmp, 'custom-yes-skills');
@@ -324,7 +324,7 @@ const agentsAfterFirst = fs.readFileSync(path.join(repo, 'AGENTS.md'), 'utf8');
 const bridgeCount = (agentsAfterFirst.match(/Repo-local instructions in this file remain authoritative\./g) || []).length;
 if (bridgeCount !== 1) fail('bridge block was not inserted exactly once');
 if ((agentsAfterFirst.match(/jhste-skills:start/g) || []).length !== 1 || (agentsAfterFirst.match(/jhste-skills:end/g) || []).length !== 1) fail('bridge block missing managed markers');
-if (!agentsAfterFirst.includes('jhste-final-review')) fail('bridge block missing final review guidance');
+if (!agentsAfterFirst.includes('jhste-red-team-review')) fail('bridge block missing red-team review guidance');
 
 fs.appendFileSync(profilePath, '# keep-existing-profile-marker\n');
 run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', repo, '--skills-dir', skillsDir, '--skip-deep-scan'], { cwd: repo });

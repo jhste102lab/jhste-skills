@@ -14,11 +14,11 @@ Core skills implemented:
 - `skills/jhste-architecture-review/SKILL.md`
 - `skills/jhste-db-api-boundary/SKILL.md`
 - `skills/jhste-crawler-automation/SKILL.md`
-- `skills/jhste-final-review/SKILL.md`
+- `skills/jhste-red-team-review/SKILL.md`
 
 ## Fast setup
 
-`cli/install.mjs` implements mode-based setup (`Minimal`, `Normal`, `Full`, `Custom`), creates `.jhste/profile.yaml` when project connection is enabled, keeps mode advisory by default, uses marker-managed bridge blocks idempotently, and does not touch target CI, `package.json`, lockfiles, or source code. Hook automation installs a managed advisory pre-commit hook in Normal and advisory pre-commit/pre-push hooks in Full, with `--skip-hooks` as opt-out and blocking mode as explicit opt-in. `cli/connect.mjs` connects additional git repositories to an existing install without silently mutating global skills unless `--install-missing` is explicit. Installed bridge/profile guidance points agents at `jhste-engineering-judgment` before non-trivial code changes and `jhste-final-review` before non-trivial code work is declared complete.
+`cli/install.mjs` implements mode-based setup (`Minimal`, `Normal`, `Full`, `Custom`), creates `.jhste/profile.yaml` when project connection is enabled, keeps mode advisory by default, uses marker-managed bridge blocks idempotently, and does not touch target CI, `package.json`, lockfiles, or source code. Hook automation installs a managed advisory pre-commit hook in Normal and advisory pre-commit/pre-push hooks in Full, with `--skip-hooks` as opt-out and blocking mode as explicit opt-in. `cli/connect.mjs` connects additional git repositories to an existing install without silently mutating global skills unless `--install-missing` is explicit. Installed bridge/profile guidance points agents at `jhste-engineering-judgment` before non-trivial code changes and `jhste-red-team-review` before non-trivial code work is declared complete.
 
 ## Deep scan
 

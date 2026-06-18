@@ -1,4 +1,4 @@
-# Final review reference
+# Red-team review reference
 
 Use an objective red-team checklist. Prefer concrete findings over broad praise.
 
@@ -44,13 +44,13 @@ Ask for explicit approval before creating or updating an issue unless the user a
 
 ## Review shape
 
-Summarize the result in this order:
+Summarize the result in this order, but write it as direct prose or short bullets rather than label-prefixed sections unless the user asks for a structured block:
 
-1. Status: `pass`, `changes required`, or `residual risk`
-2. Findings: short bullets with the concrete problem and impact
-3. Issue candidates: only when separate tracked follow-up is warranted
-4. Verification: tests, guard output, builds, or other checks that support the conclusion, plus checks not run
-5. Residual risk: what still might be wrong, if anything
+1. Start directly with `pass`, `changes required`, or `residual risk`
+2. Short finding bullets with the concrete problem and impact
+3. Issue candidates only when separate tracked follow-up is warranted
+4. Tests, guard output, builds, or other checks that support the conclusion, plus checks not run
+5. What still might be wrong, if anything
 
 Every finding should name:
 

@@ -16,8 +16,8 @@ const required = [
   'skills/jhste-architecture-review/SKILL.md',
   'skills/jhste-db-api-boundary/SKILL.md',
   'skills/jhste-crawler-automation/SKILL.md',
-  'skills/jhste-final-review/SKILL.md',
-  'skills/jhste-final-review/references/final-review.md',
+  'skills/jhste-red-team-review/SKILL.md',
+  'skills/jhste-red-team-review/references/red-team-review.md',
   'rules/core/no_silent_failure.yaml',
   'rules/core/no_secret_logging.yaml',
   'rules/core/workflow_security.yaml',
@@ -261,20 +261,20 @@ for (const rel of ['adapters/codex/README.md', 'docs/CONFLICT_RESOLUTION.md', 'c
   if (!text.includes(bridgeText)) {
     fail(`${rel} must include authoritative repo-local bridge wording`);
   }
-  for (const requiredText of ['jhste-engineering-judgment', 'jhste-final-review']) {
+  for (const requiredText of ['jhste-engineering-judgment', 'jhste-red-team-review']) {
     if (!text.includes(requiredText)) fail(`${rel} must mention ${requiredText} in shared workflow guidance`);
   }
 }
 
 const rootAgents = read('AGENTS.md');
-for (const requiredText of ['jhste-engineering-judgment', 'jhste-final-review', 'guard --scope changed --format text --fail-on error', 'at most two fix + re-review cycles']) {
+for (const requiredText of ['jhste-engineering-judgment', 'jhste-red-team-review', 'guard --scope changed --format text --fail-on error', 'at most two fix + re-review cycles']) {
   if (!rootAgents.includes(requiredText)) fail(`AGENTS.md must mention ${requiredText}`);
 }
 
 const issueCandidateDocs = {
   'skills/jhste-engineering-judgment/SKILL.md': read('skills/jhste-engineering-judgment/SKILL.md'),
-  'skills/jhste-final-review/SKILL.md': read('skills/jhste-final-review/SKILL.md'),
-  'skills/jhste-final-review/references/final-review.md': read('skills/jhste-final-review/references/final-review.md'),
+  'skills/jhste-red-team-review/SKILL.md': read('skills/jhste-red-team-review/SKILL.md'),
+  'skills/jhste-red-team-review/references/red-team-review.md': read('skills/jhste-red-team-review/references/red-team-review.md'),
 };
 for (const [rel, text] of Object.entries(issueCandidateDocs)) {
   for (const requiredText of ['Issue candidate', 'explicit approval', 'heuristic', 'secret']) {

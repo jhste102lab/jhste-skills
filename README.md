@@ -85,7 +85,7 @@ The install prompts are intentionally small:
 2. Keep the default advisory hook at first. Use `--skip-hooks` only if you do not want commit-time checks; use blocking mode only after dogfooding noise and false positives.
 3. Run `guard --scope changed --format text --fail-on error` manually while iterating on code changes.
 4. Before non-trivial code changes, use `jhste-engineering-judgment` to check scope, seams, failure paths, data contracts, and assumptions.
-5. Before declaring non-trivial code work complete, use the `jhste-final-review` skill. Skip docs-only, comment-only, formatting-only, and trivial rename-only changes.
+5. Before declaring non-trivial code work complete, use the `jhste-red-team-review` skill. Skip docs-only, comment-only, formatting-only, and trivial rename-only changes.
 6. Stop after at most two fix + re-review cycles and report remaining risks instead of chasing an unbounded review loop.
 7. Create a baseline only after reviewing existing debt. Use `ratchet` to stop new debt, not to hide scanner failures.
 8. Enable profile commands only after repo-local guard commands are stable.
@@ -112,7 +112,7 @@ Quick install defaults to the core skill set to keep setup safe-by-default. Use 
 - `jhste-architecture-review`
 - `jhste-db-api-boundary`
 - `jhste-crawler-automation`
-- `jhste-final-review`
+- `jhste-red-team-review`
 
 The kit also vendors exactly 14 allowlisted Matt Pocock skills. See [`vendor/matt-pocock/allowlist.json`](vendor/matt-pocock/allowlist.json) and [`vendor/matt-pocock/source-lock.json`](vendor/matt-pocock/source-lock.json).
 

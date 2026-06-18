@@ -32,7 +32,7 @@ Safety and compatibility:
 - existing profile is not overwritten unless `--force` is explicit; `--force` refreshes only jhste-managed outputs and does not overwrite user source, CI, package files, lockfiles, or non-managed hooks;
 - `AGENTS.md` and `CLAUDE.md` bridge blocks use `<!-- jhste-skills:start -->` / `<!-- jhste-skills:end -->` markers; only that managed block is updated on later runs;
 - CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default in Normal, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install;
-- installed bridge/profile guidance tells agents to run `jhste-final-review` before declaring non-trivial code work complete, while skipping docs-only, comment-only, formatting-only, and trivial rename-only changes.
+- installed bridge/profile guidance tells agents to run `jhste-red-team-review` before declaring non-trivial code work complete, while skipping docs-only, comment-only, formatting-only, and trivial rename-only changes.
 
 Repo detection:
 

@@ -52,16 +52,16 @@ Normal install adds a managed advisory `pre-commit` hook unless `--skip-hooks` i
 
 Repo-specific policy should stay in repo-local guards or `.jhste/profile.yaml` declarations. Shared rules are defaults and templates, not the authority over a repository.
 
-## Completion-time final review
+## Completion-time red-team review
 
 Shared guidance now distinguishes two review stages:
 
 - commit-time guard: fast, read-only, and safe for hooks;
-- completion-time final review: a read-only red-team pass before declaring non-trivial code work complete.
+- completion-time red-team review: a read-only red-team pass before declaring non-trivial code work complete.
 
-Final review should run for non-trivial code changes and may be skipped for docs-only, comment-only, formatting-only, and trivial rename-only changes. Agents should stop after at most two fix + re-review cycles and report residual risks instead of looping indefinitely.
+Red-team review should run for non-trivial code changes and may be skipped for docs-only, comment-only, formatting-only, and trivial rename-only changes. Agents should stop after at most two fix + re-review cycles and report residual risks instead of looping indefinitely.
 
-The first shared finding families behind final review are:
+The first shared finding families behind red-team review are:
 
 - `null_state_safety`
 - `authz_data_isolation`

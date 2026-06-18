@@ -11,7 +11,7 @@ Use before non-trivial code changes. Repo-local instructions and architecture do
 
 - Restate the goal in concrete terms and reject unnecessary scope expansion.
 - Check the user's premise against code, tests, and repo-local instructions before accepting it.
-- Before editing, produce a short evidence block for non-trivial code changes.
+- Before editing, run the pre-edit evidence check for non-trivial code changes and report only a concise user-facing summary.
 - Identify the ownership seam: UI, route/controller, usecase/service, repository/query, adapter, job, script, or test fixture.
 - List the important failure paths before writing code.
 - State the data contract entering and leaving the changed seam.
@@ -22,9 +22,9 @@ Use before non-trivial code changes. Repo-local instructions and architecture do
 - Do not praise, agree, or proceed based on unsupported assumptions.
 - Avoid unrelated refactors unless they are on the changed execution path and required for safety.
 
-## Required pre-edit evidence block
+## Required pre-edit evidence check
 
-For non-trivial code changes, state this before editing:
+For non-trivial code changes, check these before editing:
 
 1. **Goal** — concrete behavior or safety property being changed.
 2. **Evidence inspected** — repo instructions, issue/PR context, files, tests, and code paths actually inspected.
@@ -34,6 +34,15 @@ For non-trivial code changes, state this before editing:
 6. **Rejected scope** — adjacent refactors or old problems intentionally not touched.
 7. **Smallest safe change** — why the planned change is minimal.
 8. **Verification plan** — tests, guards, builds, or manual checks to run, plus any checks likely to be skipped.
+
+Keep these items available as internal review evidence, but do not make the user read the full 8-item block every time. User-facing output should usually be one or two plain sentences covering:
+
+- scope checked;
+- main risks;
+- smallest-change plan;
+- anything important that was **not checked**.
+
+Do not add a heading, label, or prefix unless the user asks for a structured block; start directly with the summary sentence.
 
 If a premise was not checked, say **not checked**. Do not write "not found" unless you actually inspected the relevant path.
 

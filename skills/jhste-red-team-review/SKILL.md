@@ -1,16 +1,16 @@
 ---
-name: jhste-final-review
+name: jhste-red-team-review
 description: Read-only completion-time red-team review and issue-candidate handoff for non-trivial code changes. Use before declaring code work complete.
 ---
 
-# jhste-final-review
+# jhste-red-team-review
 
 Use this skill after non-trivial code changes and before reporting completion. Repo-local instructions remain authoritative.
 
 ## Scope
 
 - Run for application, API, database, automation, or other non-trivial code changes.
-- Skip docs-only, comment-only, formatting-only, and trivial rename-only changes unless the user asks for a full review anyway.
+- Skip docs-only, comment-only, formatting-only, and trivial rename-only changes unless the user asks for a full red-team review anyway.
 
 ## Contract
 
@@ -50,6 +50,8 @@ If an existing issue appears to match, propose updating it and state the match e
 - `changes required` — specific follow-up work is still needed
 - `residual risk` — bounded review completed, but some risks remain and are being called out explicitly
 
+Start directly with the result sentence. Do not add a heading, label, or prefix unless the user asks for a structured block.
+
 Findings must include:
 
 - affected path;
@@ -65,5 +67,5 @@ Verification must state:
 
 ## References
 
-- `references/final-review.md`
+- `references/red-team-review.md`
 - `../jhste-engineering-judgment/SKILL.md`
