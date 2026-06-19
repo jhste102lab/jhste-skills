@@ -65,7 +65,7 @@ export const recipeRequirements = {
   'skills/jhste-architecture-review/references/architecture-review.md': ['Next.js or API route split', 'React client path split', 'Generic module or function split', 'Function responsibility split', 'Adjacent-code scope limit'],
   'skills/jhste-db-api-boundary/references/db-api-boundary.md': ['DB row to domain/public DTO', 'Scoped mutation'],
   'skills/jhste-crawler-automation/references/crawler-automation.md': ['Producer / consumer recipe'],
-  'skills/jhste-engineering-judgment/SKILL.md': ['Senior-quality pre-edit gate', 'partial-failure or rollback path', 'Adjacent-code scope creep', 'Changed responsibility'],
-  'skills/jhste-red-team-review/SKILL.md': ['Severity rubric and path tracing', 'changed execution path'],
+  'skills/jhste-engineering-judgment/SKILL.md': ['Senior-quality pre-edit gate', 'partial-failure or rollback path', 'Adjacent-code scope creep', 'Changed responsibility', 'bounded fix'],
+  'skills/jhste-red-team-review/SKILL.md': ['Severity rubric and path tracing', 'changed execution path', 'changes required'],
   'skills/jhste-red-team-review/references/red-team-review.md': ['Severity rubric', 'Trace at least one changed execution path', 'one main reason to change'],
 };

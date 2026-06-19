@@ -104,7 +104,7 @@ Choice [Enter=1]:
 1. Run `deep-scan` once to get advisory recommendations.
 2. Keep the default advisory hook at first. Use `--skip-hooks` only if you do not want commit-time checks; use blocking mode only after dogfooding noise and false positives.
 3. Keep the default 300-line advisory limit at first. Use `--line-limit-mode blocking` only when the team is ready for warning-level hook enforcement.
-4. Run `guard --scope changed --format text --fail-on error` manually while iterating on code changes.
+4. Run `guard --scope changed --format text --fail-on error` manually while iterating on code changes. If guard or red-team review reports new warnings on changed files, attempt a bounded fix before declaring completion, then rerun guard; do not commit automatically.
 5. Before non-trivial code changes, use `jhste-engineering-judgment` to check scope, seams, failure paths, data contracts, assumptions, and the one main responsibility of each changed class/module/function.
 6. Before declaring non-trivial code work complete, use the `jhste-red-team-review` skill. Skip docs-only, comment-only, formatting-only, and trivial rename-only changes.
 7. Stop after at most two fix + re-review cycles and report remaining risks instead of chasing an unbounded review loop.

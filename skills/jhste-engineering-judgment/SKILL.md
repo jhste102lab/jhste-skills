@@ -23,6 +23,7 @@ Use before non-trivial code changes. Repo-local instructions and architecture do
 - Ask for explicit approval before any issue tracker side effect unless the user has already authorized issue writes for this exact task.
 - Do not praise, agree, or proceed based on unsupported assumptions.
 - Avoid unrelated refactors unless they are on the changed execution path and required for safety.
+- When guard or review warnings are new on changed files, plan a bounded fix before declaring completion; rerun guard after the fix, and do not commit automatically.
 
 ## Required pre-edit evidence check
 
@@ -58,6 +59,8 @@ When mentioning guard, review, or pre-existing warnings, keep the user-facing re
 Do not hide warnings just because they are pre-existing. Do not dump raw tool output when a short paraphrase is enough.
 
 When warnings remain after guard or review, always report them briefly even if they are pre-existing.
+
+New changed-file warnings are bounded-fix candidates, not report-only by default. Try a small fix when it stays within the changed execution path; if fixing would require unrelated refactor or more than two fix/re-review cycles, stop and report residual risk or an Issue candidate. Do not commit automatically.
 
 Default to report-only when the warning is pre-existing, low-impact, heuristic-only, or unlikely to be lost without tracking.
 

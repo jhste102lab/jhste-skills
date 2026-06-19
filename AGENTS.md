@@ -7,7 +7,8 @@ This file is authoritative for work in this repository.
 1. Keep commit-time hook behavior fast, read-only, and loop-safe.
 2. Before non-trivial code changes, use the `jhste-engineering-judgment` skill to check scope, seams, failure paths, and assumptions.
 3. After non-trivial code changes, run `jhste-skills guard --scope changed --format text --fail-on error` when available.
-4. Before declaring non-trivial code work complete, use the `jhste-red-team-review` skill.
-5. Skip red-team review for docs-only, comment-only, formatting-only, and trivial rename-only changes.
-6. Do not enter an unbounded fix/review loop; stop after at most two fix + re-review cycles and report remaining risks.
-7. Report guard runtime/config failures separately from rule violations.
+4. If guard or red-team review reports new warnings on changed files, attempt a bounded fix before declaring completion, then rerun guard. Do not commit automatically.
+5. Before declaring non-trivial code work complete, use the `jhste-red-team-review` skill.
+6. Skip red-team review for docs-only, comment-only, formatting-only, and trivial rename-only changes.
+7. Do not enter an unbounded fix/review loop; stop after at most two fix + re-review cycles and report remaining risks.
+8. Report guard runtime/config failures separately from rule violations.

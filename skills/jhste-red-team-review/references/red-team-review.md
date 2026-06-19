@@ -21,6 +21,8 @@ Use an objective red-team checklist. Prefer concrete findings over broad praise.
 - Unrelated refactors are not requested unless they sit on the changed execution path and are required for safety.
 - Material follow-up work that should be tracked separately is emitted as an `Issue candidate`, not silently filed or updated.
 - Heuristic findings, including regex matches, are labeled as candidates rather than proof.
+- New guard or review warnings on changed files require a bounded fix attempt before completion when the fix stays on the changed execution path.
+- Do not commit automatically; commit/push remains an explicit user-requested publish action.
 - Issue text never includes raw secrets, tokens, credentials, or private data.
 
 Use **not found** only for risks whose relevant paths were inspected. Use **not checked** for anything outside the inspected scope.
