@@ -201,7 +201,7 @@ function makeLargePage(repo) {
   write(path.join(repo, 'src/client.tsx'), `"use client";\nexport function C() {\n  fetch('/a');\n  fetch('/b');\n  return null;\n}\n`);
   const text = run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'text', '--fail-on', 'none'], { cwd: repo }).stdout;
   if (!text.includes('[low-confidence]')) fail('text output did not show confidence');
-  if (!text.includes('의미:') || !text.includes('대처:')) fail('text output did not show actionable warning guidance');
+  if (!text.includes('Meaning:') || !text.includes('Next:')) fail('text output did not show actionable warning guidance');
 }
 
 {

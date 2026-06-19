@@ -241,17 +241,17 @@ function summarizeStatuses(results) {
 }
 
 export function printApplyResult(plan, result) {
-  console.log(`\n${plan.command === 'connect' ? '연결이' : '설치가'} 끝났습니다.`);
+  console.log(`\n${plan.command === 'connect' ? 'Connection' : 'Install'} completed.`);
   if (result.skillResults.length) {
     const summary = summarizeStatuses(result.skillResults);
     console.log(`- Skills: ${Object.entries(summary).map(([k, v]) => `${k}=${v}`).join(', ') || 'none'}`);
   } else {
-    console.log('- Skills: 변경 없음');
+    console.log('- Skills: no changes');
   }
   if (result.profileResult) {
     console.log(`- Profile: ${result.profileResult.status} (${relativeDisplay(plan.repoRoot, result.profileResult.path)})`);
   } else {
-    console.log('- Profile: 변경 없음');
+    console.log('- Profile: no changes');
   }
   for (const bridge of result.bridgeResults) {
     console.log(`- Bridge: ${path.basename(bridge.path)} ${bridge.status}`);
@@ -275,7 +275,7 @@ export function printApplyResult(plan, result) {
   console.log('- CI/package.json/lockfile/source code: unchanged by installer');
   console.log('- Non-managed hooks: never overwritten');
   if (!plan.deepScan) {
-    console.log('\n나중에 deep scan을 실행하려면:');
+    console.log('\nTo run deep scan later:');
     console.log('  npx jhste-skills deep-scan');
   }
 }

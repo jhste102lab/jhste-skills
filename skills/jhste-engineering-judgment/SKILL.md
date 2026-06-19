@@ -66,8 +66,8 @@ Propose an `Issue candidate` when any of the following is true:
 - the work is out of scope for the current change but is likely to be forgotten without tracking.
 
 Do not ask to create or update an issue unless you first state why tracking is warranted.
-Prefer: "후속 이슈로 관리하는 편이 맞습니다. 원하면 지금 후보로 정리하겠습니다."
-Avoid: "이슈를 생성할까요?" without supporting reasoning.
+Prefer: "This is better tracked as follow-up work. I can draft an issue candidate now if you want."
+Avoid: "Should I create an issue?" without supporting reasoning.
 
 ## Issue candidate protocol
 

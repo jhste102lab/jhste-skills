@@ -2,91 +2,91 @@ import { ask, relativeDisplay } from '../shared.mjs';
 import { EXIT_CONFIG_FAILURE } from './options.mjs';
 
 function describeSkillSet(skillSet) {
-  if (skillSet === 'all') return '기본 기능 + 추가 기능 전체';
-  if (skillSet === 'vendor') return '추가 기능만 (고급 옵션)';
-  return '기본 기능';
+  if (skillSet === 'all') return 'Core features + all optional features';
+  if (skillSet === 'vendor') return 'Optional features only (advanced option)';
+  return 'Core features';
 }
 
 function describeHookMode(mode) {
-  return mode === 'blocking' ? '문제 발견 시 차단' : '알림만 보여주기';
+  return mode === 'blocking' ? 'Block on detected issues' : 'Show warnings only';
 }
 
 export function printPlanSummary(plan) {
-  console.log('\n설치 계획:');
-  console.log(`- 명령: ${plan.command}`);
-  console.log(`- 설치 방식: ${plan.mode}`);
-  if (plan.overrides.length) console.log(`- 적용된 옵션 변경: ${plan.overrides.join(', ')}`);
-  console.log(`- 기능 범위: ${describeSkillSet(plan.skillSet)}`);
+  console.log('\nInstall plan:');
+  console.log(`- Command: ${plan.command}`);
+  console.log(`- Mode: ${plan.mode}`);
+  if (plan.overrides.length) console.log(`- Applied overrides: ${plan.overrides.join(', ')}`);
+  console.log(`- Feature set: ${describeSkillSet(plan.skillSet)}`);
   console.log(`- Skills directory: ${plan.skillsDir}`);
   if (plan.preflight.skills.enabled) {
-    console.log(`- Skills: ${plan.preflight.skills.expected}개 설치/갱신 예정`);
+    console.log(`- Skills: ${plan.preflight.skills.expected} to install or update`);
   } else if (plan.command === 'connect') {
     if (plan.preflight.skills.action === 'install-missing') {
-      console.log(`- Skills: 기존 설치 확인 후 누락분 설치 (${plan.preflight.skills.expected}개 필요, missing=${plan.preflight.skills.missing.length})`);
+      console.log(`- Skills: install missing after checking existing copies (${plan.preflight.skills.expected} required, missing=${plan.preflight.skills.missing.length})`);
     } else {
-      console.log(`- Skills: 기존 설치 사용 (${plan.preflight.skills.expected}개 필요, missing=${plan.preflight.skills.missing.length})`);
+      console.log(`- Skills: use existing installation (${plan.preflight.skills.expected} required, missing=${plan.preflight.skills.missing.length})`);
     }
   } else {
-    console.log('- Skills: 설치하지 않음');
+    console.log('- Skills: not installing');
   }
 
   if (plan.connectRepo) {
-    console.log(`- 현재 프로젝트: ${plan.repoRoot}`);
-    console.log(`- 설정 파일: ${plan.preflight.profile.status}`);
+    console.log(`- Current project: ${plan.repoRoot}`);
+    console.log(`- Config file: ${plan.preflight.profile.status}`);
     if (plan.writeBridge) {
       for (const bridge of plan.preflight.bridges) {
-        console.log(`- AI 안내문: ${bridge.fileName} ${bridge.status}`);
+        console.log(`- AI bridge: ${bridge.fileName} ${bridge.status}`);
       }
     } else {
-      console.log('- AI 안내문: 추가하지 않음');
+      console.log('- AI bridge: not adding');
     }
   } else {
-    console.log(`- 현재 프로젝트: ${plan.repoSkippedReason || '연결하지 않음'}`);
+    console.log(`- Current project: ${plan.repoSkippedReason || 'not connecting'}`);
   }
 
   printLineLimitSummary(plan);
   printHookSummary(plan);
   if (plan.preflight.deepScan.enabled) {
-    console.log('- 정밀 점검: 지금 실행 (몇 분 걸릴 수 있음, source code 수정 없음)');
-    console.log(`  - 결과: ${relativeDisplay(plan.repoRoot, plan.preflight.deepScan.report)}`);
-    console.log(`  - 추천 설정: ${relativeDisplay(plan.repoRoot, plan.preflight.deepScan.recommendedProfile)}`);
+    console.log('- Deep scan: run now (may take a few minutes, does not modify source code)');
+    console.log(`  - Report: ${relativeDisplay(plan.repoRoot, plan.preflight.deepScan.report)}`);
+    console.log(`  - Recommended settings: ${relativeDisplay(plan.repoRoot, plan.preflight.deepScan.recommendedProfile)}`);
   } else {
-    console.log('- 정밀 점검: 실행하지 않음');
+    console.log('- Deep scan: not running');
   }
-  console.log('- 건드리지 않음: CI, package.json, lockfile, source code, non-managed hook');
+  console.log('- Left untouched: CI, package.json, lockfile, source code, non-managed hooks');
   if (plan.force) {
-    console.log('- 주의: --force는 jhste managed 출력물만 갱신하며 사용자 소유 hook/source/CI는 덮어쓰지 않음');
+    console.log('- Note: --force refreshes only jhste-managed outputs and does not overwrite user-owned hooks, source, or CI files');
   }
 }
 
 function printLineLimitSummary(plan) {
   if (!plan.writeProfile || !plan.lineLimit) return;
   if (plan.lineLimit.enabled) {
-    const behavior = plan.lineLimit.enforcement === 'blocking' ? '커밋 차단' : '경고만 표시';
-    console.log(`- 라인 수 제한: ${plan.lineLimit.maxLines}줄 초과 시 ${behavior}`);
+    const behavior = plan.lineLimit.enforcement === 'blocking' ? 'block commits' : 'show warnings only';
+    console.log(`- Line limit: ${behavior} above ${plan.lineLimit.maxLines} lines`);
   } else {
-    console.log('- 라인 수 제한: 사용하지 않음');
+    console.log('- Line limit: not used');
   }
 }
 
 function printHookSummary(plan) {
   if (plan.hooks.length) {
-    console.log('- 자동 검사:');
+    console.log('- Automatic checks:');
     for (const hook of plan.preflight.hooks) {
       const failOn = hook.failOn && hook.failOn !== 'none' ? `, fail-on=${hook.failOn}` : '';
       console.log(`  - ${hook.target}: ${describeHookMode(hook.mode)}${failOn} (${hook.status})`);
     }
   } else {
-    console.log('- 자동 검사: 설치하지 않음');
+    console.log('- Automatic checks: not installing');
   }
 }
 
 export async function confirmPlan(plan) {
   if (plan.yes) {
-    console.log('\n--yes가 지정되어 확인 없이 진행합니다.');
+    console.log('\n--yes was provided, so this will continue without confirmation.');
     return 'yes';
   }
-  const answer = await ask('\n진행할까요? [Enter=진행 / c=Custom으로 수정 / q=취소] ');
+  const answer = await ask('\nContinue? [Enter=yes / c=customize / q=cancel] ');
   const normalized = String(answer).trim().toLowerCase();
   if (normalized === 'q' || normalized === 'n' || normalized === 'no') return 'cancel';
   if (normalized === 'c') return 'custom';

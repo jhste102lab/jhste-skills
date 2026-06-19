@@ -132,7 +132,7 @@ function validateRepoAttachment(plan, options, repoInfo) {
     if (options.explicitRepo) {
       return { errors: [`--repo must point inside a git repository for ${plan.mode} mode: ${options.repoStart}`] };
     }
-    plan.repoSkippedReason = '현재 프로젝트를 찾지 못해 프로젝트 연결을 건너뜀';
+    plan.repoSkippedReason = 'No current project detected, so project connection was skipped';
     plan.connectRepo = false;
     plan.writeProfile = false;
     plan.writeBridge = false;
@@ -183,7 +183,7 @@ export async function maybeInstallMissingForConnect(plan) {
       ],
     };
   }
-  const answer = await ask(`\n필요한 skills ${missing.length}개가 없습니다. 지금 추가 설치할까요? [y=설치 / Enter=취소] `);
+  const answer = await ask(`\n${missing.length} required skills are missing. Install them now? [y=install / Enter=cancel] `);
   if (String(answer).trim().toLowerCase() === 'y') {
     plan.installMissing = true;
     plan.preflight.skills.action = 'install-missing';
@@ -193,7 +193,7 @@ export async function maybeInstallMissingForConnect(plan) {
     ok: false,
     errors: [
       `connect requires ${plan.skillSet} skills but ${missing.length} are missing.`,
-      '먼저 `jhste-skills install`을 실행하거나 `--install-missing`을 사용하세요.',
+      'Run `jhste-skills install` first or use `--install-missing`.',
     ],
   };
 }

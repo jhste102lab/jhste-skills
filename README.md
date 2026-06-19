@@ -69,24 +69,24 @@ node cli/baseline.mjs --repo /path/to/repo
 The install prompts are intentionally small:
 
 ```text
-설치 방식을 선택하세요.
+Choose an install mode.
 
-1) Minimal - 가장 가볍게 설치합니다
-2) Normal  - 추천 설정으로 설치합니다
-3) Full    - 안전하게 가능한 모든 기능을 설치합니다
-4) Custom  - 직접 선택합니다
+1) Minimal - Install the lightest setup
+2) Normal  - Use the recommended setup
+3) Full    - Install every safe optional feature
+4) Custom  - Choose settings manually
 
-선택 [Enter=Normal / q=취소]:
+Choice [Enter=Normal / q=cancel]:
 
-파일 길이 제한을 설정할까요?
-큰 파일은 리뷰/수정/테스트 경계가 흐려지기 쉽습니다.
+Configure a file length limit?
+Large files make review, edits, and test boundaries harder to reason about.
 
-1) 300줄 기준으로 경고만 표시
-2) 300줄 기준으로 커밋 차단
-3) 사용하지 않기
-4) 줄 수 직접 입력
+1) Warn only at 300 lines
+2) Block commits at 300 lines
+3) Do not use a line limit
+4) Enter a custom line count
 
-선택 [Enter=1]:
+Choice [Enter=1]:
 ```
 
 ## Recommended rollout

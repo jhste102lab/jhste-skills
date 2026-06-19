@@ -35,15 +35,15 @@ async function main() {
   atomicWrite(reportPath, renderReport({ repoRoot, files, skipped, stack, instructions, findings }));
   atomicWrite(recommendedPath, renderRecommendedProfile({ stack, findings, thresholds }));
 
-  console.log('Deep scan이 끝났습니다. 코드는 수정하지 않았습니다.');
-  console.log(`- 감지된 stack: ${Object.entries(stack).filter(([, value]) => value).map(([key]) => key).join(', ') || 'none'}`);
+  console.log('Deep scan completed. No code was modified.');
+  console.log(`- Detected stack: ${Object.entries(stack).filter(([, value]) => value).map(([key]) => key).join(', ') || 'none'}`);
   console.log(`- Files inspected: ${files.length}`);
   console.log(`- Files skipped: ${skipped.length}`);
-  console.log('- 추천: advisory default, changed-files 후보는 사용자 승인 후 적용');
-  console.log('\n결과 파일:');
+  console.log('- Recommendation: keep advisory as the default; apply changed-files candidates only after user approval');
+  console.log('\nOutput files:');
   console.log(`- ${relativeDisplay(repoRoot, reportPath)}`);
   console.log(`- ${relativeDisplay(repoRoot, recommendedPath)}`);
-  console.log('\n추천 설정을 적용하려면:');
+  console.log('\nTo apply the recommended settings:');
   console.log('  npx jhste-skills tune');
 }
 

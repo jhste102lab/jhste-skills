@@ -36,7 +36,7 @@ async function main() {
 
   let resolved = await resolvePlan(options);
   if (resolved.cancelled) {
-    console.log('연결을 취소했습니다. 변경 없음.');
+    console.log('Connection cancelled. No changes made.');
     return;
   }
   if (resolved.errors?.length) {
@@ -49,7 +49,7 @@ async function main() {
 
   let confirmation = await confirmPlan(plan);
   if (confirmation === 'cancel') {
-    console.log('연결을 취소했습니다. 변경 없음.');
+    console.log('Connection cancelled. No changes made.');
     return;
   }
   if (confirmation === 'custom') {
@@ -62,7 +62,7 @@ async function main() {
     printPlanSummary(plan);
     confirmation = await confirmPlan(plan);
     if (confirmation !== 'yes') {
-      console.log('연결을 취소했습니다. 변경 없음.');
+      console.log('Connection cancelled. No changes made.');
       return;
     }
   }

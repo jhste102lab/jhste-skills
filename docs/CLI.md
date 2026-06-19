@@ -42,7 +42,7 @@ Safety and compatibility:
 - `AGENTS.md` and `CLAUDE.md` bridge blocks use `<!-- jhste-skills:start -->` / `<!-- jhste-skills:end -->` markers; only that managed block is updated on later runs;
 - CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default in Normal, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install;
 - installed bridge/profile guidance tells agents to run `jhste-red-team-review` before declaring non-trivial code work complete, while skipping docs-only, comment-only, formatting-only, and trivial rename-only changes.
-- guard text output includes short `의미` and `대처` guidance for warning/info findings so users can understand and address candidates from hook output.
+- guard text output includes short `Meaning` and `Next` guidance for warning/info findings so users can understand and address candidates from hook output.
 
 Repo detection:
 
