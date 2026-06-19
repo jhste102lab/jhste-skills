@@ -5,7 +5,7 @@ Use an objective red-team checklist. Prefer concrete findings over broad praise.
 ## Checklist
 
 - Inspect the changed files or diff directly. Do not pass from summaries, test output, or guard output alone.
-- Responsibility is separated cleanly enough that modules and components each have a clear main job.
+- Responsibility is separated cleanly enough that changed classes, modules, functions, and UI components each have a clear main job and one main reason to change.
 - Data flow is predictable and easy to trace through the changed code.
 - Null, undefined, empty, loading, and error states are handled safely for the affected paths.
 - Failure handling is observable and does not silently pretend success.

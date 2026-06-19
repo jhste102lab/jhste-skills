@@ -5,6 +5,7 @@ import {
   fileSizeSettings,
   loadProfileConfig,
   responsibilityBudgetSettings,
+  singleResponsibilitySettings,
   validateProfileConfig,
 } from './profile.mjs';
 import { readJsonFile, validateJsonObject } from './json-file.mjs';
@@ -75,6 +76,7 @@ async function main() {
     scope: scope.scope,
     fileSize: fileSizeSettings(profileState.profile),
     responsibilityBudget: responsibilityBudgetSettings(profileState.profile),
+    singleResponsibility: singleResponsibilitySettings(profileState.profile),
   };
   for (const relPath of scope.files) {
     const result = scanFile(repoRoot, relPath, scanSettings);

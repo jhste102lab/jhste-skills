@@ -32,3 +32,10 @@ Use these as defaults, not as mandatory architecture. Prefer repo-local names an
 - Handoff contract: schema, provenance, timestamp, and validation status.
 - Consumer: validate, dedupe, and persist according to storage policy.
 - Runtime adapter: browser/network/clock/sleep effects are explicit and replaceable.
+
+## Generic module or function
+
+- Module: one named responsibility and one main reason to change.
+- Function: either one cohesive policy/transform or thin orchestration over named seams.
+- Compatibility facade: allowed only when it contains no policy and prevents import churn during refactors.
+- Avoid: shared utility buckets that mix parsing, git/repo discovery, filesystem IO, prompting, rendering, and templates.

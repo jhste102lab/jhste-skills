@@ -27,3 +27,15 @@ When reviewing a proposed change, ask:
 ### Adjacent-code scope limit
 
 Change adjacent code only when it sits on the changed execution path and leaving it unchanged creates a concrete failure mode. Otherwise record an issue candidate instead of expanding the refactor.
+
+### Generic module or function split
+
+- Bad: a shared module exports argument parsing, git discovery, file copying, prompts, profile templates, and reporting helpers because they were all convenient to import from one place.
+- Better: each module owns one responsibility such as argument parsing, repository discovery, filesystem operations, prompting, or rendering; keep a compatibility facade only when it contains no policy and prevents churn.
+- Why: maintainers can name one reason to change the module, while callers do not learn unrelated helpers.
+
+### Function responsibility split
+
+- Bad: one function parses input, validates it, reads files, transforms data, writes output, prints a report, and decides exit behavior.
+- Better: keep orchestration thin and move parsing, validation, side effects, transformation, and reporting behind named functions or modules when those responsibilities change independently.
+- Why: tests can target the responsibility that changed, and side effects stay visible at the seam that owns them.

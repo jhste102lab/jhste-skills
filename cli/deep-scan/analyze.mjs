@@ -11,6 +11,7 @@ const SHARED_SCANNER_BUCKETS = new Map([
   ['no_secret_logging', 'secretLogging'],
   ['file_size_advisory', 'largeFiles'],
   ['responsibility_budget', 'responsibilityBudget'],
+  ['single_responsibility_advisory', 'singleResponsibility'],
   ['component_responsibility', 'clientServerSeam'],
   ['external_input_validation', 'externalInput'],
   ['null_state_safety', 'stateSafety'],
@@ -39,6 +40,7 @@ function addSharedScannerCandidates(file, text, findings, thresholds) {
     applyProfile: false,
     fileSize: thresholds.fileSize,
     responsibilityBudget: thresholds.responsibility,
+    singleResponsibility: thresholds.singleResponsibility,
   });
   const seen = new Set();
   for (const finding of sharedFindings) {
@@ -134,6 +136,7 @@ function newFindingsBag() {
     dbInRoutes: [],
     routeResponsibility: [],
     responsibilityBudget: [],
+    singleResponsibility: [],
     clientServerSeam: [],
     hiddenSideEffects: [],
     secretLogging: [],

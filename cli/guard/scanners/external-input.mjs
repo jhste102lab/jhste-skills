@@ -11,7 +11,7 @@ function hasLocalValidation(text, index, before = 360, after = 720) {
 export function externalInputValidationFindings(relPath, text) {
   const out = [];
   const markerText = maskCommentsAndStrings(text);
-  for (const match of text.matchAll(/\bJSON\.parse\s*\(/g)) {
+  for (const match of markerText.matchAll(/\bJSON\.parse\s*\(/g)) {
     const before = localWindow(markerText, match.index || 0, 260, 20);
     if (/\b(readFileSync|readFile)\s*\(/.test(before) && !hasLocalValidation(text, match.index || 0)) {
       out.push({
@@ -26,7 +26,7 @@ export function externalInputValidationFindings(relPath, text) {
       break;
     }
   }
-  for (const match of text.matchAll(/\.json\s*\(\s*\)/g)) {
+  for (const match of markerText.matchAll(/\.json\s*\(\s*\)/g)) {
     const window = localWindow(text, match.index || 0, 420, 260);
     if (/\bfetch\s*\(\s*['"]https?:\/\//.test(window) && !hasLocalValidation(text, match.index || 0)) {
       out.push({
@@ -40,10 +40,10 @@ export function externalInputValidationFindings(relPath, text) {
       break;
     }
   }
-  for (const match of text.matchAll(/\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*await\s+(?:request|req)\.json\s*\(/g)) {
+  for (const match of markerText.matchAll(/\bconst\s+([A-Za-z_$][\w$]*)\s*=\s*await\s+(?:request|req)\.json\s*\(/g)) {
     const bodyVar = match[1];
     if (hasLocalValidation(text, match.index || 0, 40, 720)) continue;
-    const after = localWindow(text, match.index || 0, 0, 1100);
+    const after = localWindow(markerText, match.index || 0, 0, 1100);
     const directUse = new RegExp(`\\b(?:create|update|upsert|delete|save|mutate|service\\.[A-Za-z_$][\\w$]*|usecase\\.[A-Za-z_$][\\w$]*)\\s*\\(\\s*${bodyVar}\\b`).test(after);
     if (directUse) {
       out.push({
@@ -57,7 +57,7 @@ export function externalInputValidationFindings(relPath, text) {
       break;
     }
   }
-  for (const match of text.matchAll(/\bexport\s+(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=\s*(?:\{[\s\S]{0,240})?process\.env\.[A-Z0-9_]+\b/g)) {
+  for (const match of markerText.matchAll(/\bexport\s+(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=\s*(?:\{[\s\S]{0,240})?process\.env\.[A-Z0-9_]+\b/g)) {
     if (!hasLocalValidation(text, match.index || 0)) {
       out.push({
         ruleId: 'input.env_export_unvalidated',

@@ -4,64 +4,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const required = [
-  'AGENTS.md',
-  'README.md',
-  'LICENSE',
-  'package.json',
-  'skills/setup/SKILL.md',
-  'skills/jhste-engineering-judgment/SKILL.md',
-  'skills/jhste-engineering-judgment/references/structure-templates.md',
-  'skills/jhste-code-quality/SKILL.md',
-  'skills/jhste-architecture-review/SKILL.md',
-  'skills/jhste-db-api-boundary/SKILL.md',
-  'skills/jhste-crawler-automation/SKILL.md',
-  'skills/jhste-red-team-review/SKILL.md',
-  'skills/jhste-red-team-review/references/red-team-review.md',
-  'rules/core/no_silent_failure.yaml',
-  'rules/core/no_secret_logging.yaml',
-  'rules/core/workflow_security.yaml',
-  'rules/core/file_size_advisory.yaml',
-  'rules/core/responsibility_budget.yaml',
-  'rules/core/null_state_safety.yaml',
-  'rules/core/authz_data_isolation.yaml',
-  'rules/core/build_runtime_env_safety.yaml',
-  'rules/core/write_safety_idempotency.yaml',
-  'rules/core/api_contract_compatibility.yaml',
-  'rules/core/performance_duplicate_fetch.yaml',
-  'rules/core/public_safe_error.yaml',
-  'rules/database/sql_parameter_binding.yaml',
-  'rules/database/db_row_validation.yaml',
-  'rules/crawler/crawler_producer_boundary.yaml',
-  'packs/core.yaml',
-  'packs/web.yaml',
-  'packs/api.yaml',
-  'packs/database.yaml',
-  'packs/crawler.yaml',
-  'adapters/codex/README.md',
-  'adapters/claude/README.md',
-  'adapters/generic/README.md',
-  'cli/profile.mjs',
-  'cli/install.mjs',
-  'cli/install-flow.mjs',
-  'cli/install-actions.mjs',
-  'cli/connect.mjs',
-  'cli/deep-scan.mjs',
-  'cli/guard.mjs',
-  'cli/guard/registry.mjs',
-  'cli/guard/scanners/external-input.mjs',
-  'cli/hooks.mjs',
-  'cli/hook-utils.mjs',
-  'cli/tune.mjs',
-  'cli/baseline.mjs',
-  'scripts/syntax-check.mjs',
-  'scripts/release-gates-test.mjs',
-  'vendor/matt-pocock/allowlist.json',
-  'vendor/matt-pocock/source-lock.json',
-  'examples/profile.yaml',
-  'docs/ACCEPTANCE_CHECK.md',
-  'docs/PUBLIC_SAFETY.md',
-];
+import { recipeRequirements, required } from './docs-check-data.mjs';
+
+
 
 function fail(message) {
   console.error(`docs-check failed: ${message}`);
@@ -258,7 +203,7 @@ for (const [ruleId, rule] of ruleById.entries()) {
 }
 
 const bridgeText = 'Repo-local instructions in this file remain authoritative.';
-for (const rel of ['adapters/codex/README.md', 'docs/CONFLICT_RESOLUTION.md', 'cli/shared.mjs']) {
+for (const rel of ['adapters/codex/README.md', 'docs/CONFLICT_RESOLUTION.md', 'cli/shared/templates.mjs']) {
   const text = read(rel);
   if (!text.includes(bridgeText)) {
     fail(`${rel} must include authoritative repo-local bridge wording`);
@@ -291,7 +236,7 @@ for (const forbidden of ['.github/workflows', '.git/hooks', 'package-lock.json',
 if (/writeFileSync\([^\n]+package\.json/.test(install)) fail('installer must not write target package.json');
 
 const pkg = safeParse('package.json');
-for (const script of ['syntax:check', 'public-safety:check', 'vendor:check', 'docs:check', 'guard-fixtures:test', 'smoke:test', 'release:gates']) {
+for (const script of ['syntax:check', 'public-safety:check', 'vendor:check', 'docs:check', 'guard-fixtures:test', 'single-responsibility-fixtures:test', 'smoke:test', 'release:gates']) {
   if (!pkg.scripts?.[script]) fail(`package script missing: ${script}`);
 }
 
@@ -305,15 +250,7 @@ for (const requiredText of ['Restricted profile format', '--trust-repo-profile',
   if (!rulesDoc.includes(requiredText)) fail(`docs/RULES.md missing rule/profile wording: ${requiredText}`);
 }
 
-const recipeRequirements = {
-  'skills/jhste-code-quality/references/code-quality.md': ['React client loader/hook/adapter/view', 'Mutation write safety', 'Import/ops script'],
-  'skills/jhste-architecture-review/references/architecture-review.md': ['Next.js or API route split', 'React client path split', 'Adjacent-code scope limit'],
-  'skills/jhste-db-api-boundary/references/db-api-boundary.md': ['DB row to domain/public DTO', 'Scoped mutation'],
-  'skills/jhste-crawler-automation/references/crawler-automation.md': ['Producer / consumer recipe'],
-  'skills/jhste-engineering-judgment/SKILL.md': ['Senior-quality pre-edit gate', 'partial-failure or rollback path', 'Adjacent-code scope creep'],
-  'skills/jhste-red-team-review/SKILL.md': ['Severity rubric and path tracing', 'changed execution path'],
-  'skills/jhste-red-team-review/references/red-team-review.md': ['Severity rubric', 'Trace at least one changed execution path'],
-};
+
 for (const [rel, snippets] of Object.entries(recipeRequirements)) {
   const text = read(rel);
   for (const snippet of snippets) {

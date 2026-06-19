@@ -13,6 +13,8 @@ Use before non-trivial code changes. Repo-local instructions and architecture do
 - Check the user's premise against code, tests, and repo-local instructions before accepting it.
 - Before editing, run the pre-edit evidence check for non-trivial code changes and report only a concise user-facing summary.
 - Identify the ownership seam: UI, route/controller, usecase/service, repository/query, adapter, job, script, or test fixture.
+- Name the one main responsibility and one main reason to change for each changed class, module, and function.
+- Reject adjacent responsibilities unless they are on the changed execution path and leaving them out creates a concrete failure mode.
 - List the important failure paths before writing code.
 - State the data contract entering and leaving the changed seam.
 - Prefer the smallest change that preserves future extension.
@@ -29,11 +31,12 @@ For non-trivial code changes, check these before editing:
 1. **Goal** — concrete behavior or safety property being changed.
 2. **Evidence inspected** — repo instructions, issue/PR context, files, tests, and code paths actually inspected.
 3. **Ownership seam** — the smallest module boundary being changed.
-4. **Data in/out** — inputs entering the seam and outputs/errors leaving it.
-5. **Failure paths** — important ways this can fail or mislead users/tools.
-6. **Rejected scope** — adjacent refactors or old problems intentionally not touched.
-7. **Smallest safe change** — why the planned change is minimal.
-8. **Verification plan** — tests, guards, builds, or manual checks to run, plus any checks likely to be skipped.
+4. **Changed responsibility** — the one main responsibility of each changed class/module/function, plus adjacent responsibilities intentionally rejected.
+5. **Data in/out** — inputs entering the seam and outputs/errors leaving it.
+6. **Failure paths** — important ways this can fail or mislead users/tools.
+7. **Rejected scope** — adjacent refactors or old problems intentionally not touched.
+8. **Smallest safe change** — why the planned change is minimal.
+9. **Verification plan** — tests, guards, builds, or manual checks to run, plus any checks likely to be skipped.
 
 Keep these items available as internal review evidence, but do not make the user read the full 8-item block every time. User-facing output should usually be one or two plain sentences covering:
 
@@ -72,7 +75,7 @@ Avoid: "Should I create an issue?" without supporting reasoning.
 
 ## Senior-quality pre-edit gate
 
-For non-trivial code changes, compare at least two plausible shapes before editing: the smallest local patch and one cleaner seam-preserving alternative. State the invariant that must remain true, the caller contract entering and leaving the seam, the test seam that will prove behavior, the rejected alternative, and the partial-failure or rollback path. Keep this quiet for docs-only, comment-only, formatting-only, and trivial rename-only work.
+For non-trivial code changes, compare at least two plausible shapes before editing: the smallest local patch and one cleaner seam-preserving alternative. State the invariant that must remain true, the changed class/module/function responsibility, the caller contract entering and leaving the seam, the test seam that will prove behavior, the rejected alternative, and the partial-failure or rollback path. Keep this quiet for docs-only, comment-only, formatting-only, and trivial rename-only work.
 
 Adjacent-code scope creep is allowed only when the adjacent code is on the changed execution path and leaving it untouched creates a concrete failure mode. Otherwise emit an Issue candidate rather than widening the change.
 

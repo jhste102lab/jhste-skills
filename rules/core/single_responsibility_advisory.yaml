@@ -1,0 +1,35 @@
+id: single_responsibility_advisory
+title: Single responsibility advisory
+description: Changed classes, modules, and functions should have one clear responsibility and one main reason to change.
+pack: core
+default_mode: advisory
+severity: medium
+applies_to:
+  languages: [typescript, javascript, python]
+  paths: [src, app, apps, packages, scripts, cli]
+settings:
+  function_review_lines: 80
+  mixed_responsibility_hints: 3
+  module_export_family_hints: 4
+scan:
+  type: single_responsibility
+  signals:
+    - function_line_count
+    - mixed_function_responsibility_hints
+    - mixed_module_export_family_hints
+implementation:
+  guard:
+    status: builtin
+    scanner: scanSingleResponsibility
+    confidence: heuristic
+    finding_ids:
+      - srp.function.length
+      - srp.function.mixed_responsibility
+      - srp.module.mixed_exports
+recommendation:
+  changed_files: true
+  baseline_supported: true
+  default_enforcement: review_only
+public_safe_examples:
+  bad: Keep adding parsing, validation, filesystem IO, prompting, transformation, persistence, and reporting to one function or shared utility bucket.
+  good: Name the changed module or function's one responsibility, keep cohesive implementation inside deep modules, and extract only when a real seam improves locality.

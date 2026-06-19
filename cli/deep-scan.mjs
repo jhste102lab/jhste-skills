@@ -11,6 +11,7 @@ import {
   fileSizeSettings,
   loadProfileConfig,
   responsibilityBudgetSettings,
+  singleResponsibilitySettings,
 } from './profile.mjs';
 import { collectFiles, detectInstructions, detectStack } from './deep-scan/collect.mjs';
 import { scanFiles } from './deep-scan/analyze.mjs';
@@ -23,6 +24,7 @@ async function main() {
   const thresholds = {
     fileSize: fileSizeSettings(profileState.profile),
     responsibility: responsibilityBudgetSettings(profileState.profile),
+    singleResponsibility: singleResponsibilitySettings(profileState.profile),
   };
   const { files, skipped, source } = collectFiles(repoRoot);
   const stack = detectStack(repoRoot, files);

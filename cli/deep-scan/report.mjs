@@ -68,6 +68,8 @@ ${tableRows(findings.rawSql)}
 ${tableRows([...findings.dbInRoutes, ...findings.routeResponsibility])}
 ### Existing responsibility budget candidates
 ${tableRows(findings.responsibilityBudget)}
+### Existing single-responsibility candidates
+${tableRows(findings.singleResponsibility)}
 ### Existing client/server seam candidates
 ${tableRows(findings.clientServerSeam)}
 ### Existing hidden side-effect candidates
@@ -148,6 +150,11 @@ rules:
     route_review_lines: ${thresholds.responsibility.route_review_lines}
     import_ops_script_review_lines: ${thresholds.responsibility.import_ops_script_review_lines}
     python_orchestrator_review_lines: ${thresholds.responsibility.python_orchestrator_review_lines}
+  single_responsibility_advisory:
+    mode: advisory
+    function_review_lines: ${thresholds.singleResponsibility.function_review_lines}
+    mixed_responsibility_hints: ${thresholds.singleResponsibility.mixed_responsibility_hints}
+    module_export_family_hints: ${thresholds.singleResponsibility.module_export_family_hints}
   external_input_validation:
     mode: advisory
   null_state_safety:

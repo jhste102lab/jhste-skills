@@ -114,7 +114,7 @@ It is meant for the common workflow of pulling the latest `jhste-skills` source 
 
 It uses Git-backed file collection by default so `.gitignore` rules are honored, then excludes generated, vendor, build, dependency, lock, large binary-like, and secret/env-like files. Secret-like findings are reported only as redacted summaries.
 
-The report includes responsibility budget candidates for large or mixed-responsibility pages, client modules, routes/controllers, import/ops scripts, and Python orchestrators. These are advisory review prompts by default and do not prove a file is wrong.
+The report includes responsibility budget candidates for large or mixed-responsibility pages, client modules, routes/controllers, import/ops scripts, and Python orchestrators, plus single-responsibility candidates for long or mixed-concern functions and mixed-export modules. These are advisory review prompts by default and do not prove a file is wrong.
 
 ## `guard`
 

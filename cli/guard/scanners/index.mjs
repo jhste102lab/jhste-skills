@@ -29,6 +29,7 @@ import {
   scanSideEffectBoundary,
   scanStateSafety,
 } from './ui-runtime.mjs';
+import { scanSingleResponsibility } from './single-responsibility.mjs';
 import { isSourceCodePath, violation } from './utils.mjs';
 
 const ACTIVE_PROFILE_MODES = new Set(['advisory', 'changed-files', 'baseline-new-only', 'strict']);
@@ -48,6 +49,7 @@ export const SCANNER_REGISTRY = [
   { id: 'scanExternalInputValidation', families: ['external_input_validation'], scan: ({ relPath, text }) => scanExternalInputValidation(relPath, text) },
   { id: 'scanFileSizeAdvisory', families: ['file_size_advisory'], scan: ({ relPath, text, settings }) => scanFileSizeAdvisory(relPath, text, settings.fileSize) },
   { id: 'scanResponsibilityBudget', families: ['responsibility_budget'], scan: ({ relPath, text, settings }) => scanResponsibilityBudget(relPath, text, settings.responsibilityBudget) },
+  { id: 'scanSingleResponsibility', families: ['single_responsibility_advisory'], scan: ({ relPath, text, settings }) => scanSingleResponsibility(relPath, text, settings.singleResponsibility) },
   { id: 'scanStateSafety', families: ['null_state_safety'], scan: ({ relPath, text }) => scanStateSafety(relPath, text) },
   { id: 'scanAuthzDataIsolation', families: ['authz_data_isolation'], scan: ({ relPath, text }) => scanAuthzDataIsolation(relPath, text) },
   { id: 'scanRuntimeEnvSafety', families: ['build_runtime_env_safety'], scan: ({ relPath, text }) => scanRuntimeEnvSafety(relPath, text) },

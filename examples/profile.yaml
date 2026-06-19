@@ -14,6 +14,11 @@ rules:
     route_review_lines: 250
     import_ops_script_review_lines: 280
     python_orchestrator_review_lines: 600
+  single_responsibility_advisory:
+    mode: advisory
+    function_review_lines: 80
+    mixed_responsibility_hints: 3
+    module_export_family_hints: 4
 baseline:
   enabled: false
   path: .jhste/baseline.json
