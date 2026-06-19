@@ -9,43 +9,22 @@ import {
   isScriptPipelinePath,
   isSourceCodePath,
   lineAt,
-  localWindow,
-  maskCommentsAndStrings,
   violation,
 } from './utils.mjs';
-
-function hasScopedPersistencePredicate(text) {
-  const masked = maskCommentsAndStrings(text);
-  const scopeToken = /\b(userId|user\.id|accountId|orgId|tenantId|ownerId|workspaceId|teamId|projectId)\b/i;
-  const prismaAccess = /\bprisma\.\w+\.(find(?:Unique|First|Many)?|aggregate|count|create|update|delete|upsert)\s*\(/gi;
-  for (const match of masked.matchAll(prismaAccess)) {
-    const window = localWindow(masked, match.index || 0, 0, 700);
-    if (/\bwhere\s*:/.test(window) && scopeToken.test(window)) return true;
-  }
-  const sqlAccess = /\b(SELECT\b[\s\S]{0,180}\bFROM\b|UPDATE\s+\w+\s+SET|DELETE\s+FROM|INSERT\s+INTO)\b/gi;
-  for (const match of text.matchAll(sqlAccess)) {
-    const window = localWindow(text, match.index || 0, 40, 700);
-    if (/\bWHERE\b/i.test(window) && scopeToken.test(window)) return true;
-  }
-  const queryAccess = /\b(pool|client|db|database)\.(query|execute|select|from|update|delete|insert)\b/gi;
-  for (const match of text.matchAll(queryAccess)) {
-    const window = localWindow(text, match.index || 0, 40, 700);
-    if ((/\bwhere\s*:/.test(window) || /\bWHERE\b/i.test(window)) && scopeToken.test(window)) return true;
-  }
-  return false;
-}
-
-function hasWriteSafetyMarker(text) {
-  return /\b(transaction|batch|Promise\.allSettled|idempotenc|dedup|dedupe|upsert|ON CONFLICT|on conflict)\b/i.test(maskCommentsAndStrings(text));
-}
+import {
+  hasLoopedWriteWithoutSafety,
+  hasUnscopedPersistenceAccess,
+  hasWriteWithoutLocalSafety,
+} from './data-boundary-locality.mjs';
 
 export function scanAuthzDataIsolation(relPath, text) {
   if (!isRouteLikePath(relPath)) return [];
   const out = [];
   const hasDbAccess = hasPersistenceAccess(text);
   const authContextVisible = hasAuthContext(text);
-  const scopeVisible = hasScopedPersistencePredicate(text);
-  if (hasDbAccess && authContextVisible && !scopeVisible && !hasReadHandler(text)) {
+  const unscopedAccessVisible = hasUnscopedPersistenceAccess(text);
+  const unscopedReadVisible = hasUnscopedPersistenceAccess(text, { reads: true, writes: false });
+  if (hasDbAccess && authContextVisible && unscopedAccessVisible && !hasReadHandler(text)) {
     out.push(violation({
       ruleId: 'authz.scope_not_visible',
       severity: 'warning',
@@ -65,7 +44,7 @@ export function scanAuthzDataIsolation(relPath, text) {
       confidence: 'low',
     }));
   }
-  if (hasDbAccess && hasReadHandler(text) && authContextVisible && !scopeVisible) {
+  if (hasDbAccess && hasReadHandler(text) && authContextVisible && unscopedReadVisible) {
     out.push(violation({
       ruleId: 'authz.read_scope_not_visible',
       severity: 'warning',
@@ -91,14 +70,14 @@ export function scanAuthzDataIsolation(relPath, text) {
 export function scanWriteSafety(relPath, text) {
   const out = [];
   const hasWrite = hasPersistenceWrite(text);
-  const markerVisible = hasWriteSafetyMarker(text);
+  const unsafeLoopedWrite = hasLoopedWriteWithoutSafety(text);
+  const unsafeWrite = hasWriteWithoutLocalSafety(text);
   const writeSafetyPath = isRouteLikePath(relPath)
     || isScriptPipelinePath(relPath)
     || /(^|\/)(repositories?|queries|db|database|migrations?)\//i.test(relPath);
   if (writeSafetyPath
     && hasWrite
-    && /(forEach\s*\(|for\s*\([^)]*;|for\s*\(\s*const\s+.+\s+of\s+|\.map\s*\(|while\s*\()/i.test(text)
-    && !markerVisible) {
+    && unsafeLoopedWrite) {
     out.push(violation({
       ruleId: 'write.loop_without_transaction',
       severity: 'warning',
@@ -111,7 +90,7 @@ export function scanWriteSafety(relPath, text) {
   if (isRouteLikePath(relPath)
     && hasMutationHandler(text)
     && hasWrite
-    && !markerVisible) {
+    && unsafeWrite) {
     out.push(violation({
       ruleId: 'write.mutation_retry_safety',
       severity: 'warning',

@@ -132,9 +132,13 @@ function makeLargePage(repo) {
   const outside = path.join(path.dirname(repo), 'outside-baseline.json');
   const result = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'update', '--baseline-path', outside, '--format', 'json', '--fail-on', 'none'], { cwd: repo });
   if (result.status !== 3) fail(`absolute outside baseline path should exit 3, got ${result.status}`);
+  const parsedOutside = JSON.parse(result.stdout);
+  if (parsedOutside.failures?.[0]?.code !== 'guard.config') fail('absolute outside baseline path should return JSON guard.config failure');
   if (fs.existsSync(outside)) fail('outside baseline path was written');
   const relativeOutside = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'update', '--baseline-path', '../outside-baseline.json', '--format', 'json', '--fail-on', 'none'], { cwd: repo });
   if (relativeOutside.status !== 3) fail(`relative outside baseline path should exit 3, got ${relativeOutside.status}`);
+  const parsedRelativeOutside = JSON.parse(relativeOutside.stdout);
+  if (parsedRelativeOutside.failures?.[0]?.code !== 'guard.config') fail('relative outside baseline path should return JSON guard.config failure');
   if (fs.existsSync(path.join(path.dirname(repo), 'outside-baseline.json'))) fail('relative outside baseline path was written');
 }
 
@@ -193,15 +197,19 @@ function makeLargePage(repo) {
   write(path.join(repo, 'src/app/api/mixed/route.ts'), `const schema = { safeParse(value) { return { success: true, data: value }; } };\nexport async function helper(request) {\n  const parsed = schema.safeParse(await request.json());\n  return parsed;\n}\nexport async function POST(request) {\n  const body = await request.json();\n  return Response.json(await service.createOrder(body));\n}\n`);
   write(path.join(repo, 'src/app/api/authz/route.ts'), `export async function GET() {\n  const user = await requireUser();\n  const userId = user.id;\n  const rows = await prisma.order.findMany({ where: { status: 'OPEN' } });\n  return Response.json({ rows });\n}\n`);
   write(path.join(repo, 'src/app/api/authz-safe/route.ts'), `export async function GET() {\n  const user = await requireUser();\n  const rows = await prisma.order.findMany({ where: { userId: user.id, status: 'OPEN' } });\n  return Response.json({ rows: rows.map((row) => ({ id: row.id })) });\n}\n`);
+  write(path.join(repo, 'src/app/api/authz-mixed/route.ts'), `export async function GET() {\n  const user = await requireUser();\n  const ownRows = await prisma.order.findMany({ where: { userId: user.id, status: 'OPEN' } });\n  const publicRows = await prisma.order.findMany({ where: { status: 'OPEN' } });\n  return Response.json({ own: ownRows.length, public: publicRows.length });\n}\n`);
   write(path.join(repo, 'src/app/api/write/route.ts'), `export async function POST(request) {\n  // TODO: add transaction later\n  const items = await request.json();\n  for (const item of items) {\n    await prisma.order.create({ data: item });\n  }\n  return Response.json({ ok: true });\n}\n`);
   write(path.join(repo, 'src/app/api/write-safe/route.ts'), `export async function POST(request) {\n  const items = await request.json();\n  await prisma.$transaction(items.map((item) => prisma.order.create({ data: item })));\n  return Response.json({ ok: true });\n}\n`);
+  write(path.join(repo, 'src/app/api/write-mixed/route.ts'), `export async function POST(request) {\n  const items = await request.json();\n  await prisma.$transaction(items.map((item) => prisma.order.create({ data: item })));\n  for (const item of items) {\n    await prisma.invoice.create({ data: item });\n  }\n  return Response.json({ ok: true });\n}\n`);
   write(path.join(repo, 'src/app/api/error/route.ts'), `export async function GET() {\n  try {\n    throw new Error('boom');\n  } catch (err) {\n    return Response.json({\n      error: err.message,\n    }, { status: 500 });\n  }\n}\n`);
   const result = guardJson(repo);
   if (!hasRule(result, 'input.request_body_direct_use', 'mixed/route.ts')) fail('localized external input scanner was suppressed by validator in another function');
   if (!hasRule(result, 'authz.read_scope_not_visible', 'authz/route.ts')) fail('authz scope scanner was suppressed by unrelated userId variable');
   notHasRule(result, 'authz.read_scope_not_visible', 'authz-safe/route.ts');
+  if (!hasRule(result, 'authz.read_scope_not_visible', 'authz-mixed/route.ts')) fail('authz scope scanner was suppressed by safe query elsewhere in same route file');
   if (!hasRule(result, 'write.loop_without_transaction', 'write/route.ts')) fail('write safety scanner was suppressed by transaction comment');
   notHasRule(result, 'write.loop_without_transaction', 'write-safe/route.ts');
+  if (!hasRule(result, 'write.loop_without_transaction', 'write-mixed/route.ts')) fail('write safety scanner was suppressed by transaction write elsewhere in same route file');
   if (!hasRule(result, 'error.public_raw_details', 'error/route.ts')) fail('multiline public raw error details were not reported');
 }
 
