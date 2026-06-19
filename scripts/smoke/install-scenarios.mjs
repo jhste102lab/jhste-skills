@@ -14,6 +14,7 @@ import { runModeScenarios } from './mode-scenarios.mjs';
 export function runInstallScenarios(ctx) {
   runRefusalScenarios(ctx);
   runDefaultInstall(ctx);
+  runUpdateScenarios(ctx);
   runLineLimitScenarios(ctx);
   runSkillSetScenarios(ctx);
   runModeScenarios(ctx);
@@ -100,6 +101,49 @@ function runDefaultInstall(ctx) {
   const defaultSkillDirs = skillDirs(skillsDir);
   if (defaultSkillDirs.length !== 7) fail(`default install should copy 7 core skills, got ${defaultSkillDirs.length}`);
   if (defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should not copy vendored workflow skills');
+}
+
+function runUpdateScenarios({ root, repo, skillsDir }) {
+  const skillPath = path.join(skillsDir, 'jhste-code-quality', 'SKILL.md');
+  const sourceSkillPath = path.join(root, 'skills', 'jhste-code-quality', 'SKILL.md');
+  const agentsPath = path.join(repo, 'AGENTS.md');
+  const preCommitPath = path.join(repo, '.git', 'hooks', 'pre-commit');
+
+  fs.writeFileSync(skillPath, '# stale local copy\n');
+
+  const existingAgents = fs.readFileSync(agentsPath, 'utf8');
+  const staleAgents = existingAgents.replace(
+    'Repo-local instructions in this file remain authoritative.',
+    'Old bridge text that should be replaced.',
+  );
+  fs.writeFileSync(agentsPath, staleAgents);
+
+  fs.writeFileSync(preCommitPath, `#!/usr/bin/env sh
+# jhste-skills managed hook start
+# mode=blocking hook=pre-commit scope=staged
+echo "stale hook"
+run_jhste_skills guard --scope staged --format text --fail-on warning
+# jhste-skills managed hook end
+`, { mode: 0o755 });
+
+  run(process.execPath, [path.join(root, 'cli/update.mjs'), '--yes', '--repo', repo, '--skills-dir', skillsDir], { cwd: repo });
+
+  if (fs.readFileSync(skillPath, 'utf8') !== fs.readFileSync(sourceSkillPath, 'utf8')) {
+    fail('update did not refresh an installed skill back to the current source version');
+  }
+
+  const updatedAgents = fs.readFileSync(agentsPath, 'utf8');
+  if (updatedAgents.includes('Old bridge text that should be replaced.')) {
+    fail('update did not refresh the managed bridge block');
+  }
+  if (!updatedAgents.includes('Repo-local instructions in this file remain authoritative.')) {
+    fail('update removed the managed bridge guidance');
+  }
+
+  const updatedPreCommit = fs.readFileSync(preCommitPath, 'utf8');
+  if (!updatedPreCommit.includes('mode=blocking')) fail('update did not preserve managed hook mode');
+  if (!updatedPreCommit.includes('--fail-on warning')) fail('update did not preserve managed hook fail-on behavior');
+  if (updatedPreCommit.includes('stale hook')) fail('update did not replace stale managed hook content');
 }
 
 function runLineLimitScenarios({ root, tmp }) {

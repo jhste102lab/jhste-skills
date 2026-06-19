@@ -49,6 +49,14 @@ jhste-skills connect
 
 `connect` requires a git repository and reuses the existing skills install. If required skills are missing, pass `--install-missing` explicitly or run `jhste-skills install` first.
 
+To refresh an existing installation after updating your local `jhste-skills` source:
+
+```bash
+jhste-skills update --yes --repo /path/to/repo
+```
+
+`update` is an alias for `sync`. It refreshes installed skill copies and already-managed repo outputs from the current local source. It does not run `git pull` or self-update the tool.
+
 Useful local-development commands:
 
 ```bash
@@ -59,6 +67,8 @@ node cli/install.mjs --yes --repo /path/to/repo --skip-hooks
 node cli/install.mjs --yes --repo /path/to/repo --hooks blocking
 node cli/install.mjs --yes --repo /path/to/repo --skill-set all
 node cli/connect.mjs --yes --repo /path/to/repo --install-missing
+node cli/sync.mjs --yes --repo /path/to/repo
+node cli/update.mjs --yes --repo /path/to/repo
 node cli/deep-scan.mjs --repo /path/to/repo
 node cli/guard.mjs --repo /path/to/repo --scope changed --format text --fail-on error
 node cli/hooks.mjs install --repo /path/to/repo --mode advisory

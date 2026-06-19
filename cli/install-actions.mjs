@@ -47,14 +47,19 @@ function skillNamesForSet(skillSet) {
   return all.filter((name) => !vendored.has(name));
 }
 
+function selectedSkillNames(plan) {
+  if (Array.isArray(plan.skillNames) && plan.skillNames.length > 0) return [...plan.skillNames];
+  return skillNamesForSet(plan.skillSet);
+}
+
 function installedSkillStatus(skillsDir, skillSet) {
-  const expected = skillNamesForSet(skillSet);
+  const expected = Array.isArray(skillSet) ? skillSet : skillNamesForSet(skillSet);
   const missing = expected.filter((name) => !fs.existsSync(path.join(skillsDir, name, 'SKILL.md')));
   return { expected, missing };
 }
 
 function preflightSkills(plan) {
-  const status = installedSkillStatus(plan.skillsDir, plan.skillSet);
+  const status = installedSkillStatus(plan.skillsDir, selectedSkillNames(plan));
   if (plan.installSkills) {
     return {
       enabled: true,
@@ -184,7 +189,8 @@ function escapeRegExp(value) {
 function installSkills(skillsDir, { force = false, skillSet = 'core' } = {}) {
   const sourceRoot = path.join(KIT_ROOT, 'skills');
   ensureDir(skillsDir);
-  return skillNamesForSet(skillSet).map((name) => copyDirSafe(path.join(sourceRoot, name), path.join(skillsDir, name), { force }));
+  const selected = Array.isArray(skillSet) ? skillSet : skillNamesForSet(skillSet);
+  return selected.map((name) => copyDirSafe(path.join(sourceRoot, name), path.join(skillsDir, name), { force }));
 }
 
 export function applyPlan(plan) {
@@ -198,7 +204,10 @@ export function applyPlan(plan) {
   };
 
   if (plan.installSkills || (plan.command === 'connect' && plan.installMissing && plan.preflight.skills.missing.length > 0)) {
-    result.skillResults = installSkills(plan.skillsDir, { force: plan.force, skillSet: plan.skillSet });
+    result.skillResults = installSkills(plan.skillsDir, {
+      force: plan.forceSkills ?? plan.force,
+      skillSet: plan.skillNames ?? plan.skillSet,
+    });
   }
 
   if (plan.writeProfile && plan.repoRoot) {
@@ -241,7 +250,13 @@ function summarizeStatuses(results) {
 }
 
 export function printApplyResult(plan, result) {
-  console.log(`\n${plan.command === 'connect' ? 'Connection' : 'Install'} completed.`);
+  const labels = {
+    connect: 'Connection',
+    install: 'Install',
+    sync: 'Sync',
+    update: 'Update',
+  };
+  console.log(`\n${labels[plan.command] || 'Run'} completed.`);
   if (result.skillResults.length) {
     const summary = summarizeStatuses(result.skillResults);
     console.log(`- Skills: ${Object.entries(summary).map(([k, v]) => `${k}=${v}`).join(', ') || 'none'}`);

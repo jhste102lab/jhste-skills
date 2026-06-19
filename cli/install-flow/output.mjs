@@ -2,6 +2,7 @@ import { ask, relativeDisplay } from '../shared.mjs';
 import { EXIT_CONFIG_FAILURE } from './options.mjs';
 
 function describeSkillSet(skillSet) {
+  if (skillSet === 'detected') return 'Currently installed skills';
   if (skillSet === 'all') return 'Core features + all optional features';
   if (skillSet === 'vendor') return 'Optional features only (advanced option)';
   return 'Core features';
@@ -12,7 +13,13 @@ function describeHookMode(mode) {
 }
 
 export function printPlanSummary(plan) {
-  console.log('\nInstall plan:');
+  const heading = {
+    connect: 'Connection plan',
+    install: 'Install plan',
+    sync: 'Sync plan',
+    update: 'Update plan',
+  }[plan.command] || 'Plan';
+  console.log(`\n${heading}:`);
   console.log(`- Command: ${plan.command}`);
   console.log(`- Mode: ${plan.mode}`);
   if (plan.overrides.length) console.log(`- Applied overrides: ${plan.overrides.join(', ')}`);

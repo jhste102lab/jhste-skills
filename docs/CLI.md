@@ -77,6 +77,34 @@ Safety contract:
 - missing required skills fail with an actionable message in `--yes` mode unless `--install-missing` is explicit;
 - repo profile, bridge blocks, and hooks follow the same managed-output safety rules as `install`.
 
+## `sync`
+
+`sync` refreshes an existing installation from the current local `jhste-skills` source.
+
+```bash
+jhste-skills sync --yes --repo /path/to/repo
+jhste-skills sync --yes --repo /path/to/repo --skills-dir /path/to/skills
+jhste-skills sync --yes --skill-set all
+```
+
+Stable contract:
+
+- refreshes installed skill directories by default when they differ from the current source;
+- only refreshes repo outputs that already look managed by jhste-skills (`.jhste/profile.yaml`, managed bridge markers, or managed hooks);
+- does not bootstrap unmanaged repositories; use `install` or `connect` for first-time setup;
+- preserves non-managed hooks and does not touch source files, CI, `package.json`, or lockfiles;
+- `--force` still applies only to repo-managed outputs such as overwriting an existing managed profile.
+
+## `update`
+
+`update` is an alias for `sync`.
+
+```bash
+jhste-skills update --yes --repo /path/to/repo
+```
+
+It is meant for the common workflow of pulling the latest `jhste-skills` source first, then reconciling local installed copies and managed repo outputs. It does not self-update the package or run `git pull` for you.
+
 ## `deep-scan`
 
 `deep-scan` is opt-in and read-only for source code. It writes only jhste output files:
