@@ -54,6 +54,8 @@ const required = [
   'cli/hook-utils.mjs',
   'cli/tune.mjs',
   'cli/baseline.mjs',
+  'scripts/syntax-check.mjs',
+  'scripts/release-gates-test.mjs',
   'vendor/matt-pocock/allowlist.json',
   'vendor/matt-pocock/source-lock.json',
   'examples/profile.yaml',
@@ -289,8 +291,34 @@ for (const forbidden of ['.github/workflows', '.git/hooks', 'package-lock.json',
 if (/writeFileSync\([^\n]+package\.json/.test(install)) fail('installer must not write target package.json');
 
 const pkg = safeParse('package.json');
-for (const script of ['public-safety:check', 'vendor:check', 'docs:check', 'guard-fixtures:test', 'smoke:test']) {
+for (const script of ['syntax:check', 'public-safety:check', 'vendor:check', 'docs:check', 'guard-fixtures:test', 'smoke:test', 'release:gates']) {
   if (!pkg.scripts?.[script]) fail(`package script missing: ${script}`);
+}
+
+const conflict = read('docs/CONFLICT_RESOLUTION.md');
+for (const requiredText of ['do not silently override verified safety', 'repo-architecture constraints', 'allow-unmanaged-skill-overwrite']) {
+  if (!conflict.includes(requiredText)) fail(`docs/CONFLICT_RESOLUTION.md missing conflict wording: ${requiredText}`);
+}
+
+const rulesDoc = read('docs/RULES.md');
+for (const requiredText of ['Restricted profile format', '--trust-repo-profile', '--allow-profile-shell', 'git ls-files --cached --others --exclude-standard']) {
+  if (!rulesDoc.includes(requiredText)) fail(`docs/RULES.md missing rule/profile wording: ${requiredText}`);
+}
+
+const recipeRequirements = {
+  'skills/jhste-code-quality/references/code-quality.md': ['React client loader/hook/adapter/view', 'Mutation write safety', 'Import/ops script'],
+  'skills/jhste-architecture-review/references/architecture-review.md': ['Next.js or API route split', 'React client path split', 'Adjacent-code scope limit'],
+  'skills/jhste-db-api-boundary/references/db-api-boundary.md': ['DB row to domain/public DTO', 'Scoped mutation'],
+  'skills/jhste-crawler-automation/references/crawler-automation.md': ['Producer / consumer recipe'],
+  'skills/jhste-engineering-judgment/SKILL.md': ['Senior-quality pre-edit gate', 'partial-failure or rollback path', 'Adjacent-code scope creep'],
+  'skills/jhste-red-team-review/SKILL.md': ['Severity rubric and path tracing', 'changed execution path'],
+  'skills/jhste-red-team-review/references/red-team-review.md': ['Severity rubric', 'Trace at least one changed execution path'],
+};
+for (const [rel, snippets] of Object.entries(recipeRequirements)) {
+  const text = read(rel);
+  for (const snippet of snippets) {
+    if (!text.includes(snippet)) fail(`${rel} missing recipe/review gate wording: ${snippet}`);
+  }
 }
 
 console.log('docs-check passed: structure, profile/rule references, guard metadata links, bridge wording, issue-candidate protocol, and scripts are valid.');

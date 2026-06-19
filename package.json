@@ -14,7 +14,12 @@
   "files": [
     "adapters/",
     "cli/",
-    "docs/",
+    "docs/ACCEPTANCE_CHECK.md",
+    "docs/CLI.md",
+    "docs/CONFLICT_RESOLUTION.md",
+    "docs/PUBLIC_SAFETY.md",
+    "docs/RULES.md",
+    "docs/VENDORING.md",
     "examples/",
     "packs/",
     "rules/",
@@ -25,14 +30,16 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "npm run docs:check && npm run vendor:check && npm run public-safety:check && npm run public-safety-fixtures:test && npm run profile-fixtures:test && npm run guard-fixtures:test && npm run smoke:test",
+    "test": "npm run syntax:check && npm run docs:check && npm run vendor:check && npm run public-safety:check && npm run public-safety-fixtures:test && npm run profile-fixtures:test && npm run guard-fixtures:test && npm run smoke:test && npm run release:gates",
+    "syntax:check": "node scripts/syntax-check.mjs",
     "docs:check": "node scripts/docs-check.mjs",
     "vendor:check": "node scripts/vendor-check.mjs",
     "public-safety:check": "node scripts/public-safety-check.mjs",
     "public-safety-fixtures:test": "node scripts/public-safety-fixtures-test.mjs",
     "profile-fixtures:test": "node scripts/profile-fixtures-test.mjs",
     "guard-fixtures:test": "node scripts/guard-fixtures-test.mjs",
-    "smoke:test": "node scripts/smoke-test.mjs"
+    "smoke:test": "node scripts/smoke-test.mjs",
+    "release:gates": "node scripts/release-gates-test.mjs"
   },
   "engines": {
     "node": ">=18"

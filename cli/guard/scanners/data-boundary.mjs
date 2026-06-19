@@ -4,21 +4,27 @@ import {
   hasPersistenceAccess,
   hasPersistenceWrite,
   hasReadHandler,
-  hasScopeHint,
   isCrawlerProducerPath,
   isRouteLikePath,
   isScriptPipelinePath,
   isSourceCodePath,
+  lineAt,
   violation,
 } from './utils.mjs';
+import {
+  hasLoopedWriteWithoutSafety,
+  hasUnscopedPersistenceAccess,
+  hasWriteWithoutLocalSafety,
+} from './data-boundary-locality.mjs';
 
 export function scanAuthzDataIsolation(relPath, text) {
   if (!isRouteLikePath(relPath)) return [];
   const out = [];
   const hasDbAccess = hasPersistenceAccess(text);
   const authContextVisible = hasAuthContext(text);
-  const scopeVisible = hasScopeHint(text);
-  if (hasDbAccess && authContextVisible && !scopeVisible && !hasReadHandler(text)) {
+  const unscopedAccessVisible = hasUnscopedPersistenceAccess(text);
+  const unscopedReadVisible = hasUnscopedPersistenceAccess(text, { reads: true, writes: false });
+  if (hasDbAccess && authContextVisible && unscopedAccessVisible && !hasReadHandler(text)) {
     out.push(violation({
       ruleId: 'authz.scope_not_visible',
       severity: 'warning',
@@ -38,7 +44,7 @@ export function scanAuthzDataIsolation(relPath, text) {
       confidence: 'low',
     }));
   }
-  if (hasDbAccess && hasReadHandler(text) && authContextVisible && !scopeVisible) {
+  if (hasDbAccess && hasReadHandler(text) && authContextVisible && unscopedReadVisible) {
     out.push(violation({
       ruleId: 'authz.read_scope_not_visible',
       severity: 'warning',
@@ -64,13 +70,14 @@ export function scanAuthzDataIsolation(relPath, text) {
 export function scanWriteSafety(relPath, text) {
   const out = [];
   const hasWrite = hasPersistenceWrite(text);
+  const unsafeLoopedWrite = hasLoopedWriteWithoutSafety(text);
+  const unsafeWrite = hasWriteWithoutLocalSafety(text);
   const writeSafetyPath = isRouteLikePath(relPath)
     || isScriptPipelinePath(relPath)
     || /(^|\/)(repositories?|queries|db|database|migrations?)\//i.test(relPath);
   if (writeSafetyPath
     && hasWrite
-    && /(forEach\s*\(|for\s*\([^)]*;|for\s*\(\s*const\s+.+\s+of\s+|\.map\s*\(|while\s*\()/i.test(text)
-    && !/\b(transaction|batch|Promise\.allSettled|idempotenc|dedup|dedupe|upsert|ON CONFLICT|on conflict)\b/i.test(text)) {
+    && unsafeLoopedWrite) {
     out.push(violation({
       ruleId: 'write.loop_without_transaction',
       severity: 'warning',
@@ -83,7 +90,7 @@ export function scanWriteSafety(relPath, text) {
   if (isRouteLikePath(relPath)
     && hasMutationHandler(text)
     && hasWrite
-    && !/\b(idempotenc|dedup|dedupe|upsert|transaction|ON CONFLICT|on conflict)\b/i.test(text)) {
+    && unsafeWrite) {
     out.push(violation({
       ruleId: 'write.mutation_retry_safety',
       severity: 'warning',
@@ -169,6 +176,21 @@ export function scanPublicSafeError(relPath, text) {
       }));
     }
   });
+  for (const match of text.matchAll(/\b(Response\.json|NextResponse\.json|res\.json)\s*\(([\s\S]{0,360})\)/gu)) {
+    const expression = match[0];
+    if (!/\n/.test(expression)) continue;
+    if (/\b(stack|error\.message|err\.message|cause|details)\b/i.test(expression)) {
+      out.push(violation({
+        ruleId: 'error.public_raw_details',
+        severity: 'warning',
+        relPath,
+        line: lineAt(text, match.index || 0),
+        symbol: 'public-error-details',
+        message: 'Public response appears to include raw error details; map to a stable public code and keep diagnostics internal.',
+        confidence: 'medium',
+      }));
+    }
+  }
   return out;
 }
 

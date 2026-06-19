@@ -28,7 +28,7 @@ const SKILL_SET_ALIASES = new Map([
   ['all', 'all'],
   ['full', 'all'],
 ]);
-const BOOLEAN_OPTIONS = new Set(['yes', 'force', 'skip-hooks', 'no-bridge', 'skip-deep-scan', 'install-missing', 'no-line-limit']);
+const BOOLEAN_OPTIONS = new Set(['yes', 'force', 'skip-hooks', 'no-bridge', 'skip-deep-scan', 'install-missing', 'no-line-limit', 'allow-unmanaged-skill-overwrite']);
 const VALUE_OPTIONS = new Set(['repo', 'skills-dir', 'hooks', 'hook', 'skill-set', 'mode', 'line-limit', 'line-limit-mode']);
 const HELP_OPTIONS = new Set(['help', 'h']);
 const COMMON_OPTIONS = new Set([...BOOLEAN_OPTIONS, ...VALUE_OPTIONS, ...HELP_OPTIONS]);
@@ -144,6 +144,7 @@ Notes:
   Full installs all safe managed features; blocking hooks require an explicit interactive or CLI choice.
   Line limit defaults to 300 lines when repo profile writing is enabled.
   --skip-hooks and --hooks are mutually exclusive.
+  --force does not overwrite unmanaged skill directories; use --allow-unmanaged-skill-overwrite only after review.
 `);
 }
 
@@ -162,6 +163,7 @@ export function normalizeOptions(argv, { command, cwd, nonInteractive }) {
   const skipDeepScan = readBooleanOption(args, 'skip-deep-scan', errors);
   const installMissing = readBooleanOption(args, 'install-missing', errors);
   const noLineLimit = readBooleanOption(args, 'no-line-limit', errors);
+  const allowUnmanagedSkillOverwrite = readBooleanOption(args, 'allow-unmanaged-skill-overwrite', errors);
   const repoInput = readPathOption(args, 'repo', errors);
   const skillsDirInput = readPathOption(args, 'skills-dir', errors);
   const mode = normalizeMode(hasOption(args, 'mode') ? args.mode : undefined, errors, { command });
@@ -215,6 +217,7 @@ export function normalizeOptions(argv, { command, cwd, nonInteractive }) {
     hookMode,
     hookTargets,
     installMissing,
+    allowUnmanagedSkillOverwrite,
     lineLimit,
     lineLimitMode,
     mode,

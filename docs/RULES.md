@@ -18,7 +18,7 @@ Merge order:
 2. pack mode;
 3. rule mode;
 4. more-specific repo-local instructions;
-5. explicit user instructions above all.
+5. explicit user instructions for task goal and scope, without silently overriding verified safety, privacy, data-loss, or repo-architecture constraints.
 
 Rule metadata lives in `rules/`. Pack files live in `packs/`. The example profile is `examples/profile.yaml`.
 
@@ -26,7 +26,7 @@ Rule metadata lives in `rules/`. Pack files live in `packs/`. The example profil
 
 `guard` is the repeatable entrypoint. It does not replace repo-local checks; it provides a stable wrapper for built-in scanners and optional profile-declared commands.
 
-- Scope is explicit: `changed`, `staged`, `all`, or `files-from`.
+- Scope is explicit: `changed`, `staged`, `all`, or `files-from`. `all` uses Git-backed file collection (`git ls-files --cached --others --exclude-standard`) by default and reports filesystem fallback metadata when Git is unavailable.
 - Output is stable: `text` for people, `json` with `schema_version: 1` for tools.
 - Exit codes are fixed: `0` pass, `1` rule violation failure, `2` guard runtime/scope/scan failure, `3` profile/config error.
 - Baseline mode is explicit: `off`, `use`, `update`, or `ratchet`.
@@ -46,7 +46,7 @@ Each rule metadata file declares `implementation.guard.status` as one of `builti
 | Deep-scan-only | `deep_scan_only` | Reserved for future repo-wide analysis rules | Findings, if introduced, come from opt-in deep scan rather than commit-time guard. |
 | Profile-command sourced | `profile_command` | Reserved for repo-local command-backed rules | Repo-local profile commands can report violations when `--run-profile-commands` is explicitly enabled. |
 
-Profile command runner is disabled unless `--run-profile-commands` is passed. A nonzero repo-local command is reported as a profile-sourced violation. Command execution failures are guard runtime failures, and malformed command configuration is a config failure. Commands should declare `name`, `run`, optional `severity`, and optional `timeout_seconds`.
+Profile command runner is disabled unless `--run-profile-commands` is passed. Executing repo-local profile commands also requires `--trust-repo-profile`; structured commands declare `name`, `cmd`, optional inline string-array `args`, optional `severity`, and optional `timeout_seconds`, and run without a shell. Legacy shell `run` commands are accepted only for compatibility and require `--allow-profile-shell` in addition to repo trust. A nonzero repo-local command is reported as a profile-sourced violation; command execution failures are guard runtime failures, and malformed command configuration is a config failure.
 
 Normal install adds a managed advisory `pre-commit` hook unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install. Full install adds managed advisory `pre-commit` and `pre-push` hooks by default and asks interactively before using blocking behavior. Managed hooks default to advisory mode, refuse to overwrite non-managed hooks, set `JHSTE_HOOK_ACTIVE=1` to skip nested runs, and remain read-only by refusing `--baseline update` and `--run-profile-commands` while the hook sentinel is active.
 
@@ -82,3 +82,7 @@ The first shared finding families behind red-team review are:
 - client, route, or script files that appear to mix several responsibility categories.
 
 The rule should be used with `advisory`, `changed-files`, or `baseline-new-only` modes unless a repository explicitly opts into stricter local enforcement. Repo-local thresholds remain authoritative.
+
+## Restricted profile format
+
+`.jhste/profile.yaml` uses a documented restricted YAML-like contract rather than arbitrary YAML. Supported operational sections are `mode`, `packs.<id>.mode`, `rules.<id>.mode`, file-size/responsibility threshold keys, `baseline.enabled`, `baseline.path`, `guard.default_scope`, `guard.default_format`, `guard.fail_on`, `guard.exit_codes`, and `commands` with `cmd`/`args` or legacy `run`. Unknown pack ids, rule ids, guard keys, baseline keys, command keys, duplicate operational sections, and invalid numeric thresholds are config failures with exit `3`. Documentation-only metadata sections such as `recommendations`, `adapters`, `deep_scan`, `workflow`, and `strict` do not affect guard runtime settings.

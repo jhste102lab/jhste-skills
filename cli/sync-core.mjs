@@ -26,6 +26,7 @@ Notes:
   It does not self-update the jhste-skills source or run git pull automatically.
   Installed skill directories are refreshed by default when they differ from the current source.
   --force still applies only to repo-managed outputs such as profile overwrites.
+  Unmanaged skill directories require --allow-unmanaged-skill-overwrite.
 `);
 }
 
@@ -43,7 +44,7 @@ function normalizeSyncOptions(argv, cwd) {
   const args = parseArgs(argv);
   if (args.help || args.h) return { help: true, errors: [] };
   const errors = [];
-  const supported = new Set(['repo', 'skills-dir', 'yes', 'y', 'force', 'skill-set', 'skip-hooks', 'no-bridge', 'help', 'h', '_']);
+  const supported = new Set(['repo', 'skills-dir', 'yes', 'y', 'force', 'skill-set', 'skip-hooks', 'no-bridge', 'allow-unmanaged-skill-overwrite', 'help', 'h', '_']);
   for (const key of Object.keys(args)) {
     if (!supported.has(key)) errors.push(`unknown option --${key}.`);
   }
@@ -72,6 +73,7 @@ function normalizeSyncOptions(argv, cwd) {
     args,
     errors,
     force: Boolean(args.force),
+    allowUnmanagedSkillOverwrite: Boolean(args['allow-unmanaged-skill-overwrite']),
     help: false,
     noBridge: Boolean(args['no-bridge']),
     repoInfo: findGitRootInfo(repoStart),
@@ -157,6 +159,7 @@ function buildSyncPlan(options, command) {
     mode: 'sync',
     yes: options.yes,
     force: options.force,
+    allowUnmanagedSkillOverwrite: options.allowUnmanagedSkillOverwrite,
     forceSkills: true,
     installMissing: false,
     overrides: [],

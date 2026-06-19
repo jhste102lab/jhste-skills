@@ -65,4 +65,23 @@ for (const skill of expected) {
 if (!fs.existsSync(path.join(root, 'vendor/matt-pocock/LICENSE'))) fail('upstream LICENSE missing');
 if (!fs.existsSync(path.join(root, 'vendor/matt-pocock/NOTICE.md'))) fail('NOTICE missing');
 
+for (const skill of expected) {
+  const skillPath = path.join(root, 'skills', skill, 'SKILL.md');
+  const text = fs.readFileSync(skillPath, 'utf8');
+  if (!text.includes('Repo-local instructions remain authoritative.')) fail(`${skill} missing jhste compatibility preamble`);
+  if (/side effects require explicit user approval unless the user already requested that side effect/.test(text)) {
+    fail(`${skill} has uncaveated side-effect wording; require exact requested side effect`);
+  }
+}
+
+for (const rel of [
+  'skills/codebase-design/SKILL.md',
+  'skills/improve-codebase-architecture/SKILL.md',
+  'skills/improve-codebase-architecture/LANGUAGE.md',
+]) {
+  const text = fs.readFileSync(path.join(root, rel), 'utf8');
+  if (/Use these terms exactly/.test(text)) fail(`${rel} has uncaveated exact vocabulary wording`);
+  if (!text.includes('repo-local')) fail(`${rel} must mention repo-local vocabulary precedence`);
+}
+
 console.log('vendor-check passed: allowlist, source-lock, vendored paths, and license attribution are valid.');

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { DEFAULT_BASELINE_PATH } from '../profile.mjs';
-import { relativeDisplay } from '../shared.mjs';
+import { relativeDisplay, resolveRepoContainedPath } from '../shared.mjs';
 
 export function profileUsesMode(profile, mode) {
   if (profile?.mode === mode) return true;
@@ -28,7 +28,12 @@ export function resolveGuardConfig(args, profileState, repoRoot, callbacks = {})
   if (!['off', 'use', 'update', 'ratchet'].includes(baselineMode)) {
     failConfig(`Unsupported --baseline ${baselineMode}. Use off, use, update, or ratchet.`);
   }
-  const baselinePath = path.resolve(repoRoot, String(args['baseline-path'] || profileState.profile.baseline.path || DEFAULT_BASELINE_PATH));
+  let baselinePath;
+  try {
+    baselinePath = resolveRepoContainedPath(repoRoot, String(args['baseline-path'] || profileState.profile.baseline.path || DEFAULT_BASELINE_PATH), { label: '--baseline-path' });
+  } catch (error) {
+    failConfig(error instanceof Error ? error.message : String(error));
+  }
   if (inManagedHook() && baselineMode === 'update') {
     failConfig('Managed hook execution is read-only; --baseline update is not allowed while JHSTE_HOOK_ACTIVE=1.');
   }

@@ -25,6 +25,15 @@ Use an objective red-team checklist. Prefer concrete findings over broad praise.
 
 Use **not found** only for risks whose relevant paths were inspected. Use **not checked** for anything outside the inspected scope.
 
+
+## Severity rubric
+
+- **P0/P1 -> changes required**: security/privacy exposure, data loss, broken documented acceptance, misleading success after a failed side effect, config that writes outside the intended boundary, or a release-blocking runtime failure.
+- **P2 -> changes required or residual risk**: contract drift, missing edge-case tests, poor failure observability, or maintainability debt on the changed path; require changes when the failure mode is concrete and immediate.
+- **P3 -> residual risk**: low-confidence heuristic, polish, docs clarity, or follow-up work outside the changed execution path.
+
+Trace at least one changed execution path from entrypoint to side effect/result for non-trivial code changes. Report paths not checked rather than implying broad coverage.
+
 ## Issue candidate shape
 
 Use an `Issue candidate` only for actionable, non-trivial follow-up work outside the current fix. Prefer no candidate over low-value issue spam.

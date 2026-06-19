@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { relativeDisplay } from '../shared.mjs';
+import { execFileSync } from 'node:child_process';
+import { isPathInside, relativeDisplay } from '../shared.mjs';
 
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py', '.sql', '.md', '.mdx', '.json']);
 const TEXT_EXTENSIONS = new Set([...SOURCE_EXTENSIONS, '.yaml', '.yml', '.toml']);
@@ -29,32 +30,42 @@ const EXCLUDED_FILE_NAMES = new Set([
 const SECRET_FILE_RE = /(^|\/)(\.env(\..*)?|.*\.(pem|key|p12|pfx|crt)|id_rsa|id_ed25519)$/i;
 const MAX_FILE_BYTES = 1024 * 1024;
 
-function readGitignoreRoots(repoRoot) {
-  const gitignore = path.join(repoRoot, '.gitignore');
-  if (!fs.existsSync(gitignore)) return new Set();
-  const roots = new Set();
-  for (const raw of fs.readFileSync(gitignore, 'utf8').split(/\r?\n/)) {
-    const line = raw.trim();
-    if (!line || line.startsWith('#') || line.includes('*') || line.startsWith('!')) continue;
-    const normalized = line.replace(/^\//, '').replace(/\/$/, '');
-    if (normalized && !normalized.includes('/')) roots.add(normalized);
-  }
-  return roots;
-}
-
 export function collectFiles(repoRoot) {
-  const gitignoreRoots = readGitignoreRoots(repoRoot);
   const files = [];
   const skipped = [];
+  const source = {
+    type: 'git-ls-files',
+    command: 'git ls-files --cached --others --exclude-standard -z',
+    fallback: false,
+    fallback_reason: null,
+    listed_count: 0,
+  };
   function skip(reason, fullPath) {
     skipped.push({ reason, path: relativeDisplay(repoRoot, fullPath) });
+  }
+  function consider(full, entryName = path.basename(full)) {
+    const rel = relativeDisplay(repoRoot, full);
+    if (EXCLUDED_FILE_NAMES.has(entryName) || SECRET_FILE_RE.test(rel)) {
+      skip('excluded sensitive or lock file', full);
+      return;
+    }
+    const ext = path.extname(entryName).toLowerCase();
+    if (!TEXT_EXTENSIONS.has(ext)) {
+      skip('non-source extension', full);
+      return;
+    }
+    const stat = fs.statSync(full);
+    if (stat.size > MAX_FILE_BYTES) {
+      skip('large file', full);
+      return;
+    }
+    files.push({ full, rel, ext, size: stat.size });
   }
   function walk(dir) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name);
-      const rel = relativeDisplay(repoRoot, full);
       if (entry.isDirectory()) {
-        if (EXCLUDED_DIRS.has(entry.name) || gitignoreRoots.has(entry.name)) {
+        if (EXCLUDED_DIRS.has(entry.name)) {
           skip('excluded directory', full);
           continue;
         }
@@ -65,25 +76,38 @@ export function collectFiles(repoRoot) {
         skip('non-file', full);
         continue;
       }
-      if (EXCLUDED_FILE_NAMES.has(entry.name) || SECRET_FILE_RE.test(rel)) {
-        skip('excluded sensitive or lock file', full);
-        continue;
-      }
-      const ext = path.extname(entry.name).toLowerCase();
-      if (!TEXT_EXTENSIONS.has(ext)) {
-        skip('non-source extension', full);
-        continue;
-      }
-      const stat = fs.statSync(full);
-      if (stat.size > MAX_FILE_BYTES) {
-        skip('large file', full);
-        continue;
-      }
-      files.push({ full, rel, ext, size: stat.size });
+      consider(full, entry.name);
     }
   }
-  walk(repoRoot);
-  return { files, skipped };
+  try {
+    execFileSync('git', ['-C', repoRoot, 'rev-parse', '--is-inside-work-tree'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    const raw = execFileSync('git', ['-C', repoRoot, 'ls-files', '--cached', '--others', '--exclude-standard', '-z'], { encoding: 'buffer', stdio: ['ignore', 'pipe', 'pipe'] });
+    const rels = raw.toString('utf8').split('\0').map((item) => item.trim()).filter(Boolean);
+    source.listed_count = rels.length;
+    for (const rel of [...new Set(rels)].sort()) {
+      const full = path.resolve(repoRoot, rel);
+      if (!isPathInside(repoRoot, full)) {
+        skip('outside repository', full);
+        continue;
+      }
+      if (!fs.existsSync(full) || !fs.statSync(full).isFile()) {
+        skip('missing or non-file', full);
+        continue;
+      }
+      if (rel.split('/').some((part) => EXCLUDED_DIRS.has(part))) {
+        skip('excluded directory', full);
+        continue;
+      }
+      consider(full);
+    }
+  } catch (error) {
+    source.type = 'filesystem-fallback';
+    source.fallback = true;
+    source.fallback_reason = error instanceof Error ? error.message : String(error);
+    walk(repoRoot);
+    source.listed_count = files.length + skipped.length;
+  }
+  return { files, skipped, source };
 }
 
 export function detectStack(repoRoot, files) {

@@ -44,6 +44,10 @@ function listAllFiles(repoRoot) {
   return out;
 }
 
+function listGitBackedAllFiles(repoRoot) {
+  return readGitPathList(repoRoot, ['ls-files', '--cached', '--others', '--exclude-standard', '-z']);
+}
+
 function readNulFile(filePath) {
   const raw = fs.readFileSync(filePath);
   return raw.toString('utf8').split('\0').map((item) => item.trim()).filter(Boolean);
@@ -112,6 +116,8 @@ export function resolveScopeFiles(repoRoot, args, callbacks = {}) {
     root: repoRoot,
     head: '',
     base: '',
+    file_source: null,
+    fallback_reason: null,
   };
   try {
     gitMeta.head = git(repoRoot, ['rev-parse', '--short', 'HEAD']).trim();
@@ -120,8 +126,17 @@ export function resolveScopeFiles(repoRoot, args, callbacks = {}) {
   }
 
   if (scope === 'all') {
-    const files = listAllFiles(repoRoot).sort();
-    return { scope, files, files_considered: files.length, git: gitMeta };
+    try {
+      git(repoRoot, ['rev-parse', '--is-inside-work-tree']);
+      const rawFiles = listGitBackedAllFiles(repoRoot);
+      gitMeta.file_source = 'git-ls-files';
+      return scopePayload(repoRoot, scope, rawFiles, gitMeta);
+    } catch (error) {
+      gitMeta.file_source = 'filesystem-fallback';
+      gitMeta.fallback_reason = error instanceof Error ? error.message : String(error);
+      const files = listAllFiles(repoRoot).sort();
+      return { scope, files, files_considered: files.length, git: gitMeta };
+    }
   }
 
   if (scope === 'files-from') {
@@ -164,4 +179,3 @@ export function resolveScopeFiles(repoRoot, args, callbacks = {}) {
   }
   return { scope, files: [], files_considered: 0, git: gitMeta };
 }
-

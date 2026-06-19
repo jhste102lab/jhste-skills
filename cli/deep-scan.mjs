@@ -24,7 +24,7 @@ async function main() {
     fileSize: fileSizeSettings(profileState.profile),
     responsibility: responsibilityBudgetSettings(profileState.profile),
   };
-  const { files, skipped } = collectFiles(repoRoot);
+  const { files, skipped, source } = collectFiles(repoRoot);
   const stack = detectStack(repoRoot, files);
   const instructions = detectInstructions(repoRoot);
   const findings = scanFiles(files, thresholds);
@@ -32,13 +32,14 @@ async function main() {
   ensureDir(jhsteDir);
   const reportPath = path.join(jhsteDir, 'deep-scan-report.md');
   const recommendedPath = path.join(jhsteDir, 'profile.recommended.yaml');
-  atomicWrite(reportPath, renderReport({ repoRoot, files, skipped, stack, instructions, findings }));
+  atomicWrite(reportPath, renderReport({ repoRoot, files, skipped, source, stack, instructions, findings }));
   atomicWrite(recommendedPath, renderRecommendedProfile({ stack, findings, thresholds }));
 
   console.log('Deep scan completed. No code was modified.');
   console.log(`- Detected stack: ${Object.entries(stack).filter(([, value]) => value).map(([key]) => key).join(', ') || 'none'}`);
   console.log(`- Files inspected: ${files.length}`);
   console.log(`- Files skipped: ${skipped.length}`);
+  console.log(`- File source: ${source.type}${source.fallback ? ` (fallback: ${source.fallback_reason || 'unknown reason'})` : ''}`);
   console.log('- Recommendation: keep advisory as the default; apply changed-files candidates only after user approval');
   console.log('\nOutput files:');
   console.log(`- ${relativeDisplay(repoRoot, reportPath)}`);

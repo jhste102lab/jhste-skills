@@ -9,6 +9,78 @@ export function lineAt(text, index) {
   return text.slice(0, index).split(/\r?\n/).length;
 }
 
+export function maskCommentsAndStrings(text) {
+  const input = String(text || '');
+  let output = '';
+  let state = 'code';
+  let quote = '';
+  for (let index = 0; index < input.length; index += 1) {
+    const char = input[index];
+    const next = input[index + 1] || '';
+    if (state === 'line-comment') {
+      if (char === '\n') {
+        state = 'code';
+        output += '\n';
+      } else {
+        output += ' ';
+      }
+      continue;
+    }
+    if (state === 'block-comment') {
+      if (char === '*' && next === '/') {
+        output += '  ';
+        index += 1;
+        state = 'code';
+      } else {
+        output += char === '\n' ? '\n' : ' ';
+      }
+      continue;
+    }
+    if (state === 'string') {
+      if (char === '\\') {
+        output += ' ';
+        if (next) {
+          output += next === '\n' ? '\n' : ' ';
+          index += 1;
+        }
+        continue;
+      }
+      output += char === '\n' ? '\n' : ' ';
+      if (char === quote) {
+        state = 'code';
+        quote = '';
+      }
+      continue;
+    }
+    if (char === '/' && next === '/') {
+      output += '  ';
+      index += 1;
+      state = 'line-comment';
+      continue;
+    }
+    if (char === '/' && next === '*') {
+      output += '  ';
+      index += 1;
+      state = 'block-comment';
+      continue;
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      output += ' ';
+      quote = char;
+      state = 'string';
+      continue;
+    }
+    output += char;
+  }
+  return output;
+}
+
+export function localWindow(text, index, before = 320, after = 520) {
+  const start = Math.max(0, Number(index || 0) - before);
+  const end = Math.min(String(text || '').length, Number(index || 0) + after);
+  return String(text || '').slice(start, end);
+}
+
 export function hasUseClientDirective(text) {
   return /^\s*(?:"use client"|'use client')\s*;?/u.test(text);
 }

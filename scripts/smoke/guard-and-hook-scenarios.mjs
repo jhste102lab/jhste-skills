@@ -76,9 +76,17 @@ function runBridgeAndDeepScanContracts(ctx) {
   for (const ruleName of ['null_state_safety:', 'authz_data_isolation:', 'build_runtime_env_safety:', 'write_safety_idempotency:', 'api_contract_compatibility:', 'performance_duplicate_fetch:']) {
     if (!recommended.includes(ruleName)) fail(`recommended profile missing ${ruleName}`);
   }
+  const profileBeforeTune = fs.readFileSync(profilePath, 'utf8');
+  run(process.execPath, [path.join(root, 'cli/tune.mjs'), '--repo', repo, '--yes'], { cwd: repo });
+  const tunedGuard = run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json', '--fail-on', 'none'], { cwd: repo });
+  const tunedGuardResult = parseJsonOutput(tunedGuard.stdout, 'tuned guard result');
+  if (tunedGuardResult.meta?.baseline_path !== '.jhste/baseline.json') fail('deep-scan -> tune -> guard did not preserve baseline path');
+  if (!tunedGuardResult.violations.some((item) => item.rule_family === 'external_input_validation')) fail('deep-scan -> tune -> guard did not keep shared scanner findings active');
+  fs.writeFileSync(profilePath, profileBeforeTune);
 }
 
 function assertDeepScanReport(report) {
+  if (!report.includes('File collection source: git-ls-files')) fail('deep scan report missing git-backed file collection source');
   if (!report.includes('Existing responsibility budget candidates')) fail('responsibility budget report section missing');
   if (!report.includes('src/app/dashboard/page.tsx:1')) fail('Next page responsibility budget candidate missing');
   if (!report.includes('Existing external input validation candidates')) fail('deep scan report missing external input section');
@@ -158,8 +166,10 @@ function runProfileCommandAndHookContracts({ root, repo, profilePath, packageHas
     `cookie=${fakeGenericSecret}`,
     `session=${fakeGenericSecret}`,
   ].join(' ');
-  fs.appendFileSync(profilePath, `\ncommands:\n  - name: local-check\n    run: printf '%s' '${secretLikeOutput}'; exit 1\n    timeout_seconds: 5\n`);
-  const profileGuardRaw = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--run-profile-commands', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout;
+  fs.appendFileSync(profilePath, `\ncommands:\n  - name: local-check\n    cmd: ${JSON.stringify(process.execPath)}\n    args: [\"-e\", \"process.stdout.write(${JSON.stringify(secretLikeOutput)}); process.exit(1)\"]\n    timeout_seconds: 5\n`);
+  const untrustedGuard = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--run-profile-commands', '--format', 'json', '--fail-on', 'error'], { cwd: repo });
+  if (untrustedGuard.status !== 3) fail(`profile commands without trust should exit 3, got ${untrustedGuard.status}`);
+  const profileGuardRaw = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--run-profile-commands', '--trust-repo-profile', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout;
   const profileGuard = parseJsonOutput(profileGuardRaw, 'profile command guard result');
   if (!profileGuard.violations.some((item) => item.rule_id === 'profile.command.local-check' && item.source === 'profile')) fail('profile command failure was not reported as profile violation');
   for (const rawSecret of [fakeOpenAiKey, fakeGithubToken, fakeGenericSecret]) {
@@ -172,10 +182,22 @@ function runProfileCommandAndHookContracts({ root, repo, profilePath, packageHas
   });
   if (hookProfileGuard.status !== 3) fail(`guard run-profile-commands inside managed hook should exit 3, got ${hookProfileGuard.status}`);
 
+  fs.appendFileSync(profilePath, `\n  - name: legacy-shell\n    run: exit 1\n`);
+  const shellBlocked = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--run-profile-commands', '--trust-repo-profile', '--format', 'json'], { cwd: repo });
+  if (shellBlocked.status !== 3) fail(`legacy run without --allow-profile-shell should exit 3, got ${shellBlocked.status}`);
+
   run(process.execPath, [path.join(root, 'cli/hooks.mjs'), 'install', '--repo', repo, '--mode', 'advisory'], { cwd: repo });
   const preCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
-  if (!fs.readFileSync(preCommit, 'utf8').includes('jhste-skills managed hook start')) fail('managed pre-commit hook missing marker');
-  run('sh', [preCommit], { cwd: repo });
+  const preCommitText = fs.readFileSync(preCommit, 'utf8');
+  if (!preCommitText.includes('jhste-skills managed hook start')) fail('managed pre-commit hook missing marker');
+  if (!preCommitText.includes('# jhste-skills version=0.1.0')) fail('managed pre-commit hook missing version comment');
+  if (preCommitText.indexOf("node '") > preCommitText.indexOf('command -v jhste-skills')) fail('managed hook should prefer local CLI before global fallback');
+  const fakeBin = path.join(path.dirname(preCommit), 'fake-bin');
+  fs.mkdirSync(fakeBin);
+  fs.writeFileSync(path.join(fakeBin, 'jhste-skills'), '#!/usr/bin/env sh\necho GLOBAL_SENTINEL\nexit 9\n', { mode: 0o755 });
+  const currentPath = process.env.PATH || '';
+  const localFirstHook = run('sh', [preCommit], { cwd: repo, env: { ...process.env, PATH: `${fakeBin}${path.delimiter}${currentPath}` } });
+  if (localFirstHook.stdout.includes('GLOBAL_SENTINEL')) fail('managed hook used global jhste-skills before local CLI path');
   const nestedHook = run('sh', [preCommit], { cwd: repo, env: { ...process.env, JHSTE_HOOK_ACTIVE: '1' } });
   if (!nestedHook.stdout.includes('nested managed hook invocation skipped')) fail('managed hook did not skip nested invocation');
   run(process.execPath, [path.join(root, 'cli/hooks.mjs'), 'uninstall', '--repo', repo], { cwd: repo });

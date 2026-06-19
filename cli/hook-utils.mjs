@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { ensureDir, relativeDisplay } from './shared.mjs';
+import { ensureDir, KIT_ROOT, relativeDisplay } from './shared.mjs';
+import { readJsonFile, validateJsonObject } from './json-file.mjs';
 
 export const EXIT_CONFIG_FAILURE = 3;
 export const MANAGED_START = '# jhste-skills managed hook start';
@@ -33,6 +34,18 @@ export function guardScopeForHook(hook) {
   return hook === 'pre-push' ? 'changed' : 'staged';
 }
 
+function toolVersion() {
+  try {
+    const pkg = readJsonFile(path.join(KIT_ROOT, 'package.json'), {
+      description: 'package.json',
+      validate: validateJsonObject,
+    });
+    return String(pkg.version || '0.0.0');
+  } catch {
+    return '0.0.0';
+  }
+}
+
 export function hookScript({ hook, mode, failOn }) {
   const scope = guardScopeForHook(hook);
   const cliPath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'index.mjs');
@@ -40,16 +53,20 @@ export function hookScript({ hook, mode, failOn }) {
   return `#!/usr/bin/env sh
 ${MANAGED_START}
 # mode=${mode} hook=${hook} scope=${scope}
+# jhste-skills version=${toolVersion()}
 set -u
 if [ "\${JHSTE_HOOK_ACTIVE:-}" = "1" ]; then
   echo "jhste-skills: nested managed hook invocation skipped."
   exit 0
 fi
 run_jhste_skills() {
-  if command -v jhste-skills >/dev/null 2>&1; then
+  if [ -f '${escapedCliPath}' ]; then
+    node '${escapedCliPath}' "$@"
+  elif command -v jhste-skills >/dev/null 2>&1; then
     jhste-skills "$@"
   else
-    node '${escapedCliPath}' "$@"
+    echo "jhste-skills: CLI not found. Expected '${escapedCliPath}' or jhste-skills on PATH." >&2
+    return 2
   fi
 }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { ask, ensureDir, findGitRoot, parseArgs, readIfExists, relativeDisplay } from './shared.mjs';
+import { confirmWriteAction, ensureDir, findGitRoot, parseArgs, readIfExists, relativeDisplay } from './shared.mjs';
 import { parseProfileText, validateProfileConfig } from './profile.mjs';
 
 function extractSection(text, heading) {
@@ -67,13 +67,6 @@ async function main() {
   console.log(`- Recommended profile: ${relativeDisplay(repoRoot, recommendedPath)}`);
   console.log('- Strict mode: not applied without --allow-strict');
 
-  const autoYes = Boolean(args.yes) || !process.stdin.isTTY;
-  const answer = autoYes ? 'y' : await ask('Apply non-strict recommended pack/rule modes to .jhste/profile.yaml? [y/N] ');
-  if (answer.toLowerCase() !== 'y') {
-    console.log('No changes applied.');
-    return;
-  }
-
   const base = current || `version: 1\nmode: advisory\n`;
   validateProfileText('Current', base);
   validateProfileText('Recommended', recommended);
@@ -86,6 +79,16 @@ async function main() {
   }
   if (!tuned.includes('# jhste tune applied from .jhste/profile.recommended.yaml')) {
     tuned = `${tuned.replace(/\s*$/, '\n')}# jhste tune applied from .jhste/profile.recommended.yaml\n# Review the recommended file for details before enabling stricter modes.\n`;
+  }
+  const shouldWrite = await confirmWriteAction(args, {
+    action: 'tune',
+    repoRoot,
+    changedFiles: [profilePath],
+    prompt: 'Apply non-strict recommended pack/rule modes to .jhste/profile.yaml? [y/N] ',
+  });
+  if (!shouldWrite) {
+    console.log('No changes applied.');
+    return;
   }
   ensureDir(path.dirname(profilePath));
   fs.writeFileSync(profilePath, tuned);

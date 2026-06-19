@@ -10,7 +10,7 @@ import {
 import { readJsonFile, validateJsonObject } from './json-file.mjs';
 import { loadBaseline, writeBaseline, applyBaseline } from './guard/baseline.mjs';
 import { resolveGuardConfig } from './guard/config.mjs';
-import { runProfileCommands } from './guard/profile-commands.mjs';
+import { profileCommandExecutionErrors, runProfileCommands } from './guard/profile-commands.mjs';
 import { guardResult, printResult, exitCodeFor } from './guard/reporting.mjs';
 import { resolveScopeFiles } from './guard/scope.mjs';
 import { scanFile } from './guard/scanners/index.mjs';
@@ -48,11 +48,18 @@ function toolVersion() {
   }
 }
 
+function requestedOutputFormat(args, profileState = null) {
+  const requested = String(args.format || profileState?.profile?.guard?.default_format || 'text');
+  return ['text', 'json'].includes(requested) ? requested : 'text';
+}
+
 async function main() {
   const startedAt = Date.now();
   const args = parseArgs(process.argv.slice(2));
+  currentFormat = requestedOutputFormat(args);
   const repoRoot = findGitRoot(args.repo || process.cwd());
   const profileState = loadProfileConfig(repoRoot);
+  currentFormat = requestedOutputFormat(args, profileState);
   const profileErrors = validateProfileConfig(profileState.profile);
   if (profileErrors.length) failConfig(`Invalid profile ${relativeDisplay(repoRoot, profileState.path)}.`, profileErrors);
   const { format, failOn, baselineMode, baselinePath, scopedArgs } = resolveGuardConfig(args, profileState, repoRoot, {
@@ -78,7 +85,14 @@ async function main() {
     if (inManagedHook()) {
       failConfig('Managed hook execution is read-only; --run-profile-commands is not allowed while JHSTE_HOOK_ACTIVE=1.');
     }
-    const profile = runProfileCommands(repoRoot, profileState.profile.commands);
+    const executionErrors = profileCommandExecutionErrors(profileState.profile.commands, {
+      trusted: Boolean(args['trust-repo-profile']),
+      allowShell: Boolean(args['allow-profile-shell']),
+    });
+    if (executionErrors.length) failConfig('Profile command execution requires explicit trust.', executionErrors);
+    const profile = runProfileCommands(repoRoot, profileState.profile.commands, {
+      allowShell: Boolean(args['allow-profile-shell']),
+    });
     violations.push(...profile.violations);
     failures.push(...profile.failures);
   }
@@ -104,6 +118,6 @@ async function main() {
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);
   const result = guardResult([], [{ code: 'guard.unhandled', message, details: [] }]);
-  printResult(result, 'text');
+  printResult(result, currentFormat);
   process.exit(EXIT_GUARD_FAILURE);
 });

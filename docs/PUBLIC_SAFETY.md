@@ -14,10 +14,13 @@ Before release, confirm:
 - strict mode requires explicit opt-in;
 - Matt skills have allowlist, source lock, and license attribution.
 
+Optional local private patterns can be placed in `.jhste/private-safety-patterns.txt` (one literal fragment per line, `#` comments allowed). The file is ignored and skipped by the checker; matches are reported without echoing the private fragment. If the file is absent, generic secret-like filename, token, credential, and local-path checks still run.
+
 Run:
 
 ```bash
 npm run public-safety:check
 npm run vendor:check
 npm run docs:check
+npm run release:gates
 ```

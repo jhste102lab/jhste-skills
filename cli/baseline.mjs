@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
-import { ask, findGitRoot, parseArgs, relativeDisplay, KIT_ROOT } from './shared.mjs';
+import { confirmWriteAction, findGitRoot, parseArgs, relativeDisplay, KIT_ROOT } from './shared.mjs';
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
@@ -9,9 +9,13 @@ async function main() {
   const baselinePath = path.join(repoRoot, '.jhste', 'baseline.json');
   console.log('Baseline is optional and does not enable strict mode by itself.');
   console.log('It is a remediation queue: encountered baseline issues remain visible until fixed or explicitly tracked.');
-  const autoYes = Boolean(args.yes) || !process.stdin.isTTY;
-  const answer = autoYes ? 'y' : await ask(`Create/update ${relativeDisplay(repoRoot, baselinePath)} from guard --scope all? [y/N] `);
-  if (answer.toLowerCase() !== 'y') {
+  const shouldWrite = await confirmWriteAction(args, {
+    action: 'baseline',
+    repoRoot,
+    changedFiles: [baselinePath],
+    prompt: `Create/update ${relativeDisplay(repoRoot, baselinePath)} from guard --scope all? [y/N] `,
+  });
+  if (!shouldWrite) {
     console.log('No baseline created.');
     return;
   }

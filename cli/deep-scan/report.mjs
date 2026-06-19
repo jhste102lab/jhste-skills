@@ -20,7 +20,7 @@ export function recommendedPacks(stack, findings) {
   ];
 }
 
-export function renderReport({ repoRoot, files, skipped, stack, instructions, findings }) {
+export function renderReport({ repoRoot, files, skipped, source, stack, instructions, findings }) {
   const packRows = recommendedPacks(stack, findings);
   return `# Deep Scan Report
 
@@ -29,6 +29,8 @@ export function renderReport({ repoRoot, files, skipped, stack, instructions, fi
 - Repository: ${path.basename(repoRoot)}
 - Files inspected: ${files.length}
 - Files skipped: ${skipped.length}
+- File collection source: ${source?.type || 'unknown'}
+- File collection fallback: ${source?.fallback ? `yes (${source.fallback_reason || 'unknown reason'})` : 'no'}
 - Recommended packs: ${packRows.filter((row) => row[1] !== 'off').map((row) => row[0]).join(', ') || 'core'}
 - Suggested default mode: advisory
 - Code modified: no
