@@ -65,6 +65,29 @@ Verification must state:
 - checks not run;
 - whether any guard failures were runtime/config failures or rule violations.
 
+When reporting warnings or residual risks to the user, keep the write-up to 2-3 short sentences in a natural developer tone:
+
+- sentence 1: say whether the warning is new, pre-existing, or not checked;
+- sentence 2: name the warning categories and counts in plain language;
+- sentence 3: say whether you are proposing an `Issue candidate`, and why or why not.
+
+Do not hide pre-existing warnings. Do not paste raw guard output unless the user asks for the full log.
+
+When warnings remain after guard or review, always report them briefly even if they are pre-existing.
+
+Default to report-only when the warning is pre-existing, low-impact, heuristic-only, or unlikely to be lost without tracking.
+
+Propose an `Issue candidate` when any of the following is true:
+
+- the warning was introduced by this change;
+- the same warning has appeared repeatedly across tasks;
+- the warning reflects actionable structural debt with meaningful impact on reliability, debuggability, or review cost;
+- the work is out of scope for the current change but is likely to be forgotten without tracking.
+
+Do not ask to create or update an issue unless you first state why tracking is warranted.
+Prefer: "후속 이슈로 관리하는 편이 맞습니다. 원하면 지금 후보로 정리하겠습니다."
+Avoid: "이슈를 생성할까요?" without supporting reasoning.
+
 ## References
 
 - `references/red-team-review.md`
