@@ -18,7 +18,7 @@ implementation:
       - error.public_raw_details
 recommendation:
   changed_files: true
-  baseline_supported: false
+  baseline_supported: true
 public_safe_examples:
   bad: Return a raw database error or stack trace to a public client.
   good: Return a stable public error code and keep detailed diagnostics in redacted internal logs.

@@ -18,7 +18,7 @@ implementation:
       - boundary.import.server_in_client
 recommendation:
   changed_files: true
-  baseline_supported: false
+  baseline_supported: true
 public_safe_examples:
   bad: Import a database client into a client component.
   good: Fetch through a server boundary or pass already-shaped data into the component.

@@ -149,7 +149,8 @@ function assertGuardFailureModes({ root, repo, tmp }) {
   });
   if (hookBaselineUpdate.status !== 3) fail(`guard baseline write inside managed hook should exit 3, got ${hookBaselineUpdate.status}`);
   const baselineUse = parseJsonOutput(run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'use', '--format', 'json', '--fail-on', 'error'], { cwd: repo }).stdout, 'baseline result');
-  if (baselineUse.summary.suppressed < 1) fail('guard baseline use did not suppress known violations');
+  if (baselineUse.summary.baseline_matched < 1) fail('guard baseline use did not count matched known issues');
+  if (baselineUse.summary.suppressed < 1) fail('guard baseline use did not preserve suppressed compatibility alias');
 }
 
 function runProfileCommandAndHookContracts({ root, repo, profilePath, packageHashBefore }) {

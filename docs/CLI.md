@@ -132,7 +132,7 @@ Stable contract:
 - `--scope`: one of `changed`, `staged`, `all`, `files-from`. `changed` means committed diff from base/head plus unstaged, staged, and untracked files; `staged` means staged files only; `all` uses `git ls-files --cached --others --exclude-standard` by default and reports filesystem fallback metadata if Git is unavailable.
 - `--format`: `text` for humans or schema-versioned `json` for AI/hooks/CI.
 - `--fail-on`: `none`, `warning`, or `error`.
-- `--baseline`: `off`, `use`, `update`, or `ratchet`. `ratchet` requires an existing baseline. `update` is refused when guard runtime failures occur, inside managed hooks, or when `--baseline-path` resolves outside the repository. Baseline-matched findings encountered in the selected scope remain visible as remediation queue items rather than being treated as a pass.
+- `--baseline`: `off`, `use`, `update`, or `ratchet`. `ratchet` requires an existing baseline. `update` is refused when guard runtime failures occur, inside managed hooks, or when `--baseline-path` resolves outside the repository. Think of baseline as a known-issues ledger: baseline-matched findings encountered in the selected scope remain visible as remediation queue items rather than being treated as a pass.
 - exit `0`: pass; exit `1`: violations met `--fail-on` or ratchet found new issues; exit `2`: guard runtime/scope/scan failure; exit `3`: config/profile error.
 
 The JSON output starts with:
@@ -140,7 +140,7 @@ The JSON output starts with:
 ```json
 {
   "schema_version": 1,
-  "summary": { "error": 0, "warning": 0, "info": 0, "suppressed": 0, "failures": 0 },
+  "summary": { "error": 0, "warning": 0, "info": 0, "baseline_matched": 0, "suppressed": 0, "failures": 0 },
   "meta": {
     "tool_version": "0.1.0",
     "scope": "changed",
@@ -154,6 +154,7 @@ The JSON output starts with:
 
 Guard failures are not validation success. AI agents should report exit `2` or `3` separately from rule violations.
 Each JSON violation includes `confidence`, `category`, and `why_not_proof`; `heuristic_candidate` findings are review prompts, not proof of a bug.
+`summary.baseline_matched` counts known-issues ledger matches that are still shown in `violations`; `summary.suppressed` is retained only as a schema-version-1 compatibility alias.
 Profile `changed-files` findings are inactive for `--scope all`; `strict` defaults to `scope=all` and `fail_on=error`; `baseline-new-only` defaults to baseline `ratchet`.
 
 Managed hook executions are read-only. While `JHSTE_HOOK_ACTIVE=1`, `guard` refuses `--baseline update` and `--run-profile-commands`. Outside hooks, `--run-profile-commands` requires `--trust-repo-profile`; legacy shell `run` commands additionally require `--allow-profile-shell`, while structured `cmd` plus inline string-array `args` runs without a shell.
@@ -186,4 +187,4 @@ Safety contract:
 
 ## `baseline`
 
-`baseline` creates or updates `.jhste/baseline.json` through `guard --scope all --baseline update`. Non-interactive runs fail closed with exit `3` unless `--yes`/`-y` is explicit; `--dry-run` prints planned changed files without writing. Baseline creation does not enable strict mode. The file is a remediation queue with fingerprint, first/last seen, reason, and optional owner/expiry/fix-tracking fields; matched findings encountered in a selected guard scope are still shown until fixed.
+`baseline` creates or updates `.jhste/baseline.json` through `guard --scope all --baseline update`. Non-interactive runs fail closed with exit `3` unless `--yes`/`-y` is explicit; `--dry-run` prints planned changed files without writing. Baseline creation does not enable strict mode. The file is a known-issues ledger/remediation queue with fingerprint, first/last seen, reason, and optional owner/expiry/fix-tracking fields; matched findings encountered in a selected guard scope are still shown until fixed.

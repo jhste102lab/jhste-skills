@@ -9,7 +9,7 @@ Rules are metadata plus implementation declarations. They are used by skills, pr
 | `off` | Rule is not used. |
 | `advisory` | Rule is guidance only. This is the default. |
 | `changed-files` | Rule applies to changed/staged/file-list scopes after user approval; it is inactive for `guard --scope all`. |
-| `baseline-new-only` | Uses baseline ratchet semantics by default: encountered baseline debt is shown as existing, and new findings require remediation. |
+| `baseline-new-only` | Uses baseline ratchet semantics by default: encountered known issues are shown as existing, and new findings require remediation. |
 | `strict` | Whole-repository enforcement by default with `fail_on: error` unless explicitly overridden to another enforcing threshold. Requires explicit opt-in. |
 
 Merge order:
@@ -31,7 +31,9 @@ Rule metadata lives in `rules/`. Pack files live in `packs/`. The example profil
 - Exit codes are fixed: `0` pass, `1` rule violation failure, `2` guard runtime/scope/scan failure, `3` profile/config error.
 - Baseline mode is explicit: `off`, `use`, `update`, or `ratchet`.
 
-Violation fingerprints are based on finding id, normalized path, and a shape-hashed occurrence key. The occurrence key includes location/symbol shape so repeated findings in the same file do not accidentally share a broad baseline fingerprint; secret-related occurrence keys are hashes and do not expose raw values. JSON output includes `rule_id` for the concrete finding and `rule_family` for the profile-controlled metadata rule.
+Baseline is best understood as a **known-issues ledger**: it records currently accepted guard findings so teams can keep old debt visible while preventing new debt with `ratchet`. It is not an allowlist, not proof of safety, and not strict mode. Baseline-matched findings remain in output with `baseline_status: matched`; JSON summaries expose `baseline_matched` for their count. The legacy `suppressed` summary field remains as a schema-version-1 compatibility alias, but new integrations should prefer `baseline_matched`.
+
+Violation fingerprints are based on finding id, normalized path, and a shape-hashed occurrence key. The occurrence key includes location/symbol shape so repeated findings in the same file do not accidentally share a broad baseline fingerprint; secret-related occurrence keys are hashes and do not expose raw values. JSON output includes `rule_id` for the concrete finding and `rule_family` for the profile-controlled metadata rule. Rule recommendation metadata uses `baseline_supported: true` to mean the guard finding has a stable fingerprint and can appear in the known-issues ledger; it is not an allowlist, proof of safety, or a per-rule enforcement mode. Heuristic findings still need human review before being treated as real debt.
 
 Built-in scanners read `.jhste/profile.yaml` for root, pack/rule modes, and supported thresholds. The generated profile keeps file-size policy explicit: default source-file limit is 300 lines, `mode: advisory` reports it, and `mode: off` disables matching file-size findings. Responsibility/file-size thresholds come from the profile when present. Text output shows confidence markers plus short meaning/remediation hints so heuristic findings are not mistaken for proof and can be acted on from hook output.
 

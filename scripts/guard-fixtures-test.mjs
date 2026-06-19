@@ -71,7 +71,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   if (result.status !== 0) fail(`baseline-new-only should pass when all findings are baseline-matched, got ${result.status}`);
   let parsed = JSON.parse(result.stdout);
   if (parsed.meta?.baseline_mode !== 'ratchet') fail('baseline-new-only should default to baseline ratchet mode');
-  if (parsed.summary?.suppressed !== 1) fail('baseline-new-only should suppress only accepted debt from failure counts');
+  if (parsed.summary?.baseline_matched !== 1) fail('baseline-new-only should count matched known issues');
+  if (parsed.summary?.suppressed !== 1) fail('baseline-new-only should keep suppressed as a compatibility alias');
   write(path.join(repo, 'src/b.ts'), `export function b() {\n  try {\n    return true;\n  } ${emptyCatch}\n}\n`);
   result = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json'], { cwd: repo });
   if (result.status !== 1) fail(`baseline-new-only should fail when a new finding appears, got ${result.status}`);
@@ -244,8 +245,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   }
   write(path.join(repo, 'src/b.ts'), `export function b() {\n  try {\n    return true;\n  } ${emptyCatch}\n}\n`);
   const text = run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--baseline', 'use', '--format', 'text', '--fail-on', 'none'], { cwd: repo }).stdout;
-  if (!text.includes('suppressed=1')) fail('baseline suppressed count missing from text summary');
-  if (!text.includes('Existing baseline issues encountered')) fail('baseline-matched finding was not shown as encountered existing issue');
+  if (!text.includes('baseline-matched=1')) fail('baseline-matched count missing from text summary');
+  if (text.includes('suppressed=1')) fail('text summary should not describe known issues as suppressed');
+  if (!text.includes('Existing known issues encountered from baseline')) fail('baseline-matched finding was not shown as encountered existing issue');
   if (text.includes('more omitted from text output')) fail('baseline-suppressed finding was counted as text omission');
 }
 

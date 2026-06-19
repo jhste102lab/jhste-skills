@@ -14,6 +14,7 @@ Before non-trivial code changes, use the \`jhste-engineering-judgment\` skill to
 For changed code, name the one main responsibility of each changed class, module, and function, and reject adjacent responsibilities unless they are on the changed execution path and prevent a concrete failure.
 After code changes, run \`jhste-skills guard --scope changed --format text --fail-on error\` when available.
 Report guard warnings/errors; do not treat guard runtime/config failures as validation success.
+Treat guard output as review evidence, not proof by itself.
 If guard or red-team review reports new warnings on changed files, attempt a bounded fix before declaring completion, then rerun guard. Do not commit automatically.
 Before declaring non-trivial code work complete, use the \`jhste-red-team-review\` skill.
 Skip red-team review for docs-only, comment-only, formatting-only, or trivial rename-only changes.

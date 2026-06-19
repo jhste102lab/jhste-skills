@@ -21,7 +21,7 @@ implementation:
       - input.env_export_unvalidated
 recommendation:
   changed_files: true
-  baseline_supported: false
+  baseline_supported: true
 public_safe_examples:
   bad: Pass an unvalidated request body directly into domain logic.
   good: Check required fields, enum values, ranges, and lengths at the boundary.

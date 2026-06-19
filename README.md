@@ -19,7 +19,7 @@ This kit does **not** replace existing repository instructions. Repo-local `AGEN
 - It does not run a repo-wide strict scan.
 - It does not auto-refactor code.
 - It does not enable `strict` mode without explicit opt-in.
-- Responsibility budget checks are advisory by default; they flag review candidates rather than blocking a repository.
+- Responsibility budget and single-responsibility checks are advisory by default; they flag review candidates rather than proving a bug or blocking a repository.
 
 ## Quick start
 
@@ -108,7 +108,7 @@ Choice [Enter=1]:
 5. Before non-trivial code changes, use `jhste-engineering-judgment` to check scope, seams, failure paths, data contracts, assumptions, and the one main responsibility of each changed class/module/function.
 6. Before declaring non-trivial code work complete, use the `jhste-red-team-review` skill. Skip docs-only, comment-only, formatting-only, and trivial rename-only changes.
 7. Stop after at most two fix + re-review cycles and report remaining risks instead of chasing an unbounded review loop.
-8. Create a baseline only after reviewing existing debt. Use `ratchet` to stop new debt, not to hide scanner failures.
+8. Create a baseline only after reviewing existing debt. Treat it as a known-issues ledger: use `ratchet` to stop new debt, not to hide scanner failures.
 9. Enable profile commands only after repo-local guard commands are stable.
 
 ## Repository layout

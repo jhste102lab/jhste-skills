@@ -7,7 +7,16 @@ export const SEVERITIES = ['info', 'warning', 'error'];
 
 export function summarize(violations, failures = []) {
   const active = violations.filter((item) => item.baseline_status !== 'matched');
-  const summary = { error: 0, warning: 0, info: 0, suppressed: violations.length - active.length, failures: failures.length };
+  const baselineMatched = violations.length - active.length;
+  const summary = {
+    error: 0,
+    warning: 0,
+    info: 0,
+    baseline_matched: baselineMatched,
+    // Backward-compatible alias for schema_version: 1 consumers. Prefer baseline_matched in new integrations.
+    suppressed: baselineMatched,
+    failures: failures.length,
+  };
   for (const item of active) summary[item.severity] = (summary[item.severity] || 0) + 1;
   return summary;
 }
@@ -117,7 +126,7 @@ export function printResult(result, format) {
     return;
   }
   const { summary } = result;
-  console.log(`jhste guard: errors=${summary.error} warnings=${summary.warning} info=${summary.info} suppressed=${summary.suppressed} failures=${summary.failures}`);
+  console.log(`jhste guard: errors=${summary.error} warnings=${summary.warning} info=${summary.info} baseline-matched=${summary.baseline_matched} failures=${summary.failures}`);
   if (result.meta?.git?.file_source) {
     const fallback = result.meta.git.file_source === 'filesystem-fallback' ? ` (fallback: ${result.meta.git.fallback_reason || 'unknown reason'})` : '';
     console.log(`File collection: ${result.meta.git.file_source}${fallback}`);
@@ -145,7 +154,7 @@ export function printResult(result, format) {
   }
   const matched = result.violations.filter((item) => item.baseline_status === 'matched');
   if (matched.length) {
-    console.log('\nExisting baseline issues encountered (remediation queue; not a pass):');
+    console.log('\nExisting known issues encountered from baseline (remediation queue; not a pass):');
     for (const item of matched.slice(0, 40)) {
       const family = item.rule_family && item.rule_family !== item.rule_id ? ` (${item.rule_family})` : '';
       const reason = item.baseline_reason ? ` — ${item.baseline_reason}` : '';

@@ -8,7 +8,7 @@ async function main() {
   const repoRoot = findGitRoot(args.repo || process.cwd());
   const baselinePath = path.join(repoRoot, '.jhste', 'baseline.json');
   console.log('Baseline is optional and does not enable strict mode by itself.');
-  console.log('It is a remediation queue: encountered baseline issues remain visible until fixed or explicitly tracked.');
+  console.log('Think of it as a known-issues ledger: matched findings remain visible until fixed or explicitly tracked.');
   const shouldWrite = await confirmWriteAction(args, {
     action: 'baseline',
     repoRoot,

@@ -18,7 +18,7 @@ implementation:
       - database.raw_row_public_response
 recommendation:
   changed_files: true
-  baseline_supported: false
+  baseline_supported: true
 public_safe_examples:
   bad: Return a raw storage row directly from a public API.
   good: Map and validate the fields needed by the caller.
