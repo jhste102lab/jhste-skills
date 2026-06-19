@@ -18,3 +18,5 @@ Do not enter an unbounded fix/review loop; stop after at most two fix + re-revie
 ```
 
 Default install copies skills to a kit-managed skill directory and does not delete or rewrite existing Codex skills.
+
+Explicit user instructions set task scope but do not silently override verified safety, privacy, data-loss, or repo-architecture constraints.

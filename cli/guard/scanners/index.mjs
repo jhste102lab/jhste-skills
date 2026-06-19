@@ -40,6 +40,52 @@ function scanExternalInputValidation(relPath, text) {
   return externalInputValidationFindings(relPath, text).map((item) => violation(item));
 }
 
+export const SCANNER_REGISTRY = [
+  { id: 'scanSilentFailures', families: ['no_silent_failure'], scan: ({ relPath, text }) => scanSilentFailures(relPath, text) },
+  { id: 'scanSecretLogging', families: ['no_secret_logging'], scan: ({ relPath, text }) => scanSecretLogging(relPath, text) },
+  { id: 'scanClientServerBoundary', families: ['component_responsibility'], scan: ({ relPath, text }) => scanClientServerBoundary(relPath, text) },
+  { id: 'scanWorkflowSecurity', families: ['workflow_security'], scan: ({ relPath, text }) => scanWorkflowSecurity(relPath, text) },
+  { id: 'scanExternalInputValidation', families: ['external_input_validation'], scan: ({ relPath, text }) => scanExternalInputValidation(relPath, text) },
+  { id: 'scanFileSizeAdvisory', families: ['file_size_advisory'], scan: ({ relPath, text, settings }) => scanFileSizeAdvisory(relPath, text, settings.fileSize) },
+  { id: 'scanResponsibilityBudget', families: ['responsibility_budget'], scan: ({ relPath, text, settings }) => scanResponsibilityBudget(relPath, text, settings.responsibilityBudget) },
+  { id: 'scanStateSafety', families: ['null_state_safety'], scan: ({ relPath, text }) => scanStateSafety(relPath, text) },
+  { id: 'scanAuthzDataIsolation', families: ['authz_data_isolation'], scan: ({ relPath, text }) => scanAuthzDataIsolation(relPath, text) },
+  { id: 'scanRuntimeEnvSafety', families: ['build_runtime_env_safety'], scan: ({ relPath, text }) => scanRuntimeEnvSafety(relPath, text) },
+  { id: 'scanWriteSafety', families: ['write_safety_idempotency'], scan: ({ relPath, text }) => scanWriteSafety(relPath, text) },
+  { id: 'scanApiContractCompatibility', families: ['api_contract_compatibility'], scan: ({ relPath, text }) => scanApiContractCompatibility(relPath, text) },
+  { id: 'scanPerformanceDuplicateFetch', families: ['performance_duplicate_fetch'], scan: ({ relPath, text }) => scanPerformanceDuplicateFetch(relPath, text) },
+  { id: 'scanSqlParameterBinding', families: ['sql_parameter_binding'], scan: ({ relPath, text }) => scanSqlParameterBinding(relPath, text) },
+  { id: 'scanPublicSafeError', families: ['public_safe_error'], scan: ({ relPath, text }) => scanPublicSafeError(relPath, text) },
+  { id: 'scanDbRowValidation', families: ['db_row_validation'], scan: ({ relPath, text }) => scanDbRowValidation(relPath, text) },
+  { id: 'scanThinApiRoute', families: ['thin_api_route'], scan: ({ relPath, text }) => scanThinApiRoute(relPath, text) },
+  { id: 'scanTypeEscapeAdvisory', families: ['type_escape_advisory'], scan: ({ relPath, text }) => scanTypeEscapeAdvisory(relPath, text) },
+  { id: 'scanSideEffectBoundary', families: ['side_effect_boundary'], scan: ({ relPath, text }) => scanSideEffectBoundary(relPath, text) },
+  { id: 'scanCrawlerProducerBoundary', families: ['crawler_producer_boundary'], scan: ({ relPath, text }) => scanCrawlerProducerBoundary(relPath, text) },
+  { id: 'scanBroadExceptionAdvisory', families: ['broad_exception_advisory'], scan: ({ relPath, text }) => scanBroadExceptionAdvisory(relPath, text) },
+];
+
+export function validateScannerRegistry() {
+  const errors = [];
+  const seen = new Set();
+  for (const scanner of SCANNER_REGISTRY) {
+    if (!scanner?.id || typeof scanner.scan !== 'function' || !Array.isArray(scanner.families)) {
+      errors.push(`Invalid scanner registry entry: ${JSON.stringify(scanner?.id || scanner)}`);
+      continue;
+    }
+    if (seen.has(scanner.id)) errors.push(`Duplicate scanner registry id: ${scanner.id}`);
+    seen.add(scanner.id);
+  }
+  for (const [findingId, metadata] of Object.entries(FINDING_METADATA)) {
+    if (!seen.has(metadata.scanner)) errors.push(`Finding ${findingId} references missing scanner registry id ${metadata.scanner}`);
+  }
+  return errors;
+}
+
+const registryErrors = validateScannerRegistry();
+if (registryErrors.length) {
+  throw new Error(`Invalid guard scanner registry:\n${registryErrors.map((error) => `- ${error}`).join('\n')}`);
+}
+
 function decorateViolation(item, profile) {
   const metadata = FINDING_METADATA[item.rule_id] || { family: item.rule_id, pack: 'core', scanner: item.source || 'unknown' };
   const effectiveMode = effectiveRuleMode(profile, metadata);
@@ -63,29 +109,7 @@ function applyProfileModes(violations, profile, { scope } = {}) {
 }
 
 export function scanText(relPath, text, settings = {}) {
-  const raw = [
-    ...scanSilentFailures(relPath, text),
-    ...scanSecretLogging(relPath, text),
-    ...scanClientServerBoundary(relPath, text),
-    ...scanWorkflowSecurity(relPath, text),
-    ...scanExternalInputValidation(relPath, text),
-    ...scanFileSizeAdvisory(relPath, text, settings.fileSize),
-    ...scanResponsibilityBudget(relPath, text, settings.responsibilityBudget),
-    ...scanStateSafety(relPath, text),
-    ...scanAuthzDataIsolation(relPath, text),
-    ...scanRuntimeEnvSafety(relPath, text),
-    ...scanWriteSafety(relPath, text),
-    ...scanApiContractCompatibility(relPath, text),
-    ...scanPerformanceDuplicateFetch(relPath, text),
-    ...scanSqlParameterBinding(relPath, text),
-    ...scanPublicSafeError(relPath, text),
-    ...scanDbRowValidation(relPath, text),
-    ...scanThinApiRoute(relPath, text),
-    ...scanTypeEscapeAdvisory(relPath, text),
-    ...scanSideEffectBoundary(relPath, text),
-    ...scanCrawlerProducerBoundary(relPath, text),
-    ...scanBroadExceptionAdvisory(relPath, text),
-  ];
+  const raw = SCANNER_REGISTRY.flatMap((scanner) => scanner.scan({ relPath, text, settings }));
   if (settings.applyProfile === false) return raw.map((item) => decorateViolation(item, settings.profile || {}));
   return applyProfileModes(raw, settings.profile || {}, { scope: settings.scope });
 }

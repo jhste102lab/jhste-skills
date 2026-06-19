@@ -23,3 +23,23 @@ Mock at external seams such as network, time, filesystem, third-party APIs, and 
 Logging should help diagnose behavior without exposing sensitive values. When reporting secret-like matches, show only file, line, and a redacted summary.
 
 When code crosses async UI, env, or persistence paths, be skeptical of fragile assumptions. Nullable values, missing loading/error states, direct env reads, duplicate fetches, and repeated writes without dedupe or transaction safety are all review candidates.
+
+## Implementation recipes
+
+### React client loader/hook/adapter/view
+
+- Bad: one client component fetches, parses, mutates URL state, maps DTOs, shows toasts, and renders every branch.
+- Better: a loader or adapter owns IO and parsing, a hook owns client state and retry policy, and the view receives shaped data plus explicit loading/empty/error states.
+- Why: caller contracts and null-state invariants are visible, tests can cover the hook/adapter seam, and the view stays reviewable.
+
+### Mutation write safety
+
+- Bad: a route loops over writes and returns success after the first non-throwing path.
+- Better: define the idempotency key or dedupe rule, use a transaction/batch/upsert where needed, check affected rows, and report partial failure explicitly.
+- Why: duplicate execution, retry, and rollback behavior are observable instead of assumed.
+
+### Import/ops script
+
+- Bad: a single script parses CLI flags, reads files, transforms rows, writes persistence, and prints a summary inline.
+- Better: split into `parseArgs -> load -> transform -> persist -> report`, with dry-run and failure-result seams.
+- Why: fixtures can test transforms without side effects, while integration tests cover the persistence seam.

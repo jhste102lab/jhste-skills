@@ -147,3 +147,9 @@ npm run docs:check
 ```
 
 See [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.md) for release acceptance notes.
+
+## Release and safety gates
+
+Run `npm test` before publishing. The test suite includes syntax checks, docs/vendor/public-safety checks, profile and guard fixtures, smoke coverage for `install -> deep-scan -> tune --yes -> guard`, and release packaging gates. `npm run release:gates` runs `npm pack --dry-run`, checks package contents, creates a packed tarball, installs it into a fresh temp consumer, and verifies the `jhste-skills` bin.
+
+Installed skill directories are tracked with `.jhste-skills-manifest.json`. `--force` refreshes manifest-managed skill copies; overwriting unmanaged differing skill directories requires the separate `--allow-unmanaged-skill-overwrite` flag after review.

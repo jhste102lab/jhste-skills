@@ -5,8 +5,8 @@ import {
   BRIDGE_BLOCK,
   BRIDGE_END,
   BRIDGE_START,
-  copyDirSafe,
   DEFAULT_PROFILE,
+  directoryDigest,
   ensureDir,
   KIT_ROOT,
   listDirectories,
@@ -16,9 +16,11 @@ import {
   relativeDisplay,
 } from './shared.mjs';
 import { installHookTarget, preflightHookTarget } from './hook-utils.mjs';
-import { readJsonFile, validateStringArray } from './json-file.mjs';
+import { readJsonFile, validateJsonObject, validateStringArray } from './json-file.mjs';
 
 const EXIT_CONFIG_FAILURE = 3;
+const SKILLS_MANIFEST_NAME = '.jhste-skills-manifest.json';
+const MANIFEST_MANAGED_BY = 'jhste-skills';
 
 export function preflightPlan(plan) {
   return {
@@ -186,11 +188,135 @@ function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function installSkills(skillsDir, { force = false, skillSet = 'core' } = {}) {
+function manifestPath(skillsDir) {
+  return path.join(skillsDir, SKILLS_MANIFEST_NAME);
+}
+
+function loadSkillsManifest(skillsDir) {
+  const file = manifestPath(skillsDir);
+  if (!fs.existsSync(file)) return null;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!parsed || typeof parsed !== 'object' || parsed.managed_by !== MANIFEST_MANAGED_BY || typeof parsed.skills !== 'object' || Array.isArray(parsed.skills)) {
+      return { invalid: true, reason: `${SKILLS_MANIFEST_NAME} is not a valid ${MANIFEST_MANAGED_BY} manifest.` };
+    }
+    return parsed;
+  } catch (error) {
+    return { invalid: true, reason: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+function writeSkillsManifest(skillsDir, manifest) {
+  ensureDir(skillsDir);
+  fs.writeFileSync(manifestPath(skillsDir), `${JSON.stringify(manifest, null, 2)}\n`);
+}
+
+function packageVersion() {
+  try {
+    return String(readJsonFile(path.join(KIT_ROOT, 'package.json'), {
+      description: 'package.json',
+      validate: validateJsonObject,
+    }).version || '0.0.0');
+  } catch {
+    return '0.0.0';
+  }
+}
+
+function copyManagedSkill(source, destination, name, {
+  force = false,
+  allowUnmanagedOverwrite = false,
+  manifest = null,
+  nextManifest,
+} = {}) {
+  if (!fs.existsSync(source)) {
+    return { status: 'missing-source', source, destination };
+  }
+  const sourceHash = directoryDigest(source);
+  const destinationExists = fs.existsSync(destination);
+  const destinationHash = destinationExists ? directoryDigest(destination) : null;
+  const manifestEntry = manifest?.skills?.[name] || null;
+  const manifestOwnsDestination = Boolean(manifestEntry);
+
+  function recordManaged() {
+    nextManifest.skills[name] = { digest: sourceHash };
+  }
+
+  if (!destinationExists) {
+    ensureDir(path.dirname(destination));
+    fs.cpSync(source, destination, { recursive: true });
+    recordManaged();
+    return { status: 'created', source, destination };
+  }
+  if (sourceHash === destinationHash) {
+    recordManaged();
+    return { status: 'unchanged', source, destination };
+  }
+  if (!force) {
+    return { status: 'skipped-existing-different', source, destination };
+  }
+  if (!manifestOwnsDestination && !allowUnmanagedOverwrite) {
+    return {
+      status: 'skipped-unmanaged-different',
+      source,
+      destination,
+      reason: `${path.basename(destination)} differs and is not recorded as managed by ${MANIFEST_MANAGED_BY}; pass --allow-unmanaged-skill-overwrite only after review`,
+    };
+  }
+  fs.rmSync(destination, { recursive: true, force: true });
+  fs.cpSync(source, destination, { recursive: true });
+  recordManaged();
+  return {
+    status: manifestOwnsDestination ? 'overwritten-managed' : 'overwritten-unmanaged',
+    source,
+    destination,
+  };
+}
+
+function installSkills(skillsDir, { force = false, skillSet = 'core', allowUnmanagedOverwrite = false } = {}) {
   const sourceRoot = path.join(KIT_ROOT, 'skills');
   ensureDir(skillsDir);
   const selected = Array.isArray(skillSet) ? skillSet : skillNamesForSet(skillSet);
-  return selected.map((name) => copyDirSafe(path.join(sourceRoot, name), path.join(skillsDir, name), { force }));
+  const currentManifest = loadSkillsManifest(skillsDir);
+  if (currentManifest?.invalid) {
+    return [{ status: 'invalid-manifest', source: '', destination: manifestPath(skillsDir), reason: currentManifest.reason }];
+  }
+  const version = packageVersion();
+  const nextManifest = currentManifest || {
+    managed_by: MANIFEST_MANAGED_BY,
+    version,
+    installed_at: nowIso(),
+    skills: {},
+  };
+  nextManifest.managed_by = MANIFEST_MANAGED_BY;
+  nextManifest.version = version || String(nextManifest.version || '0.0.0');
+  nextManifest.updated_at = nowIso();
+  nextManifest.skills ||= {};
+  const unmanagedConflicts = [];
+  if (force && !allowUnmanagedOverwrite) {
+    for (const name of selected) {
+      const source = path.join(sourceRoot, name);
+      const destination = path.join(skillsDir, name);
+      if (!fs.existsSync(source) || !fs.existsSync(destination)) continue;
+      if (directoryDigest(source) === directoryDigest(destination)) continue;
+      if (!currentManifest?.skills?.[name]) {
+        unmanagedConflicts.push({
+          status: 'skipped-unmanaged-different',
+          source,
+          destination,
+          reason: `${name} differs and is not recorded as managed by ${MANIFEST_MANAGED_BY}; pass --allow-unmanaged-skill-overwrite only after review`,
+        });
+      }
+    }
+  }
+  if (unmanagedConflicts.length) return unmanagedConflicts;
+  const results = selected.map((name) => copyManagedSkill(path.join(sourceRoot, name), path.join(skillsDir, name), name, {
+    force,
+    allowUnmanagedOverwrite,
+    manifest: currentManifest,
+    nextManifest,
+  }));
+  writeSkillsManifest(skillsDir, nextManifest);
+  return results;
 }
 
 export function applyPlan(plan) {
@@ -206,8 +332,13 @@ export function applyPlan(plan) {
   if (plan.installSkills || (plan.command === 'connect' && plan.installMissing && plan.preflight.skills.missing.length > 0)) {
     result.skillResults = installSkills(plan.skillsDir, {
       force: plan.forceSkills ?? plan.force,
+      allowUnmanagedOverwrite: plan.allowUnmanagedSkillOverwrite,
       skillSet: plan.skillNames ?? plan.skillSet,
     });
+    if (result.skillResults.some((item) => ['skipped-unmanaged-different', 'invalid-manifest'].includes(item.status))) {
+      result.exitCode = EXIT_CONFIG_FAILURE;
+      return result;
+    }
   }
 
   if (plan.writeProfile && plan.repoRoot) {
@@ -260,6 +391,9 @@ export function printApplyResult(plan, result) {
   if (result.skillResults.length) {
     const summary = summarizeStatuses(result.skillResults);
     console.log(`- Skills: ${Object.entries(summary).map(([k, v]) => `${k}=${v}`).join(', ') || 'none'}`);
+    for (const skill of result.skillResults.filter((item) => item.reason)) {
+      console.log(`  - ${skill.status}: ${skill.reason}`);
+    }
   } else {
     console.log('- Skills: no changes');
   }

@@ -36,9 +36,9 @@ Line-size policy:
 
 Safety and compatibility:
 
-- selected skills copied to a kit-managed skill directory; default `--skill-set core` installs only jhste core skills, while `vendor` and `all` are explicit opt-ins for vendored workflow skills;
+- selected skills copied to a kit-managed skill directory with `.jhste-skills-manifest.json` digests; default `--skill-set core` installs only jhste core skills, while `vendor` and `all` are explicit opt-ins for vendored workflow skills;
 - `.jhste/profile.yaml` created with `mode: advisory` when missing;
-- existing profile is not overwritten unless `--force` is explicit; `--force` refreshes only jhste-managed outputs and does not overwrite user source, CI, package files, lockfiles, or non-managed hooks;
+- existing profile is not overwritten unless `--force` is explicit; `--force` refreshes only jhste-managed outputs and does not overwrite user source, CI, package files, lockfiles, non-managed hooks, or unmanaged differing skill directories; unmanaged skill overwrite requires `--allow-unmanaged-skill-overwrite` after review;
 - `AGENTS.md` and `CLAUDE.md` bridge blocks use `<!-- jhste-skills:start -->` / `<!-- jhste-skills:end -->` markers; only that managed block is updated on later runs;
 - CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default in Normal, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install;
 - installed bridge/profile guidance tells agents to run `jhste-red-team-review` before declaring non-trivial code work complete, while skipping docs-only, comment-only, formatting-only, and trivial rename-only changes.
@@ -93,7 +93,7 @@ Stable contract:
 - only refreshes repo outputs that already look managed by jhste-skills (`.jhste/profile.yaml`, managed bridge markers, or managed hooks);
 - does not bootstrap unmanaged repositories; use `install` or `connect` for first-time setup;
 - preserves non-managed hooks and does not touch source files, CI, `package.json`, or lockfiles;
-- `--force` still applies only to repo-managed outputs such as overwriting an existing managed profile.
+- `--force` still applies only to repo-managed outputs such as overwriting an existing managed profile; unmanaged differing skill directories require `--allow-unmanaged-skill-overwrite`.
 
 ## `update`
 
@@ -112,7 +112,7 @@ It is meant for the common workflow of pulling the latest `jhste-skills` source 
 - `.jhste/deep-scan-report.md`
 - `.jhste/profile.recommended.yaml`
 
-It excludes generated, vendor, build, dependency, lock, large binary-like, and secret/env-like files. Secret-like findings are reported only as redacted summaries.
+It uses Git-backed file collection by default so `.gitignore` rules are honored, then excludes generated, vendor, build, dependency, lock, large binary-like, and secret/env-like files. Secret-like findings are reported only as redacted summaries.
 
 The report includes responsibility budget candidates for large or mixed-responsibility pages, client modules, routes/controllers, import/ops scripts, and Python orchestrators. These are advisory review prompts by default and do not prove a file is wrong.
 
@@ -129,10 +129,10 @@ jhste-skills guard --scope files-from --files-from /tmp/files.zlist
 
 Stable contract:
 
-- `--scope`: one of `changed`, `staged`, `all`, `files-from`. `changed` means committed diff from base/head plus unstaged, staged, and untracked files; `staged` means staged files only.
+- `--scope`: one of `changed`, `staged`, `all`, `files-from`. `changed` means committed diff from base/head plus unstaged, staged, and untracked files; `staged` means staged files only; `all` uses `git ls-files --cached --others --exclude-standard` by default and reports filesystem fallback metadata if Git is unavailable.
 - `--format`: `text` for humans or schema-versioned `json` for AI/hooks/CI.
 - `--fail-on`: `none`, `warning`, or `error`.
-- `--baseline`: `off`, `use`, `update`, or `ratchet`. `ratchet` requires an existing baseline. `update` is refused when guard runtime failures occur. Baseline-matched findings encountered in the selected scope remain visible as remediation queue items rather than being treated as a pass.
+- `--baseline`: `off`, `use`, `update`, or `ratchet`. `ratchet` requires an existing baseline. `update` is refused when guard runtime failures occur, inside managed hooks, or when `--baseline-path` resolves outside the repository. Baseline-matched findings encountered in the selected scope remain visible as remediation queue items rather than being treated as a pass.
 - exit `0`: pass; exit `1`: violations met `--fail-on` or ratchet found new issues; exit `2`: guard runtime/scope/scan failure; exit `3`: config/profile error.
 
 The JSON output starts with:
@@ -156,7 +156,7 @@ Guard failures are not validation success. AI agents should report exit `2` or `
 Each JSON violation includes `confidence`, `category`, and `why_not_proof`; `heuristic_candidate` findings are review prompts, not proof of a bug.
 Profile `changed-files` findings are inactive for `--scope all`; `strict` defaults to `scope=all` and `fail_on=error`; `baseline-new-only` defaults to baseline `ratchet`.
 
-Managed hook executions are read-only. While `JHSTE_HOOK_ACTIVE=1`, `guard` refuses `--baseline update` and `--run-profile-commands`.
+Managed hook executions are read-only. While `JHSTE_HOOK_ACTIVE=1`, `guard` refuses `--baseline update` and `--run-profile-commands`. Outside hooks, `--run-profile-commands` requires `--trust-repo-profile`; legacy shell `run` commands additionally require `--allow-profile-shell`, while structured `cmd` plus inline string-array `args` runs without a shell.
 
 ## `hooks`
 
@@ -176,14 +176,14 @@ Safety contract:
 - `--skip-hooks` opts out;
 - advisory hooks print guard output but do not block commits;
 - blocking hooks return the guard exit code;
-- nested managed hook runs are skipped using `JHSTE_HOOK_ACTIVE=1`;
+- generated managed hooks prefer the install-time local CLI path before the global `jhste-skills` fallback, include a `# jhste-skills version=...` comment, and skip nested runs using `JHSTE_HOOK_ACTIVE=1`;
 - existing non-managed hooks are never overwritten;
 - uninstall removes only hooks marked as managed by this tool.
 
 ## `tune`
 
-`tune` shows that the recommended profile is separate, then applies non-strict pack/rule recommendations only after user approval. `strict` is rejected unless `--allow-strict` is explicit.
+`tune` shows that the recommended profile is separate, then applies non-strict pack/rule recommendations only after user approval. Non-interactive runs fail closed with exit `3` unless `--yes`/`-y` is explicit; `--dry-run` prints planned changed files without writing. `strict` is rejected unless `--allow-strict` is explicit.
 
 ## `baseline`
 
-`baseline` creates or updates `.jhste/baseline.json` through `guard --scope all --baseline update`. Baseline creation does not enable strict mode. The file is a remediation queue with fingerprint, first/last seen, reason, and optional owner/expiry/fix-tracking fields; matched findings encountered in a selected guard scope are still shown until fixed.
+`baseline` creates or updates `.jhste/baseline.json` through `guard --scope all --baseline update`. Non-interactive runs fail closed with exit `3` unless `--yes`/`-y` is explicit; `--dry-run` prints planned changed files without writing. Baseline creation does not enable strict mode. The file is a remediation queue with fingerprint, first/last seen, reason, and optional owner/expiry/fix-tracking fields; matched findings encountered in a selected guard scope are still shown until fixed.

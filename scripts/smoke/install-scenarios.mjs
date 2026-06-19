@@ -97,7 +97,11 @@ function runDefaultInstall(ctx) {
   const defaultPreCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
   if (!fs.existsSync(defaultPreCommit)) fail('install did not create default advisory pre-commit hook');
   if (!fs.readFileSync(defaultPreCommit, 'utf8').includes('mode=advisory')) fail('default pre-commit hook is not advisory');
+  if (!fs.readFileSync(defaultPreCommit, 'utf8').includes('# jhste-skills version=0.1.0')) fail('default pre-commit hook missing version comment');
   if (!fs.existsSync(path.join(skillsDir, 'jhste-red-team-review', 'SKILL.md'))) fail('install did not copy jhste-red-team-review skill');
+  if (!fs.existsSync(path.join(skillsDir, '.jhste-skills-manifest.json'))) fail('install did not write skills manifest');
+  const manifest = JSON.parse(fs.readFileSync(path.join(skillsDir, '.jhste-skills-manifest.json'), 'utf8'));
+  if (manifest.managed_by !== 'jhste-skills' || !manifest.skills?.['jhste-red-team-review']?.digest) fail('skills manifest missing managed skill digest');
   const defaultSkillDirs = skillDirs(skillsDir);
   if (defaultSkillDirs.length !== 7) fail(`default install should copy 7 core skills, got ${defaultSkillDirs.length}`);
   if (defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should not copy vendored workflow skills');
@@ -143,7 +147,19 @@ run_jhste_skills guard --scope staged --format text --fail-on warning
   const updatedPreCommit = fs.readFileSync(preCommitPath, 'utf8');
   if (!updatedPreCommit.includes('mode=blocking')) fail('update did not preserve managed hook mode');
   if (!updatedPreCommit.includes('--fail-on warning')) fail('update did not preserve managed hook fail-on behavior');
+  if (!updatedPreCommit.includes('# jhste-skills version=0.1.0')) fail('update did not refresh hook version comment');
   if (updatedPreCommit.includes('stale hook')) fail('update did not replace stale managed hook content');
+
+  const unmanagedSkills = path.join(path.dirname(skillsDir), 'unmanaged-skills');
+  fs.mkdirSync(path.join(unmanagedSkills, 'jhste-code-quality'), { recursive: true });
+  fs.writeFileSync(path.join(unmanagedSkills, 'jhste-code-quality', 'SKILL.md'), '# unmanaged local copy\n');
+  const refused = runAny(process.execPath, [path.join(root, 'cli/update.mjs'), '--yes', '--repo', repo, '--skills-dir', unmanagedSkills, '--skill-set', 'core', '--force'], { cwd: repo });
+  if (refused.status !== 3) fail(`update should refuse unmanaged skill overwrite with --force, got ${refused.status}`);
+  if (fs.readFileSync(path.join(unmanagedSkills, 'jhste-code-quality', 'SKILL.md'), 'utf8') !== '# unmanaged local copy\n') fail('refused unmanaged update changed local skill');
+  run(process.execPath, [path.join(root, 'cli/update.mjs'), '--yes', '--repo', repo, '--skills-dir', unmanagedSkills, '--skill-set', 'core', '--force', '--allow-unmanaged-skill-overwrite'], { cwd: repo });
+  if (fs.readFileSync(path.join(unmanagedSkills, 'jhste-code-quality', 'SKILL.md'), 'utf8') !== fs.readFileSync(sourceSkillPath, 'utf8')) {
+    fail('explicit unmanaged overwrite did not refresh local skill');
+  }
 }
 
 function runLineLimitScenarios({ root, tmp }) {

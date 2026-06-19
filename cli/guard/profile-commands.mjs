@@ -25,13 +25,37 @@ function safeCommandRuleId(name) {
   return `profile.command.${slug || 'unnamed'}`;
 }
 
-export function runProfileCommands(repoRoot, commands) {
+export function profileCommandExecutionErrors(commands, { trusted = false, allowShell = false } = {}) {
+  const errors = [];
+  if (!trusted && (commands || []).length > 0) {
+    errors.push('--run-profile-commands executes repo-local commands; pass --trust-repo-profile after reviewing .jhste/profile.yaml.');
+  }
+  for (const command of commands || []) {
+    if (command.run && !allowShell) {
+      errors.push(`Profile command ${command.name || 'unnamed'} uses legacy shell run; pass --allow-profile-shell to execute it.`);
+    }
+  }
+  return errors;
+}
+
+export function runProfileCommands(repoRoot, commands, { allowShell = false } = {}) {
   const violations = [];
   const failures = [];
   for (const command of commands || []) {
-    const result = spawnSync(command.run, [], {
+    const usingShell = Boolean(command.run);
+    if (usingShell && !allowShell) {
+      failures.push({
+        code: 'profile.command.config',
+        message: `Profile command shell execution is not allowed: ${command.name}`,
+        details: ['Pass --allow-profile-shell only after reviewing .jhste/profile.yaml.'],
+      });
+      continue;
+    }
+    const executable = usingShell ? command.run : command.cmd;
+    const commandArgs = usingShell ? [] : (command.args || []).map(String);
+    const result = spawnSync(executable, commandArgs, {
       cwd: repoRoot,
-      shell: true,
+      shell: usingShell,
       encoding: 'utf8',
       timeout: command.timeoutSeconds ? command.timeoutSeconds * 1000 : DEFAULT_COMMAND_TIMEOUT_MS,
       maxBuffer: 1024 * 1024,
@@ -40,7 +64,7 @@ export function runProfileCommands(repoRoot, commands) {
       failures.push({
         code: 'profile.command.runtime',
         message: `Profile command could not run: ${command.name}`,
-        details: [redactSecretLike(result.error.message), redactSecretLike(command.run)],
+        details: [redactSecretLike(result.error.message), redactSecretLike(usingShell ? command.run : [command.cmd, ...commandArgs].join(' '))],
       });
       continue;
     }
@@ -48,7 +72,7 @@ export function runProfileCommands(repoRoot, commands) {
       const output = compactOutput([result.stdout, result.stderr].filter(Boolean).join('\n'));
       violations.push(violation({
         ruleId: safeCommandRuleId(command.name),
-        severity: command.severity,
+        severity: command.severity || 'error',
         relPath: '.jhste/profile.yaml',
         line: 1,
         symbol: command.name,
@@ -61,4 +85,3 @@ export function runProfileCommands(repoRoot, commands) {
   }
   return { violations, failures };
 }
-

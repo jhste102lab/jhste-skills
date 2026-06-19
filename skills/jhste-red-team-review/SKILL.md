@@ -24,6 +24,11 @@ Use this skill after non-trivial code changes and before reporting completion. R
 - Label heuristic findings as candidates, not proof; never include raw secrets or private data in issue text.
 - Do not enter an unbounded fix/review loop. Stop after at most two fix + re-review cycles and report residual risks.
 
+
+## Severity rubric and path tracing
+
+For non-trivial code changes, trace at least one changed execution path from entrypoint through validation/auth/state to the side effect or result, and state any changed paths not checked. Use `changes required` for P0/P1 issues that can cause data loss, security/privacy exposure, misleading success, broken runtime behavior, or failed documented acceptance. Use `residual risk` when the bounded review completed but lower-severity, heuristic, environmental, or out-of-scope risks remain. Use `pass` only after inspecting the relevant diff and finding no material follow-up.
+
 ## Issue candidate protocol
 
 Use this only for actionable, non-trivial follow-up work that should be tracked separately from the current fix. Do not create issue spam for every warning.

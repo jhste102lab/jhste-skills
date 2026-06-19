@@ -111,6 +111,10 @@ export function printResult(result, format) {
   }
   const { summary } = result;
   console.log(`jhste guard: errors=${summary.error} warnings=${summary.warning} info=${summary.info} suppressed=${summary.suppressed} failures=${summary.failures}`);
+  if (result.meta?.git?.file_source) {
+    const fallback = result.meta.git.file_source === 'filesystem-fallback' ? ` (fallback: ${result.meta.git.fallback_reason || 'unknown reason'})` : '';
+    console.log(`File collection: ${result.meta.git.file_source}${fallback}`);
+  }
   if (result.failures.length) {
     console.log('\nGuard failures:');
     for (const failure of result.failures) console.log(`- [${failure.code}] ${failure.message}${failure.details?.length ? ` (${failure.details.join('; ')})` : ''}`);

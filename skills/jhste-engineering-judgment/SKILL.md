@@ -69,6 +69,13 @@ Do not ask to create or update an issue unless you first state why tracking is w
 Prefer: "This is better tracked as follow-up work. I can draft an issue candidate now if you want."
 Avoid: "Should I create an issue?" without supporting reasoning.
 
+
+## Senior-quality pre-edit gate
+
+For non-trivial code changes, compare at least two plausible shapes before editing: the smallest local patch and one cleaner seam-preserving alternative. State the invariant that must remain true, the caller contract entering and leaving the seam, the test seam that will prove behavior, the rejected alternative, and the partial-failure or rollback path. Keep this quiet for docs-only, comment-only, formatting-only, and trivial rename-only work.
+
+Adjacent-code scope creep is allowed only when the adjacent code is on the changed execution path and leaving it untouched creates a concrete failure mode. Otherwise emit an Issue candidate rather than widening the change.
+
 ## Issue candidate protocol
 
 Use this when pre-change inspection finds a material old problem, adjacent risk, or remediation follow-up that should not be fixed in the current scope.

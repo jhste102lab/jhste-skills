@@ -1,6 +1,6 @@
 # Language
 
-Shared vocabulary for every suggestion this skill makes. Use these terms exactly — don't substitute "component," "service," "API," or "boundary." Consistent language is the whole point.
+Shared vocabulary for every suggestion this skill makes. Use these terms as the internal review lens and map them to repo-local terms when local vocabulary exists. When no local term exists, avoid substituting generic "component," "service," "API," or "boundary."
 
 ## Terms
 

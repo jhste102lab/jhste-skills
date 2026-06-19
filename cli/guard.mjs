@@ -10,7 +10,7 @@ import {
 import { readJsonFile, validateJsonObject } from './json-file.mjs';
 import { loadBaseline, writeBaseline, applyBaseline } from './guard/baseline.mjs';
 import { resolveGuardConfig } from './guard/config.mjs';
-import { runProfileCommands } from './guard/profile-commands.mjs';
+import { profileCommandExecutionErrors, runProfileCommands } from './guard/profile-commands.mjs';
 import { guardResult, printResult, exitCodeFor } from './guard/reporting.mjs';
 import { resolveScopeFiles } from './guard/scope.mjs';
 import { scanFile } from './guard/scanners/index.mjs';
@@ -78,7 +78,14 @@ async function main() {
     if (inManagedHook()) {
       failConfig('Managed hook execution is read-only; --run-profile-commands is not allowed while JHSTE_HOOK_ACTIVE=1.');
     }
-    const profile = runProfileCommands(repoRoot, profileState.profile.commands);
+    const executionErrors = profileCommandExecutionErrors(profileState.profile.commands, {
+      trusted: Boolean(args['trust-repo-profile']),
+      allowShell: Boolean(args['allow-profile-shell']),
+    });
+    if (executionErrors.length) failConfig('Profile command execution requires explicit trust.', executionErrors);
+    const profile = runProfileCommands(repoRoot, profileState.profile.commands, {
+      allowShell: Boolean(args['allow-profile-shell']),
+    });
     violations.push(...profile.violations);
     failures.push(...profile.failures);
   }

@@ -4,11 +4,13 @@ This kit is a shared guidance layer. It does not replace repository-specific rul
 
 Priority order:
 
-1. Explicit user instruction.
+1. Explicit user instruction for the concrete task goal and scope.
 2. Current repo `AGENTS.md`, `CLAUDE.md`, and docs.
 3. `.jhste/profile.yaml`.
 4. jhste shared skills.
 5. General clean-code principles.
+
+Explicit user instructions can narrow or redirect the task, but they do not silently override verified safety, privacy, security, data-loss, managed-output, or repo-architecture constraints. If a request conflicts with repo-local architecture or safety rules, report the conflict and choose the smallest safe alternative instead of guessing.
 
 ## Existing profile
 
@@ -16,7 +18,7 @@ If `.jhste/profile.yaml` exists, default install keeps it. Overwrite requires `-
 
 ## Existing skills
 
-If a target skill directory already exists and differs, the installer skips it by default. The user can inspect the diff and rerun with an explicit overwrite option.
+Installed skill directories are tracked in `.jhste-skills-manifest.json` inside the skills directory. If a target skill directory already exists and differs, default install skips it; `--force` can refresh manifest-managed copies, but unmanaged differing directories are refused unless `--allow-unmanaged-skill-overwrite` is also explicit. The manifest stores skill digests, not absolute local paths.
 
 ## Bridge block
 

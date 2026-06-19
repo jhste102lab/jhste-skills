@@ -139,6 +139,56 @@ export function readIfExists(file) {
   return fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
 }
 
+export function isYesArg(args) {
+  return args?.yes === true || args?.y === true;
+}
+
+export function isDryRunArg(args) {
+  return args?.['dry-run'] === true;
+}
+
+export function isPathInside(parent, child) {
+  const relative = path.relative(path.resolve(parent), path.resolve(child));
+  return relative === '' || (!!relative && !relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
+export function resolveRepoContainedPath(repoRoot, inputPath, { label = 'path' } = {}) {
+  const raw = String(inputPath || '').trim();
+  if (!raw) throw new Error(`${label} must not be empty.`);
+  const resolved = path.isAbsolute(raw) ? path.resolve(raw) : path.resolve(repoRoot, raw);
+  if (!isPathInside(repoRoot, resolved)) {
+    throw new Error(`${label} must resolve inside the repository: ${raw}`);
+  }
+  return resolved;
+}
+
+export function printChangedFiles(repoRoot, files, { prefix = 'Changed files' } = {}) {
+  const normalized = [...new Set((files || []).filter(Boolean).map((file) => relativeDisplay(repoRoot, file)))];
+  console.log(`${prefix}:`);
+  for (const file of normalized) console.log(`- ${file}`);
+  if (normalized.length === 0) console.log('- none');
+}
+
+export async function confirmWriteAction(args, {
+  action,
+  prompt,
+  repoRoot,
+  changedFiles = [],
+} = {}) {
+  printChangedFiles(repoRoot || process.cwd(), changedFiles, { prefix: isDryRunArg(args) ? 'Planned changed files' : 'Changed files' });
+  if (isDryRunArg(args)) {
+    console.log('Dry run: no changes applied.');
+    return false;
+  }
+  if (isYesArg(args)) return true;
+  if (!process.stdin.isTTY) {
+    console.error(`Non-interactive ${action || 'write'} requires explicit --yes or -y; refusing to change files.`);
+    process.exit(3);
+  }
+  const answer = await ask(prompt || 'Apply changes? [y/N] ');
+  return answer.toLowerCase() === 'y';
+}
+
 export function writeFileIfChanged(file, content) {
   if (fs.existsSync(file) && fs.readFileSync(file, 'utf8') === content) {
     return false;

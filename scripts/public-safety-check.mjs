@@ -4,21 +4,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const excludedDirs = new Set(['.git', 'node_modules', 'dist', 'build', '.next', 'out', 'coverage']);
+const PRIVATE_PATTERNS_REL = '.jhste/private-safety-patterns.txt';
+const excludedDirs = new Set(['.git', 'node_modules', 'dist', 'build', '.next', 'out', 'coverage', 'worker-goals']);
 const textExts = new Set(['.md', '.mdx', '.txt', '.json', '.yaml', '.yml', '.mjs', '.js', '.ts', '.tsx']);
 const secretLikeFileNamePatterns = [
   { pattern: /(^|\/)\.env(?:$|\.(?:local|development|production|test|staging)(?:\..*)?$)/i, label: 'environment file' },
   { pattern: /(^|\/)id_(?:rsa|ed25519)$/i, label: 'private key filename' },
   { pattern: /\.(?:pem|key|p12|pfx)$/i, label: 'credential/private-key filename' },
-];
-const privateRepoFragments = [
-  'JH' + 'financial',
-  'Novel' + 'Crawler',
-  'Novel' + 'Track',
-  'Story' + 'Index',
-  'crawler-' + 'platform',
-  'front' + 'bench',
-  'ssh' + 'bridge',
 ];
 const privatePathFragments = ['/' + 'home/', '/' + 'Users/', 'C:' + '\\' + 'Users' + '\\'];
 const secretValuePatterns = [
@@ -59,8 +51,18 @@ function walk(dir, files = []) {
   return files;
 }
 
+function loadPrivatePatterns(scanRoot) {
+  const file = path.join(scanRoot, PRIVATE_PATTERNS_REL);
+  if (!fs.existsSync(file)) return [];
+  return fs.readFileSync(file, 'utf8')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'));
+}
+
 const args = parseArgs(process.argv.slice(2));
 const scanRoot = args.root;
+const privateRepoFragments = loadPrivatePatterns(scanRoot);
 
 for (const { full: file, scanContent } of walk(scanRoot)) {
   const rel = path.relative(scanRoot, file).replaceAll(path.sep, '/');
@@ -68,9 +70,10 @@ for (const { full: file, scanContent } of walk(scanRoot)) {
     if (pattern.test(rel)) fail(`${rel} has secret-like filename (${label}); remove it from public artifacts.`);
   }
   if (!scanContent) continue;
+  if (rel === PRIVATE_PATTERNS_REL) continue;
   const text = fs.readFileSync(file, 'utf8');
   for (const fragment of privateRepoFragments) {
-    if (text.includes(fragment)) fail(`${rel} contains private reference repo name fragment: ${fragment}`);
+    if (text.includes(fragment)) fail(`${rel} matches a local private safety pattern; remove it from public artifacts.`);
   }
   for (const fragment of privatePathFragments) {
     if (text.includes(fragment) && !text.includes('/path/to/repo')) fail(`${rel} contains private local path fragment: ${fragment}`);
@@ -81,5 +84,5 @@ for (const { full: file, scanContent } of walk(scanRoot)) {
 }
 
 if (!process.exitCode) {
-  console.log('public-safety-check passed: no private repo names, private local paths, or sensitive value patterns detected.');
+  console.log('public-safety-check passed: no configured private patterns, private local paths, or sensitive value patterns detected.');
 }

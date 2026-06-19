@@ -4,20 +4,47 @@ import {
   hasPersistenceAccess,
   hasPersistenceWrite,
   hasReadHandler,
-  hasScopeHint,
   isCrawlerProducerPath,
   isRouteLikePath,
   isScriptPipelinePath,
   isSourceCodePath,
+  lineAt,
+  localWindow,
+  maskCommentsAndStrings,
   violation,
 } from './utils.mjs';
+
+function hasScopedPersistencePredicate(text) {
+  const masked = maskCommentsAndStrings(text);
+  const scopeToken = /\b(userId|user\.id|accountId|orgId|tenantId|ownerId|workspaceId|teamId|projectId)\b/i;
+  const prismaAccess = /\bprisma\.\w+\.(find(?:Unique|First|Many)?|aggregate|count|create|update|delete|upsert)\s*\(/gi;
+  for (const match of masked.matchAll(prismaAccess)) {
+    const window = localWindow(masked, match.index || 0, 0, 700);
+    if (/\bwhere\s*:/.test(window) && scopeToken.test(window)) return true;
+  }
+  const sqlAccess = /\b(SELECT\b[\s\S]{0,180}\bFROM\b|UPDATE\s+\w+\s+SET|DELETE\s+FROM|INSERT\s+INTO)\b/gi;
+  for (const match of text.matchAll(sqlAccess)) {
+    const window = localWindow(text, match.index || 0, 40, 700);
+    if (/\bWHERE\b/i.test(window) && scopeToken.test(window)) return true;
+  }
+  const queryAccess = /\b(pool|client|db|database)\.(query|execute|select|from|update|delete|insert)\b/gi;
+  for (const match of text.matchAll(queryAccess)) {
+    const window = localWindow(text, match.index || 0, 40, 700);
+    if ((/\bwhere\s*:/.test(window) || /\bWHERE\b/i.test(window)) && scopeToken.test(window)) return true;
+  }
+  return false;
+}
+
+function hasWriteSafetyMarker(text) {
+  return /\b(transaction|batch|Promise\.allSettled|idempotenc|dedup|dedupe|upsert|ON CONFLICT|on conflict)\b/i.test(maskCommentsAndStrings(text));
+}
 
 export function scanAuthzDataIsolation(relPath, text) {
   if (!isRouteLikePath(relPath)) return [];
   const out = [];
   const hasDbAccess = hasPersistenceAccess(text);
   const authContextVisible = hasAuthContext(text);
-  const scopeVisible = hasScopeHint(text);
+  const scopeVisible = hasScopedPersistencePredicate(text);
   if (hasDbAccess && authContextVisible && !scopeVisible && !hasReadHandler(text)) {
     out.push(violation({
       ruleId: 'authz.scope_not_visible',
@@ -64,13 +91,14 @@ export function scanAuthzDataIsolation(relPath, text) {
 export function scanWriteSafety(relPath, text) {
   const out = [];
   const hasWrite = hasPersistenceWrite(text);
+  const markerVisible = hasWriteSafetyMarker(text);
   const writeSafetyPath = isRouteLikePath(relPath)
     || isScriptPipelinePath(relPath)
     || /(^|\/)(repositories?|queries|db|database|migrations?)\//i.test(relPath);
   if (writeSafetyPath
     && hasWrite
     && /(forEach\s*\(|for\s*\([^)]*;|for\s*\(\s*const\s+.+\s+of\s+|\.map\s*\(|while\s*\()/i.test(text)
-    && !/\b(transaction|batch|Promise\.allSettled|idempotenc|dedup|dedupe|upsert|ON CONFLICT|on conflict)\b/i.test(text)) {
+    && !markerVisible) {
     out.push(violation({
       ruleId: 'write.loop_without_transaction',
       severity: 'warning',
@@ -83,7 +111,7 @@ export function scanWriteSafety(relPath, text) {
   if (isRouteLikePath(relPath)
     && hasMutationHandler(text)
     && hasWrite
-    && !/\b(idempotenc|dedup|dedupe|upsert|transaction|ON CONFLICT|on conflict)\b/i.test(text)) {
+    && !markerVisible) {
     out.push(violation({
       ruleId: 'write.mutation_retry_safety',
       severity: 'warning',
@@ -169,6 +197,21 @@ export function scanPublicSafeError(relPath, text) {
       }));
     }
   });
+  for (const match of text.matchAll(/\b(Response\.json|NextResponse\.json|res\.json)\s*\(([\s\S]{0,360})\)/gu)) {
+    const expression = match[0];
+    if (!/\n/.test(expression)) continue;
+    if (/\b(stack|error\.message|err\.message|cause|details)\b/i.test(expression)) {
+      out.push(violation({
+        ruleId: 'error.public_raw_details',
+        severity: 'warning',
+        relPath,
+        line: lineAt(text, match.index || 0),
+        symbol: 'public-error-details',
+        message: 'Public response appears to include raw error details; map to a stable public code and keep diagnostics internal.',
+        confidence: 'medium',
+      }));
+    }
+  }
   return out;
 }
 

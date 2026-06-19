@@ -112,6 +112,7 @@ function applyOptionOverrides(plan, options) {
 function attachCommonPlanState(plan, options, overrides) {
   plan.command = options.command;
   plan.force = options.force;
+  plan.allowUnmanagedSkillOverwrite = options.allowUnmanagedSkillOverwrite;
   plan.installMissing = options.installMissing;
   plan.overrides = overrides;
   plan.skillsDir = options.skillsDir;

@@ -45,4 +45,16 @@ for (const filename of secretLikeFilenames) {
   if (output.includes('harmless fixture text')) fail(`${filename} failure leaked file contents`);
 }
 
+{
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'jhste-public-safety-local-pattern-'));
+  fs.mkdirSync(path.join(tmp, '.jhste'), { recursive: true });
+  fs.writeFileSync(path.join(tmp, '.jhste', 'private-safety-patterns.txt'), '# local patterns stay untracked\nPrivateProjectCodename\n');
+  fs.writeFileSync(path.join(tmp, 'README.md'), '# PrivateProjectCodename\n');
+  const result = runChecker(tmp);
+  const output = `${result.stdout}\n${result.stderr}`;
+  if (result.status !== 1) fail(`local private pattern should fail, got ${result.status}`);
+  if (!output.includes('matches a local private safety pattern')) fail('local private pattern failure did not explain configured pattern risk');
+  if (output.includes('PrivateProjectCodename')) fail('local private pattern failure leaked the private fragment');
+}
+
 console.log('public-safety-fixtures-test passed: sensitive filenames are rejected without content leakage.');
