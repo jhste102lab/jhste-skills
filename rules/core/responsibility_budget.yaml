@@ -35,6 +35,9 @@ implementation:
       - responsibility.route.budget
       - responsibility.script.budget
       - responsibility.python_orchestrator.budget
+      - responsibility.client.mixed
+      - responsibility.route.mixed
+      - responsibility.script.mixed
 recommendation:
   changed_files: true
   baseline_supported: true

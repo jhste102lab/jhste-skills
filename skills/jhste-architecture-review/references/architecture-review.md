@@ -9,6 +9,8 @@ When reviewing a proposed change, ask:
 - Does this module hide complexity or merely pass it through?
 - Are repo-local docs using a more specific term or rule?
 - Where do caller contracts, mutation safety, or hot-path performance assumptions belong so they stay visible instead of leaking across seams?
+- Do the proposed files change independently, or do they always move together as one cohesive contract?
+- Would the split reduce the number of files touched for a typical change, or merely make readers chase more files?
 
 ## Bad / better / why skeletons
 
@@ -33,6 +35,12 @@ Change adjacent code only when it sits on the changed execution path and leaving
 - Bad: a shared module exports argument parsing, git discovery, file copying, prompts, profile templates, and reporting helpers because they were all convenient to import from one place.
 - Better: each module owns one responsibility such as argument parsing, repository discovery, filesystem operations, prompting, or rendering; keep a compatibility facade only when it contains no policy and prevents churn.
 - Why: maintainers can name one reason to change the module, while callers do not learn unrelated helpers.
+
+### Over-fragmented contract split
+
+- Bad: a cohesive feature contract is split into separate `*-types`, `*-select`, `*-mapper`, `*-aliases`, and tiny wrapper files that are hard to understand alone and usually change in the same commit.
+- Better: keep type, select/shape alias, mapper, and small constants together when they describe one caller-facing contract; split only the independently changing query, policy, side effect, or behavior seam.
+- Why: SRP is about independent reasons to change, not maximizing file count; good splits reduce change surface and test scope without increasing reader navigation cost.
 
 ### Function responsibility split
 

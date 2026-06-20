@@ -70,63 +70,6 @@ function addSharedScannerCandidates(file, text, findings, thresholds) {
   }
 }
 
-function hasUseClientDirective(text) {
-  return /^\s*(?:"use client"|'use client')\s*;?/u.test(text);
-}
-
-function isScriptPipeline(file) {
-  return /(^|\/)scripts\/(data|ops|import|imports|backfill|repair|migrate|migration)\//.test(file.rel)
-    && /\.(ts|tsx|js|jsx|mjs|cjs|py)$/.test(file.rel);
-}
-
-function matchedResponsibilityHints(text, hintGroups) {
-  return hintGroups
-    .filter((group) => group.patterns.some((pattern) => pattern.test(text)))
-    .map((group) => group.label);
-}
-
-function scanMixedResponsibilities(file, text, findings) {
-  if (hasUseClientDirective(text)) {
-    const hints = matchedResponsibilityHints(text, [
-      { label: 'browser storage', patterns: [/\b(localStorage|sessionStorage)\b/] },
-      { label: 'network/API', patterns: [/\bfetch\s*\(/, /\baxios\./, /\buse(Query|Mutation)\s*\(/] },
-      { label: 'toast/notification', patterns: [/\btoast\b/, /\bnotify\b/] },
-      { label: 'modal/dialog state', patterns: [/\b(Dialog|Modal|Sheet)\b/, /\bopen[A-Z]\w*\b/, /\bis[A-Z]\w*Open\b/] },
-      { label: 'route navigation', patterns: [/\buseRouter\s*\(/, /\brouter\.(push|replace|refresh)\b/] },
-      { label: 'heavy mapping', patterns: [/\.(map|filter|reduce)\s*\(/] },
-    ]);
-    if (hints.length >= 3) {
-      candidate(findings.responsibilityBudget, 'mixed client responsibility candidate', file, 1, `client module mixes ${hints.slice(0, 4).join(', ')}; review hook/adapter/presentation split`, 'warning');
-    }
-  }
-
-  const routeLike = /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(file.rel) || /route\.(ts|js)$/.test(file.rel);
-  if (routeLike) {
-    const hints = matchedResponsibilityHints(text, [
-      { label: 'auth/session', patterns: [/\b(auth|session|permission|currentUser|getUser)\b/i] },
-      { label: 'validation', patterns: [/\b(z\.object|safeParse|parseAsync|validate|schema)\b/] },
-      { label: 'database', patterns: [/\b(prisma|pool\.query|client\.query|SELECT|INSERT|UPDATE|DELETE|db\.)\b/i] },
-      { label: 'response formatting', patterns: [/\b(Response\.json|NextResponse\.json|res\.json)\b/] },
-    ]);
-    if (hints.length >= 3) {
-      candidate(findings.responsibilityBudget, 'mixed route responsibility candidate', file, 1, `route/controller mixes ${hints.join(', ')}; review route/service/repository/response split`, 'warning');
-    }
-  }
-
-  if (isScriptPipeline(file)) {
-    const hints = matchedResponsibilityHints(text, [
-      { label: 'CLI parsing', patterns: [/\b(process\.argv|argparse|ArgumentParser|commander)\b/] },
-      { label: 'file IO', patterns: [/\b(readFile|writeFile|open\(|Path\(|fs\.)\b/] },
-      { label: 'data transform', patterns: [/\.(map|filter|reduce)\s*\(/, /\bjson\.loads\b/i, /\bJSON\.parse\b/] },
-      { label: 'persistence/network', patterns: [/\b(fetch|pool\.query|client\.query|INSERT|UPDATE|DELETE|requests\.)\b/i] },
-      { label: 'reporting', patterns: [/\b(console\.|print\(|logger\.)\b/] },
-    ]);
-    if (hints.length >= 4) {
-      candidate(findings.responsibilityBudget, 'mixed script responsibility candidate', file, 1, `script mixes ${hints.join(', ')}; review CLI/loader/transform/persist/report seams`, 'warning');
-    }
-  }
-}
-
 function newFindingsBag() {
   return {
     largeFiles: [],
@@ -157,7 +100,6 @@ export function scanFiles(files, thresholds) {
     try {
       const text = fs.readFileSync(file.full, 'utf8');
       addSharedScannerCandidates(file, text, findings, thresholds);
-      scanMixedResponsibilities(file, text, findings);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       candidate(findings.scanWarnings, 'scan warning', file, 1, `file could not be scanned and was omitted from rule candidates: ${message}`, 'warning');

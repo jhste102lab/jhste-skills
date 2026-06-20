@@ -54,3 +54,9 @@ Record actual command output in release notes before publishing a release.
 Release gates include dependency-free syntax checking, a first-run `install -> deep-scan -> tune --yes -> guard` smoke flow, `npm pack --dry-run` contents checks, and packed-tarball bin execution in a fresh temp consumer. These gates are not part of commit-time hooks.
 
 - Verify `sync`/`update` migrates older managed vendored renames without leaving duplicate directories, including `diagnose` → `diagnosing-bugs`.
+
+## npm trusted publishing
+
+Package publishing is handled by `.github/workflows/publish-npm.yml` on `v*.*.*` tags using GitHub Actions OIDC trusted publishing. The workflow grants `id-token: write`, runs `npm test`, and publishes with provenance, so it does not require a long-lived npm token, local `npm adduser`, or OAuth login in the release shell.
+
+Before cutting a tag, confirm the npm package's trusted publisher settings match this repository and workflow file exactly: GitHub owner/repo `jhste102lab/jhste-skills`, workflow `publish-npm.yml`, and no environment unless one is added to the workflow.

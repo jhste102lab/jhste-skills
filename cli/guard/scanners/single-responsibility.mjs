@@ -12,11 +12,14 @@ const RESPONSIBILITY_HINTS = [
   { label: 'validation', patterns: [/\b(validate|validator|safeParse|parseAsync|schema|assert|parseEnv|errors\.push)\b/i] },
   { label: 'filesystem IO', patterns: [/\b(fs\.|readFile|writeFile|mkdir|rmSync|cpSync|readdirSync)\b/i] },
   { label: 'process/git/network IO', patterns: [/\b(spawnSync|execFileSync|fetch\(|axios\.|git\(|git\s+-C)\b/i] },
-  { label: 'persistence', patterns: [/\b(prisma|pool\.query|client\.query|db\.|INSERT\s+INTO|UPDATE\s+\w|DELETE\s+FROM|SELECT\s+.+\s+FROM)\b/i] },
+  { label: 'persistence', patterns: [/\b(prisma|pool\.query|client\.query|db\.|INSERT\s+INTO|UPDATE\s+\w|DELETE\s+FROM|SELECT\s+.+\s+FROM)\b/i, /\b\w*(Repository|Repo|Store)\.(find|findMany|save|create|insert|update|delete|upsert|query|persist)\w*\s*\(/i] },
   { label: 'rendering/reporting', patterns: [/\b(console\.|Response\.json|NextResponse\.json|res\.json|render|markdown|tableRows|print|logger\.)\b/i] },
   { label: 'prompting', patterns: [/\b(ask\(|readline|question\(|prompt)\b/i] },
   { label: 'data transformation', patterns: [/\btransform|serialize|deserialize\b/i] },
   { label: 'time/crypto policy', patterns: [/\b(Date\.now|new Date\(|crypto\.|randomUUID|createHash)\b/i] },
+  { label: 'notification/email side effect', patterns: [/\b\w*(Email|Mail|Notification|Notifier)\w*\.(send|deliver|notify|enqueue|publish)\w*\s*\(/i, /\b(sendEmail|sendMail|sendWelcome|notifyUser)\w*\s*\(/i] },
+  { label: 'billing/payment side effect', patterns: [/\b\w*(Payment|Billing|Invoice|Subscription|Stripe)\w*\.(create|charge|capture|refund|update|cancel)\w*\s*\(/i] },
+  { label: 'event/queue side effect', patterns: [/\b(eventBus|queue|publisher|producer)\.(publish|send|enqueue|emit)\w*\s*\(/i] },
 ];
 
 const EXPORT_NAME_FAMILIES = [
@@ -52,6 +55,45 @@ function functionDeclarations(text) {
     const end = matchingBraceIndex(text, openBrace);
     if (end === -1) continue;
     out.push({ name, start, end, body: text.slice(start, end + 1) });
+  }
+  return out;
+}
+
+const CONTROL_FLOW_NAMES = new Set(['if', 'for', 'while', 'switch', 'catch', 'function']);
+
+function braceDepthBetween(text, start, end) {
+  let depth = 0;
+  for (let index = start; index < end; index += 1) {
+    if (text[index] === '{') depth += 1;
+    if (text[index] === '}') depth -= 1;
+  }
+  return depth;
+}
+
+function classMethodDeclarations(text) {
+  const classPattern = /(?:^|\n)[ \t]*(?:export\s+)?(?:default\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)[^{]*\{/gu;
+  const methodPattern = /(?:^|\n)([ \t]*(?:(?:public|private|protected|static|override|abstract|async|get|set)\s+)*([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*(?::[^{;\n]+)?\s*\{)/gu;
+  const out = [];
+  for (const classMatch of text.matchAll(classPattern)) {
+    const className = classMatch[1] || 'AnonymousClass';
+    const classStart = (classMatch.index || 0) + (classMatch[0].startsWith('\n') ? 1 : 0);
+    const classOpen = text.indexOf('{', classStart);
+    if (classOpen === -1) continue;
+    const classEnd = matchingBraceIndex(text, classOpen);
+    if (classEnd === -1) continue;
+    const classBodyStart = classOpen + 1;
+    const classBody = text.slice(classBodyStart, classEnd);
+    for (const methodMatch of classBody.matchAll(methodPattern)) {
+      const methodName = methodMatch[2] || 'anonymous';
+      if (CONTROL_FLOW_NAMES.has(methodName)) continue;
+      const relativeStart = (methodMatch.index || 0) + (methodMatch[0].startsWith('\n') ? 1 : 0);
+      const start = classBodyStart + relativeStart;
+      if (braceDepthBetween(text, classOpen, start) !== 1) continue;
+      const openBrace = classBodyStart + (methodMatch.index || 0) + methodMatch[0].lastIndexOf('{');
+      const end = matchingBraceIndex(text, openBrace);
+      if (end === -1 || end > classEnd) continue;
+      out.push({ name: `${className}.${methodName}`, start, end, body: text.slice(start, end + 1) });
+    }
   }
   return out;
 }
@@ -111,7 +153,8 @@ function pythonFunctionDeclarations(text) {
 }
 
 function declarationsForPath(relPath, text) {
-  return relPath.endsWith('.py') ? pythonFunctionDeclarations(text) : functionDeclarations(text);
+  if (relPath.endsWith('.py')) return pythonFunctionDeclarations(text);
+  return [...functionDeclarations(text), ...classMethodDeclarations(text)].sort((left, right) => left.start - right.start);
 }
 
 function exportedCallableNames(text) {

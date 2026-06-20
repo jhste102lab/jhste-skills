@@ -62,6 +62,23 @@ export function importRows(argv) {
 }
 
 {
+  const repo = makeRepo('class-method-mixed');
+  write(path.join(repo, 'src/UserService.ts'), `export class UserService {
+  async register(input) {
+    const user = await userRepository.save(input);
+    await emailService.sendWelcome(user.email);
+    await paymentClient.createCustomer(user.id);
+    return user;
+  }
+}
+`);
+  const result = guardJson(repo);
+  const item = result.violations.find((violation) => violation.rule_id === 'srp.function.mixed_responsibility' && violation.symbol === 'UserService.register');
+  if (!item) fail('mixed class method SRP candidate was not reported');
+  if (item.confidence !== 'low' || item.severity !== 'warning') fail('mixed class method SRP candidate should be low-confidence warning');
+}
+
+{
   const repo = makeRepo('module-exports');
   write(path.join(repo, 'src/shared.ts'), `export function parseArgs() { return {}; }
 export function findGitRoot() { return '.'; }

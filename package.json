@@ -1,6 +1,6 @@
 {
   "name": "jhste-skills",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Installable engineering guardrails and workflow skills for AI coding agents.",
   "type": "module",
   "license": "MIT",
@@ -33,7 +33,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "npm run syntax:check && npm run docs:check && npm run vendor:check && npm run public-safety:check && npm run public-safety-fixtures:test && npm run profile-fixtures:test && npm run guard-fixtures:test && npm run single-responsibility-fixtures:test && npm run smoke:test && npm run release:gates",
+    "test": "npm run syntax:check && npm run docs:check && npm run vendor:check && npm run public-safety:check && npm run public-safety-fixtures:test && npm run profile-fixtures:test && npm run guard-fixtures:test && npm run responsibility-budget-fixtures:test && npm run single-responsibility-fixtures:test && npm run smoke:test && npm run release:gates",
     "syntax:check": "node scripts/syntax-check.mjs",
     "docs:check": "node scripts/docs-check.mjs",
     "vendor:check": "node scripts/vendor-check.mjs",
@@ -41,6 +41,7 @@
     "public-safety-fixtures:test": "node scripts/public-safety-fixtures-test.mjs",
     "profile-fixtures:test": "node scripts/profile-fixtures-test.mjs",
     "guard-fixtures:test": "node scripts/guard-fixtures-test.mjs",
+    "responsibility-budget-fixtures:test": "node scripts/responsibility-budget-fixtures-test.mjs",
     "single-responsibility-fixtures:test": "node scripts/single-responsibility-fixtures-test.mjs",
     "smoke:test": "node scripts/smoke-test.mjs",
     "release:gates": "node scripts/release-gates-test.mjs"

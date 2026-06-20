@@ -66,7 +66,7 @@ function guidanceForFinding(item) {
   if (family === 'single_responsibility_advisory') {
     return {
       means: 'This class, module, or function may have more than one reason to change. The finding is heuristic and should be reviewed, not treated as proof.',
-      next: 'Name the one main responsibility, then move only independently changing work behind a real seam; avoid extracting shallow pass-through wrappers.',
+      next: 'Name the one main responsibility, then move only independently changing work behind a real seam; keep always-cochanging contract pieces together and avoid shallow pass-through wrappers.',
     };
   }
   if (family === 'external_input_validation') {

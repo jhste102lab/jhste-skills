@@ -31,5 +31,5 @@ recommendation:
   baseline_supported: true
   default_enforcement: review_only
 public_safe_examples:
-  bad: Keep adding parsing, validation, filesystem IO, prompting, transformation, persistence, and reporting to one function or shared utility bucket.
-  good: Name the changed module or function's one responsibility, keep cohesive implementation inside deep modules, and extract only when a real seam improves locality.
+  bad: Keep adding parsing, validation, filesystem IO, prompting, transformation, persistence, and reporting to one function or split every type, select alias, mapper, and tiny wrapper into separate files that always change together.
+  good: Name the changed module or function's one responsibility and one independent reason to change; keep cohesive contracts together inside deep modules, and extract only when a real tested seam improves locality.

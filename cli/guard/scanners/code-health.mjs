@@ -1,6 +1,8 @@
 import path from 'node:path';
 import {
   hasUseClientDirective,
+  isRouteLikePath,
+  isScriptPipelinePath,
   isSourceCodePath,
   lineAt,
   violation,
@@ -119,6 +121,42 @@ export function scanFileSizeAdvisory(relPath, text, settings) {
   return [];
 }
 
+function matchedResponsibilityHints(text, hintGroups) {
+  return hintGroups
+    .filter((group) => group.patterns.some((pattern) => pattern.test(text)))
+    .map((group) => group.label);
+}
+
+function mixedClientResponsibilityHints(text) {
+  return matchedResponsibilityHints(text, [
+    { label: 'browser storage', patterns: [/\b(localStorage|sessionStorage)\b/] },
+    { label: 'network/API', patterns: [/\bfetch\s*\(/, /\baxios\./, /\buse(Query|Mutation)\s*\(/] },
+    { label: 'toast/notification', patterns: [/\btoast\b/, /\bnotify\b/] },
+    { label: 'modal/dialog state', patterns: [/\b(Dialog|Modal|Sheet)\b/, /\bopen[A-Z]\w*\b/, /\bis[A-Z]\w*Open\b/] },
+    { label: 'route navigation', patterns: [/\buseRouter\s*\(/, /\brouter\.(push|replace|refresh)\b/] },
+    { label: 'heavy mapping', patterns: [/\.(map|filter|reduce)\s*\(/] },
+  ]);
+}
+
+function mixedRouteResponsibilityHints(text) {
+  return matchedResponsibilityHints(text, [
+    { label: 'auth/session', patterns: [/\b(auth|session|permission|currentUser|getUser)\b/i] },
+    { label: 'validation', patterns: [/\b(z\.object|safeParse|parseAsync|validate|schema)\b/] },
+    { label: 'database', patterns: [/\b(prisma|pool\.query|client\.query|SELECT|INSERT|UPDATE|DELETE|db\.)\b/i] },
+    { label: 'response formatting', patterns: [/\b(Response\.json|NextResponse\.json|res\.json)\b/] },
+  ]);
+}
+
+function mixedScriptResponsibilityHints(text) {
+  return matchedResponsibilityHints(text, [
+    { label: 'CLI parsing', patterns: [/\b(process\.argv|argparse|ArgumentParser|commander)\b/] },
+    { label: 'file IO', patterns: [/\b(readFile|writeFile|open\(|Path\(|fs\.)\b/] },
+    { label: 'data transform', patterns: [/\.(map|filter|reduce)\s*\(/, /\bjson\.loads\b/i, /\bJSON\.parse\b/] },
+    { label: 'persistence/network', patterns: [/\b(fetch|pool\.query|client\.query|INSERT|UPDATE|DELETE|requests\.)\b/i] },
+    { label: 'reporting', patterns: [/\b(console\.|print\(|logger\.)\b/] },
+  ]);
+}
+
 export function scanResponsibilityBudget(relPath, text, settings) {
   const ext = path.extname(relPath).toLowerCase();
   if (!['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py'].includes(ext)) return [];
@@ -131,16 +169,34 @@ export function scanResponsibilityBudget(relPath, text, settings) {
   if (hasUseClientDirective(text) && lineCount > settings.client_module_review_lines) {
     out.push(violation({ ruleId: 'responsibility.client.budget', severity: 'warning', relPath, symbol: 'use-client', message: `${lineCount} lines in client module; review hook/adapter/presentation split.`, confidence: 'medium' }));
   }
-  const routeLike = /(^|\/)(api|routes?|controllers?|pages\/api)\//i.test(relPath) || /route\.(ts|js)$/.test(relPath);
+  const routeLike = isRouteLikePath(relPath);
   if (routeLike && lineCount >= settings.route_review_lines) {
     out.push(violation({ ruleId: 'responsibility.route.budget', severity: 'warning', relPath, symbol: 'route', message: `${lineCount} lines in route/controller-like file; review auth/validation/service/response seams.`, confidence: 'medium' }));
   }
-  const scriptPipeline = /(^|\/)scripts\/(data|ops|import|imports|backfill|repair|migrate|migration)\//.test(relPath);
+  const scriptPipeline = isScriptPipelinePath(relPath);
   if (scriptPipeline && lineCount >= settings.import_ops_script_review_lines) {
     out.push(violation({ ruleId: 'responsibility.script.budget', severity: 'warning', relPath, symbol: 'script-pipeline', message: `${lineCount} lines in import/ops-style script; review CLI/loader/transform/persist/report seams.`, confidence: 'medium' }));
   }
   if (ext === '.py' && /(^|\/)(main|.*orchestrator|.*runner|stage_runner)\.py$/.test(relPath) && lineCount >= settings.python_orchestrator_review_lines) {
     out.push(violation({ ruleId: 'responsibility.python_orchestrator.budget', severity: 'warning', relPath, symbol: 'python-orchestrator', message: `${lineCount} lines in Python orchestrator/runner; review policy/IO/runtime/notification/result seams.`, confidence: 'medium' }));
+  }
+  if (hasUseClientDirective(text)) {
+    const hints = mixedClientResponsibilityHints(text);
+    if (hints.length >= 3) {
+      out.push(violation({ ruleId: 'responsibility.client.mixed', severity: 'warning', relPath, symbol: 'use-client-mixed', message: `client module mixes ${hints.slice(0, 4).join(', ')}; review hook/adapter/presentation split.`, confidence: 'low' }));
+    }
+  }
+  if (routeLike) {
+    const hints = mixedRouteResponsibilityHints(text);
+    if (hints.length >= 3) {
+      out.push(violation({ ruleId: 'responsibility.route.mixed', severity: 'warning', relPath, symbol: 'route-mixed', message: `route/controller mixes ${hints.join(', ')}; review route/service/repository/response split.`, confidence: 'low' }));
+    }
+  }
+  if (scriptPipeline) {
+    const hints = mixedScriptResponsibilityHints(text);
+    if (hints.length >= 4) {
+      out.push(violation({ ruleId: 'responsibility.script.mixed', severity: 'warning', relPath, symbol: 'script-pipeline-mixed', message: `script mixes ${hints.join(', ')}; review CLI/loader/transform/persist/report seams.`, confidence: 'low' }));
+    }
   }
   return out;
 }
