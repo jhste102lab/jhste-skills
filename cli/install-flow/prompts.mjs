@@ -92,7 +92,7 @@ export async function customInstallPlan(command) {
   const plan = {
     mode: 'custom',
     installSkills: command === 'install',
-    skillSet: 'core',
+    skillSet: 'all',
     connectRepo: true,
     writeProfile: true,
     writeBridge: true,
@@ -131,11 +131,11 @@ Choice [Enter=1]: `);
     if (plan.installSkills) {
       const featureRange = await ask(`Choose the feature set to install.
 
-1) Core features
-2) Core features + all optional features
+1) All bundled features
+2) jhste core guardrail features only
 
 Choice [Enter=1]: `);
-      if (String(featureRange).trim() === '2') plan.skillSet = 'all';
+      if (String(featureRange).trim() === '2') plan.skillSet = 'core';
     }
     return;
   }
@@ -144,11 +144,11 @@ Choice [Enter=1]: `);
   plan.connectRepo = true;
   const featureRange = await ask(`Choose the feature set for the current project.
 
-1) Core features
-2) Core features + all optional features
+1) All bundled features
+2) jhste core guardrail features only
 
 Choice [Enter=1]: `);
-  if (String(featureRange).trim() === '2') plan.skillSet = 'all';
+  if (String(featureRange).trim() === '2') plan.skillSet = 'core';
 }
 
 async function askCustomProjectSettings(plan) {

@@ -17,6 +17,7 @@ export function runInstallScenarios(ctx) {
   runUpdateScenarios(ctx);
   runLineLimitScenarios(ctx);
   runSkillSetScenarios(ctx);
+  runUninstallScenarios(ctx);
   runModeScenarios(ctx);
   runConnectScenarios(ctx);
 }
@@ -103,8 +104,8 @@ function runDefaultInstall(ctx) {
   const manifest = JSON.parse(fs.readFileSync(path.join(skillsDir, '.jhste-skills-manifest.json'), 'utf8'));
   if (manifest.managed_by !== 'jhste-skills' || !manifest.skills?.['jhste-red-team-review']?.digest) fail('skills manifest missing managed skill digest');
   const defaultSkillDirs = skillDirs(skillsDir);
-  if (defaultSkillDirs.length !== 7) fail(`default install should copy 7 core skills, got ${defaultSkillDirs.length}`);
-  if (defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should not copy vendored workflow skills');
+  if (defaultSkillDirs.length !== 21) fail(`default install should copy 21 bundled skills, got ${defaultSkillDirs.length}`);
+  if (!defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should copy vendored workflow skills');
 }
 
 function runUpdateScenarios({ root, repo, skillsDir }) {
@@ -215,4 +216,29 @@ function runSkillSetScenarios({ root, tmp }) {
   const allSkillDirs = skillDirs(allSkillsDir);
   if (allSkillDirs.length !== 21) fail(`--skill-set all should copy 21 skills, got ${allSkillDirs.length}`);
   if (!allSkillDirs.includes('jhste-red-team-review') || !allSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set all missing core or vendored skill');
+}
+
+function runUninstallScenarios({ root, tmp }) {
+  const uninstallRepo = path.join(tmp, 'uninstall-repo');
+  const uninstallSkills = path.join(tmp, 'uninstall-skills');
+  initRepo(uninstallRepo);
+  fs.writeFileSync(path.join(uninstallRepo, 'AGENTS.md'), '# Uninstall repo\n\nKeep this instruction.\n');
+  run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', uninstallRepo, '--skills-dir', uninstallSkills, '--skip-deep-scan'], { cwd: uninstallRepo });
+  if (!fs.existsSync(path.join(uninstallRepo, '.git', 'hooks', 'pre-commit'))) fail('uninstall scenario install did not create hook');
+  if (!fs.existsSync(path.join(uninstallSkills, '.jhste-skills-manifest.json'))) fail('uninstall scenario install did not create manifest');
+  run(process.execPath, [path.join(root, 'cli/uninstall.mjs'), '--yes', '--repo', uninstallRepo, '--skills-dir', uninstallSkills], { cwd: uninstallRepo });
+  if (fs.existsSync(path.join(uninstallRepo, '.git', 'hooks', 'pre-commit'))) fail('uninstall did not remove managed pre-commit hook');
+  const agentsAfter = fs.readFileSync(path.join(uninstallRepo, 'AGENTS.md'), 'utf8');
+  if (agentsAfter.includes('jhste-skills:start') || !agentsAfter.includes('Keep this instruction.')) fail('uninstall did not remove only the managed bridge block');
+  if (fs.existsSync(path.join(uninstallRepo, '.jhste', 'profile.yaml'))) fail('uninstall did not remove generated profile');
+  if (fs.existsSync(path.join(uninstallSkills, '.jhste-skills-manifest.json'))) fail('uninstall did not remove skills manifest');
+  if (fs.existsSync(uninstallSkills) && skillDirs(uninstallSkills).length !== 0) fail('uninstall did not remove manifest-managed skills');
+
+  const modifiedProfileRepo = path.join(tmp, 'uninstall-modified-profile-repo');
+  const modifiedProfileSkills = path.join(tmp, 'uninstall-modified-profile-skills');
+  initRepo(modifiedProfileRepo);
+  run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', modifiedProfileRepo, '--skills-dir', modifiedProfileSkills, '--skip-deep-scan', '--skip-hooks'], { cwd: modifiedProfileRepo });
+  fs.appendFileSync(path.join(modifiedProfileRepo, '.jhste', 'profile.yaml'), '\ncommands:\n  local-check:\n    cmd: npm\n    args: [test]\n');
+  run(process.execPath, [path.join(root, 'cli/uninstall.mjs'), '--yes', '--repo', modifiedProfileRepo, '--skills-dir', modifiedProfileSkills, '--repo-only'], { cwd: modifiedProfileRepo });
+  if (!fs.existsSync(path.join(modifiedProfileRepo, '.jhste', 'profile.yaml'))) fail('uninstall removed modified profile without --force-profile');
 }

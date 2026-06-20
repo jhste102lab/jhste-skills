@@ -149,7 +149,7 @@ function buildSyncPlan(options, command) {
   const installedSkills = detectInstalledSkillNames(options.skillsDir);
   const skillNames = options.skillSet
     ? skillNamesForSet(options.skillSet)
-    : (installedSkills.length > 0 ? installedSkills : skillNamesForSet('core'));
+    : (installedSkills.length > 0 ? installedSkills : skillNamesForSet('all'));
   const repoRoot = options.repoInfo.isGitRepo ? options.repoInfo.repoRoot : null;
   const managedRepo = repoLooksManaged(repoRoot);
   const hooks = detectSyncHooks(repoRoot, options.skipHooks);
@@ -163,7 +163,7 @@ function buildSyncPlan(options, command) {
     forceSkills: true,
     installMissing: false,
     overrides: [],
-    skillSet: options.skillSet || (installedSkills.length > 0 ? 'detected' : 'core'),
+    skillSet: options.skillSet || (installedSkills.length > 0 ? 'detected' : 'all'),
     skillNames,
     installSkills: true,
     skillsDir: options.skillsDir,

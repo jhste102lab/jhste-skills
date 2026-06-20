@@ -21,8 +21,8 @@ Install mode defaults to `normal`. Non-interactive installs fail closed with exi
 
 Modes:
 
-- `minimal`: basic/core skills only; no repo profile, bridge, hook, or deep scan.
-- `normal`: basic/core skills, repo profile/bridge when a git repo is available, and advisory pre-commit hook.
+- `minimal`: jhste core skills only; no repo profile, bridge, hook, or deep scan.
+- `normal`: all bundled skills, repo profile/bridge when a git repo is available, and advisory pre-commit hook.
 - `full`: all skills, repo profile/bridge, advisory pre-commit and pre-push hooks, and deep scan by default. Interactive Full asks only whether automatic checks should warn, block at commit time, or block at commit and push time.
 - `custom`: interactive-only effect-oriented wizard.
 
@@ -36,7 +36,7 @@ Line-size policy:
 
 Safety and compatibility:
 
-- selected skills copied to a kit-managed skill directory with `.jhste-skills-manifest.json` digests; default `--skill-set core` installs only jhste core skills, while `vendor` and `all` are explicit opt-ins for vendored workflow skills;
+- selected skills copied to a kit-managed skill directory with `.jhste-skills-manifest.json` digests; default `--skill-set all` installs jhste core skills plus vendored workflow skills, while `core` and `vendor` remain explicit narrower choices;
 - `.jhste/profile.yaml` created with `mode: advisory` when missing;
 - existing profile is not overwritten unless `--force` is explicit; `--force` refreshes only jhste-managed outputs and does not overwrite user source, CI, package files, lockfiles, non-managed hooks, or unmanaged differing skill directories; unmanaged skill overwrite requires `--allow-unmanaged-skill-overwrite` after review;
 - `AGENTS.md` and `CLAUDE.md` bridge blocks use `<!-- jhste-skills:start -->` / `<!-- jhste-skills:end -->` markers; only that managed block is updated on later runs;
@@ -180,6 +180,26 @@ Safety contract:
 - generated managed hooks prefer the install-time local CLI path before the global `jhste-skills` fallback, include a `# jhste-skills version=...` comment, and skip nested runs using `JHSTE_HOOK_ACTIVE=1`;
 - existing non-managed hooks are never overwritten;
 - uninstall removes only hooks marked as managed by this tool.
+
+## `uninstall`
+
+`uninstall` removes jhste-skills managed outputs without touching unmanaged project files.
+
+```bash
+jhste-skills uninstall --yes --repo /path/to/repo
+jhste-skills uninstall --yes --repo /path/to/repo --repo-only
+jhste-skills uninstall --yes --skills-dir /path/to/skills --skills-only
+jhste-skills uninstall --yes --repo /path/to/repo --force-profile
+```
+
+Safety contract:
+
+- non-interactive runs fail closed unless `--yes`/`-y` is explicit;
+- managed `pre-commit` and `pre-push` hooks are removed, while non-managed hooks are left untouched;
+- marker-managed bridge blocks are removed from `AGENTS.md` and `CLAUDE.md`; other text in those files is preserved;
+- manifest-managed skill directories are removed from the skills directory, while unmanaged skill directories are left untouched;
+- `.jhste/profile.yaml` is removed only when it still matches the generated profile shape; modified profiles are left for manual review unless `--force-profile` is explicit;
+- empty managed directories are cleaned up best-effort.
 
 ## `tune`
 

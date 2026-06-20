@@ -44,7 +44,7 @@ function presetPlan(command, mode) {
   return {
     mode,
     installSkills: true,
-    skillSet: 'core',
+    skillSet: 'all',
     connectRepo: true,
     writeProfile: true,
     writeBridge: true,
@@ -71,7 +71,7 @@ function presetConnectPlan(mode) {
   return {
     mode,
     installSkills: false,
-    skillSet: 'core',
+    skillSet: 'all',
     connectRepo: true,
     writeProfile: true,
     writeBridge: true,

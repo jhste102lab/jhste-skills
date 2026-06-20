@@ -13,7 +13,7 @@ export function runConnectScenarios({ root, tmp, skillsDir }) {
   fs.mkdirSync(nonGitCwd, { recursive: true });
   run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--skills-dir', nonGitCwdSkills, '--skip-deep-scan'], { cwd: nonGitCwd });
   if (fs.existsSync(path.join(nonGitCwd, '.jhste'))) fail('install outside git repo created .jhste');
-  if (skillDirs(nonGitCwdSkills).length !== 7) fail('install outside git repo did not install core skills');
+  if (skillDirs(nonGitCwdSkills).length !== 21) fail('install outside git repo did not install bundled skills');
 
   const explicitNonGitRepo = path.join(tmp, 'explicit-non-git-repo');
   const explicitNonGitSkills = path.join(tmp, 'explicit-non-git-skills');
@@ -42,6 +42,6 @@ export function runConnectScenarios({ root, tmp, skillsDir }) {
   if (connectMissing.status !== 3) fail(`connect missing skills should exit 3, got ${connectMissing.status}`);
   if (fs.existsSync(path.join(connectMissingRepo, '.jhste'))) fail('connect missing skills created .jhste');
   run(process.execPath, [path.join(root, 'cli/connect.mjs'), '--mode', 'normal', '--yes', '--repo', connectMissingRepo, '--skills-dir', connectMissingSkills, '--skip-deep-scan', '--install-missing'], { cwd: connectMissingRepo });
-  if (skillDirs(connectMissingSkills).length !== 7) fail('connect --install-missing did not install core skills');
+  if (skillDirs(connectMissingSkills).length !== 21) fail('connect --install-missing did not install bundled skills');
   if (!fs.existsSync(path.join(connectMissingRepo, '.jhste', 'profile.yaml'))) fail('connect --install-missing did not create profile');
 }

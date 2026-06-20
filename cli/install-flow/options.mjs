@@ -70,10 +70,10 @@ function normalizeMode(value, errors, { command }) {
 }
 
 function normalizeSkillSet(value, errors) {
-  const requested = value === undefined ? 'core' : String(value).toLowerCase();
+  const requested = value === undefined ? 'all' : String(value).toLowerCase();
   const skillSet = SKILL_SET_ALIASES.get(requested);
   if (!skillSet) errors.push('--skill-set must be core, vendor, or all.');
-  return skillSet || 'core';
+  return skillSet || 'all';
 }
 
 function normalizeHookMode(value, errors) {
@@ -141,6 +141,7 @@ Usage:
 Notes:
   Non-interactive installs require explicit --yes or -y.
   The default mode is normal.
+  Normal installs all bundled skills by default; use --skill-set core for only jhste core skills.
   Full installs all safe managed features; blocking hooks require an explicit interactive or CLI choice.
   Line limit defaults to 300 lines when repo profile writing is enabled.
   --skip-hooks and --hooks are mutually exclusive.

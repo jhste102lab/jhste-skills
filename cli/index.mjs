@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const cliDir = path.dirname(fileURLToPath(import.meta.url));
 const [command, ...rest] = process.argv.slice(2);
-const commands = new Set(['install', 'connect', 'sync', 'update', 'deep-scan', 'guard', 'hooks', 'tune', 'baseline']);
+const commands = new Set(['install', 'connect', 'sync', 'update', 'deep-scan', 'guard', 'hooks', 'tune', 'baseline', 'uninstall']);
 
 if (!command || command === '--help' || command === '-h') {
   console.log(`jhste-skills
@@ -20,6 +20,7 @@ Usage:
   jhste-skills hooks install|uninstall|doctor [--repo <path>]
   jhste-skills tune [--repo <path>]
   jhste-skills baseline [--repo <path>]
+  jhste-skills uninstall [--repo <path>] [--skills-dir <path>] [--yes]
 `);
   process.exit(0);
 }

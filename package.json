@@ -27,6 +27,9 @@
     "skills/",
     "vendor/",
     "README.md",
+    "README.ko.md",
+    "README.zh.md",
+    "README.ja.md",
     "LICENSE"
   ],
   "scripts": {
