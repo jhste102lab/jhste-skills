@@ -61,6 +61,15 @@ warning이 나오면:
 npx jhste-skills install
 ```
 
+또는 npm으로 CLI를 전역 설치해서 어느 레포에서든 사용할 수 있습니다.
+
+```bash
+npm install -g jhste-skills
+jhste-skills install
+```
+
+한 번만 실행해보고 싶다면 `npx`를 쓰면 되고, 평소에 계속 사용할 CLI로 두고 싶다면 `npm install -g`를 쓰면 됩니다.
+
 기본 설치는 Normal mode를 사용합니다.
 
 - bundled skills 전체를 설치합니다: jhste core skills + vendored workflow skills.

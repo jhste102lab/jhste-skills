@@ -6,6 +6,8 @@
 
 ```bash
 npx jhste-skills install
+npm install -g jhste-skills
+jhste-skills install
 node cli/install.mjs --yes --mode normal --repo /path/to/repo
 node cli/install.mjs --yes --mode minimal --repo /path/to/repo
 node cli/install.mjs --yes --mode full --repo /path/to/repo

@@ -61,6 +61,15 @@ You may not need this if you only want a single prompt file, want strict CI enfo
 npx jhste-skills install
 ```
 
+Or install the CLI globally with npm and use it from any repository:
+
+```bash
+npm install -g jhste-skills
+jhste-skills install
+```
+
+Use `npx` when you want a one-off run without a global install. Use `npm install -g` when you want `jhste-skills` available as a normal shell command.
+
 The default install uses Normal mode.
 
 - Installs all bundled skills: jhste core skills + vendored workflow skills.

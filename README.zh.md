@@ -61,6 +61,15 @@ AI 编程代理很快，但经常以可预测的方式失败：
 npx jhste-skills install
 ```
 
+也可以用 npm 全局安装 CLI，然后在任意仓库中使用。
+
+```bash
+npm install -g jhste-skills
+jhste-skills install
+```
+
+如果只想临时运行一次，请使用 `npx`。如果希望把 `jhste-skills` 作为常用 shell 命令，请使用 `npm install -g`。
+
 默认安装使用 Normal mode。
 
 - 安装全部 bundled skills：jhste core skills + vendored workflow skills。
