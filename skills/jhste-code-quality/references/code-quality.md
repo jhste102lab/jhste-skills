@@ -12,6 +12,11 @@ A fallback is acceptable when the degraded behavior is intentional, scoped to an
 
 Risky fallback patterns include `catch` blocks that return `[]`, `null`, `undefined`, or `false` without a reason; required environment values with silent defaults; and repeated caller-side defensive chains that duplicate the same uncertainty across the codebase.
 
+
+## SOLID-informed coding discipline
+
+Use SOLID as a design review lens, not as automatic compliance. Keep each changed function, module, or class focused on one responsibility and one reason to change. Review extension seams when new variants repeatedly edit core branching, but avoid premature strategies or registries. Preserve caller-visible return shapes, nullability, error behavior, and side-effect expectations. Prefer right-sized contracts over broad config/interface/props bags, while keeping cohesive public contracts together. Keep concrete DB, API, browser, filesystem, email, payment, and queue effects visible through adapters, repositories, injected dependencies, or intentionally local seams.
+
 ## Test quality
 
 Tests should verify observable behavior through the module interface. They should not pass by checking function-name existence, incidental strings, private helpers, or internal call order.

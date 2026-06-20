@@ -18,6 +18,7 @@ Use repo-local instructions first. Treat this skill as shared advisory guidance 
 - Do not stop at happy-path-only coverage for changed behavior; include the most relevant edge, failure, side-effect, idempotency, or regression case.
 - Mock external seams, not internal collaborators you control.
 - Before adding a new helper, type, or shape, check for the existing source of truth.
+- Use SOLID-informed coding discipline as advisory guidance: one responsibility, extension seams only when variants force repeated edits, stable caller contracts, right-sized interfaces, and visible side-effect dependencies.
 - If a hand-written source file grows beyond the profile threshold, consider splitting responsibilities before adding more code.
 - If a page, client module, route/controller, import script, or Python orchestrator crosses a responsibility budget, treat it as a review signal to find the next clean seam.
 - After code changes, prefer `jhste-skills guard --scope changed --format text --fail-on error` when the CLI is available; report warnings and guard runtime/config failures separately.
@@ -31,3 +32,8 @@ Use repo-local instructions first. Treat this skill as shared advisory guidance 
 - `../../rules/core/external_input_validation.yaml`
 - `../../rules/core/file_size_advisory.yaml`
 - `../../rules/core/responsibility_budget.yaml`
+- `../../rules/core/single_responsibility_advisory.yaml`
+- `../../rules/core/extension_seam_advisory.yaml`
+- `../../rules/core/substitutability_advisory.yaml`
+- `../../rules/core/interface_segregation_advisory.yaml`
+- `../../rules/core/dependency_boundary_advisory.yaml`

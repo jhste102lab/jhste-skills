@@ -14,6 +14,7 @@ Use before non-trivial code changes. Repo-local instructions and architecture do
 - Before editing, run the pre-edit evidence check for non-trivial code changes and report only a concise user-facing summary.
 - Identify the ownership seam: UI, route/controller, usecase/service, repository/query, adapter, job, script, or test fixture.
 - Name the one main responsibility and one main reason to change for each changed class, module, and function.
+- Apply SOLID-informed coding discipline as review guidance, not compliance proof: responsibility, extension seam, substitutability, interface size, and dependency direction.
 - Reject adjacent responsibilities unless they are on the changed execution path and leaving them out creates a concrete failure mode.
 - List the important failure paths before writing code.
 - State the data contract entering and leaving the changed seam.
@@ -33,13 +34,14 @@ For non-trivial code changes, check these before editing:
 2. **Evidence inspected** — repo instructions, issue/PR context, files, tests, and code paths actually inspected.
 3. **Ownership seam** — the smallest module boundary being changed.
 4. **Changed responsibility** — the one main responsibility of each changed class/module/function, plus adjacent responsibilities intentionally rejected.
-5. **Data in/out** — inputs entering the seam and outputs/errors leaving it.
-6. **Failure paths** — important ways this can fail or mislead users/tools.
-7. **Rejected scope** — adjacent refactors or old problems intentionally not touched.
-8. **Smallest safe change** — why the planned change is minimal.
-9. **Verification plan** — tests, guards, builds, or manual checks to run, plus any checks likely to be skipped.
+5. **SOLID-informed review lens** — whether the change affects extension seams, substitutability contracts, broad interfaces/configs/props, or concrete side-effect dependencies.
+6. **Data in/out** — inputs entering the seam and outputs/errors leaving it.
+7. **Failure paths** — important ways this can fail or mislead users/tools.
+8. **Rejected scope** — adjacent refactors or old problems intentionally not touched.
+9. **Smallest safe change** — why the planned change is minimal.
+10. **Verification plan** — tests, guards, builds, or manual checks to run, plus any checks likely to be skipped.
 
-Keep these items available as internal review evidence, but do not make the user read the full 8-item block every time. User-facing output should usually be one or two plain sentences covering:
+Keep these items available as internal review evidence, but do not make the user read the full evidence block every time. User-facing output should usually be one or two plain sentences covering:
 
 - scope checked;
 - main risks;

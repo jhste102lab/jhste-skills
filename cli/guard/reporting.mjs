@@ -48,69 +48,60 @@ export function exitCodeFor(result, failOn, baselineMode) {
   return 0;
 }
 
+const FAMILY_GUIDANCE = {
+  file_size_advisory: {
+    means: 'This file exceeds the configured line limit. It is not proof of a bug, but it increases the chance that review, conflict resolution, and test boundaries become harder to manage.',
+    next: 'Split the file along natural boundaries so each helper, adapter, scanner family, or test fixture carries one main responsibility at a time.',
+  },
+  responsibility_budget: {
+    means: 'This file may be combining multiple responsibilities such as UI, state, IO, validation, persistence, and response shaping.',
+    next: 'Check whether the code can move into smaller modules with explicit names such as loader, service, repository, or view.',
+  },
+  single_responsibility_advisory: {
+    means: 'This class, module, or function may have more than one reason to change. The finding is heuristic and should be reviewed, not treated as proof.',
+    next: 'Name the one main responsibility, then move only independently changing work behind a real seam; keep always-cochanging contract pieces together and avoid shallow pass-through wrappers.',
+  },
+  extension_seam_advisory: {
+    means: 'This is a low-confidence SOLID-informed OCP candidate where variant, provider, or policy branching may keep forcing core edits.',
+    next: 'Review whether a registry, strategy, adapter, or explicit policy table would reduce repeated edits without adding premature pass-through abstraction.',
+  },
+  dependency_boundary_advisory: {
+    means: 'This is a low-confidence SOLID-informed DIP candidate where high-level policy or service code may directly own a concrete side effect.',
+    next: 'Check whether the dependency should be visible behind an adapter, repository, injected dependency, or intentionally local seam.',
+  },
+  external_input_validation: {
+    means: 'This is a candidate path where external input such as files, request bodies, third-party API data, or env values may be trusted without shape validation.',
+    next: 'Add an explicit validation boundary such as schema.safeParse, a validator, or assert/parseEnv, or make an existing validation step clearly visible in code.',
+  },
+  no_secret_logging: {
+    means: 'This is a candidate path where logs may include sensitive fields such as tokens, passwords, or session values.',
+    next: 'Confirm that real secrets are not emitted, and redact values before logging when needed.',
+  },
+  build_runtime_env_safety: {
+    means: 'Direct env reads can fail differently across build and runtime environments, producing undefined values or invalid configuration.',
+    next: 'Use startup-time env schema validation, defaults, or a requiredEnv helper so failure points are explicit.',
+  },
+  write_safety_idempotency: {
+    means: 'This is a candidate path where repeated or retried writes could create duplicate records or partial success states.',
+    next: 'Check whether transactions, upserts, idempotency keys, dedupe logic, or batch semantics are the right safety mechanism here.',
+  },
+  api_contract_compatibility: {
+    means: 'The request or response shape may be unclear at the API boundary, or storage-layer shapes may be leaking directly to callers.',
+    next: 'Add an input schema and public DTO mapping so the caller-facing contract stays explicit and stable.',
+  },
+  authz_data_isolation: {
+    means: 'Authn/authz checks or tenant-owner scoping may be unclear in code, creating a candidate risk of cross-user data access.',
+    next: 'Make requireUser/permission checks and owner filters such as userId, orgId, or tenantId visible in the same flow.',
+  },
+  performance_duplicate_fetch: {
+    means: 'Duplicate fetches or missing cache use in the same path may cause slow rendering or unnecessary network calls.',
+    next: 'Check whether these calls can be consolidated behind a shared loader, query hook, or cache key.',
+  },
+};
+
 function guidanceForFinding(item) {
   const family = item.rule_family || FINDING_METADATA[item.rule_id]?.family || item.rule_id;
-  if (family === 'file_size_advisory') {
-    return {
-      means: 'This file exceeds the configured line limit. It is not proof of a bug, but it increases the chance that review, conflict resolution, and test boundaries become harder to manage.',
-      next: 'Split the file along natural boundaries so each helper, adapter, scanner family, or test fixture carries one main responsibility at a time.',
-    };
-  }
-  if (family === 'responsibility_budget') {
-    return {
-      means: 'This file may be combining multiple responsibilities such as UI, state, IO, validation, persistence, and response shaping.',
-      next: 'Check whether the code can move into smaller modules with explicit names such as loader, service, repository, or view.',
-    };
-  }
-
-  if (family === 'single_responsibility_advisory') {
-    return {
-      means: 'This class, module, or function may have more than one reason to change. The finding is heuristic and should be reviewed, not treated as proof.',
-      next: 'Name the one main responsibility, then move only independently changing work behind a real seam; keep always-cochanging contract pieces together and avoid shallow pass-through wrappers.',
-    };
-  }
-  if (family === 'external_input_validation') {
-    return {
-      means: 'This is a candidate path where external input such as files, request bodies, third-party API data, or env values may be trusted without shape validation.',
-      next: 'Add an explicit validation boundary such as schema.safeParse, a validator, or assert/parseEnv, or make an existing validation step clearly visible in code.',
-    };
-  }
-  if (family === 'no_secret_logging') {
-    return {
-      means: 'This is a candidate path where logs may include sensitive fields such as tokens, passwords, or session values.',
-      next: 'Confirm that real secrets are not emitted, and redact values before logging when needed.',
-    };
-  }
-  if (family === 'build_runtime_env_safety') {
-    return {
-      means: 'Direct env reads can fail differently across build and runtime environments, producing undefined values or invalid configuration.',
-      next: 'Use startup-time env schema validation, defaults, or a requiredEnv helper so failure points are explicit.',
-    };
-  }
-  if (family === 'write_safety_idempotency') {
-    return {
-      means: 'This is a candidate path where repeated or retried writes could create duplicate records or partial success states.',
-      next: 'Check whether transactions, upserts, idempotency keys, dedupe logic, or batch semantics are the right safety mechanism here.',
-    };
-  }
-  if (family === 'api_contract_compatibility') {
-    return {
-      means: 'The request or response shape may be unclear at the API boundary, or storage-layer shapes may be leaking directly to callers.',
-      next: 'Add an input schema and public DTO mapping so the caller-facing contract stays explicit and stable.',
-    };
-  }
-  if (family === 'authz_data_isolation') {
-    return {
-      means: 'Authn/authz checks or tenant-owner scoping may be unclear in code, creating a candidate risk of cross-user data access.',
-      next: 'Make requireUser/permission checks and owner filters such as userId, orgId, or tenantId visible in the same flow.',
-    };
-  }
-  if (family === 'performance_duplicate_fetch') {
-    return {
-      means: 'Duplicate fetches or missing cache use in the same path may cause slow rendering or unnecessary network calls.',
-      next: 'Check whether these calls can be consolidated behind a shared loader, query hook, or cache key.',
-    };
-  }
+  if (FAMILY_GUIDANCE[family]) return FAMILY_GUIDANCE[family];
   if (item.confidence === 'low') {
     return {
       means: 'This is a low-confidence static heuristic candidate. It does not mean the code is definitely buggy.',

@@ -70,6 +70,10 @@ ${tableRows([...findings.dbInRoutes, ...findings.routeResponsibility])}
 ${tableRows(findings.responsibilityBudget)}
 ### Existing single-responsibility candidates
 ${tableRows(findings.singleResponsibility)}
+### Existing extension seam candidates
+${tableRows(findings.extensionSeams)}
+### Existing dependency boundary candidates
+${tableRows(findings.dependencyBoundaries)}
 ### Existing client/server seam candidates
 ${tableRows(findings.clientServerSeam)}
 ### Existing hidden side-effect candidates
@@ -156,6 +160,10 @@ rules:
     mixed_responsibility_hints: ${thresholds.singleResponsibility.mixed_responsibility_hints}
     module_export_family_hints: ${thresholds.singleResponsibility.module_export_family_hints}
   external_input_validation:
+    mode: advisory
+  extension_seam_advisory:
+    mode: advisory
+  dependency_boundary_advisory:
     mode: advisory
   null_state_safety:
     mode: advisory

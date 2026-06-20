@@ -4,7 +4,17 @@ Languages: [English](README.md) · [한국어](README.ko.md) · [中文](README.
 
 An installable working-rules kit that helps AI coding agents consistently follow your engineering standards.
 
-`jhste-skills` gives Codex, Claude Code, and other AI coding agents a shared engineering workflow. It helps agents verify assumptions before editing, respect repo-local instructions, keep API/database/automation boundaries clear, check whether each module has one clear responsibility under SRP (Single Responsibility Principle), run changed-file guards, and perform a red-team code review before claiming work is complete.
+`jhste-skills` gives Codex, Claude Code, and other AI coding agents a shared engineering workflow. It helps agents verify assumptions before editing, respect repo-local instructions, keep API/database/automation boundaries clear, apply SOLID-informed coding discipline and design review, run changed-file guards, and perform a red-team code review before claiming work is complete. Guard findings are review candidates, not automatic SOLID proof.
+
+## What SOLID means here
+
+SOLID is used here as a design review lens, not as an automatic compliance checklist.
+
+- **S — Single Responsibility:** each changed function, module, or class should have one main job and one main reason to change.
+- **O — Open/Closed:** adding a new variant, provider, or policy should not force repeated edits to core branching when a real extension seam would be safer.
+- **L — Liskov Substitution:** implementations should not weaken caller expectations for return shape, nullability, errors, side effects, or documented behavior.
+- **I — Interface Segregation:** callers should not depend on broad config, interface, or props objects when they only need a small, stable slice.
+- **D — Dependency Inversion:** high-level policy should not be tightly coupled to concrete DB, API, browser, filesystem, email, payment, or queue effects unless that seam is intentional and visible.
 
 This tool does **not** take over your project. Repo-local `AGENTS.md`, `CLAUDE.md`, and docs remain authoritative. The default setup is advisory, marker-managed, and designed to be low-risk to try.
 
@@ -16,7 +26,7 @@ AI coding agents are fast, but they fail in predictable ways:
 
 - They silently accept unclear requirements or incorrect premises.
 - They expand the scope while trying to be helpful.
-- They mix UI, route/controller, service, database, and side-effect responsibilities in one place, breaking the “one module, one responsibility” principle (SRP).
+- They mix UI, route/controller, service, database, and side-effect responsibilities in one place, or add abstractions without a real SOLID-informed seam.
 - They hide failures or produce unsafe logs.
 - They say “done” before the changed code has been checked.
 - They forget repo-specific rules when you switch machines or repositories.
@@ -25,7 +35,7 @@ AI coding agents are fast, but they fail in predictable ways:
 
 ```text
 Before a non-trivial code change:
-  check the goal, premise, ownership seam, data contract, failure path, and SRP responsibility
+  check the goal, premise, ownership seam, data contract, failure path, and SOLID-informed review lens
 
 While editing:
   treat repo-local instructions as the authority
@@ -40,7 +50,7 @@ If warnings appear:
   attempt a bounded fix, re-check, and stop instead of looping forever
 ```
 
-The expected result is smaller diffs, clearer SRP boundaries, safer API/database code, fewer silent assumptions, and more honest completion reports.
+The expected result is smaller diffs, clearer SOLID-informed seams, safer API/database code, fewer silent assumptions, and more honest completion reports.
 
 ## Who should install this?
 
@@ -50,7 +60,7 @@ Install `jhste-skills` if you:
 - want agents to verify assumptions before non-trivial code changes;
 - want existing repo docs to remain the source of authority;
 - want lightweight advisory checks before commit or before declaring work complete;
-- care about SRP, API/database boundaries, safe logging, input validation, side effects, and automation reliability;
+- care about SOLID-informed coding discipline, API/database boundaries, safe logging, input validation, side effects, and automation reliability;
 - want to restore the same AI coding workflow across machines and repositories.
 
 You may not need this if you only want a single prompt file, want strict CI enforcement immediately after installation, do not want generated `.jhste/` files or bridge blocks, or expect this tool to automatically refactor code.
@@ -147,7 +157,7 @@ These are the jhste-authored guardrail skills. They are installed by default as 
 | [`setup`](skills/setup/SKILL.md)<br>A safe setup skill that prevents install/connect/update flows from overwriting existing project instructions | Installing or connecting the kit to a repository | Unsafe overwrite, unmanaged hook conflict, repo instruction replacement |
 | [`jhste-engineering-judgment`](skills/jhste-engineering-judgment/SKILL.md)<br>A pre-change judgment skill that verifies goal, premise, scope, seam, and failure path before code edits | Before non-trivial code changes | Blind agreement, scope creep, unverified assumptions, unclear seams |
 | [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>A code-quality skill for input validation, observable failure handling, and secret-safe logging | Writing or reviewing application code | Unvalidated input, silent failure, secret logging, oversized files |
-| [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>An architecture review skill for module boundaries, side-effect placement, and possible SRP violations | Changing module boundaries or app structure | Pass-through abstraction, mixed responsibility, side-effect leakage |
+| [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>An architecture review skill for module boundaries, side-effect placement, and SOLID-informed design risks | Changing module boundaries or app structure | Pass-through abstraction, mixed responsibility, side-effect leakage |
 | [`jhste-db-api-boundary`](skills/jhste-db-api-boundary/SKILL.md)<br>A boundary skill that checks responsibility and data contracts across API routes, services, repositories, and SQL | Touching API, controller, service, repository, SQL, or persistence code | Fat routes, unsafe SQL, missing auth/data scoping, leaky DTOs |
 | [`jhste-crawler-automation`](skills/jhste-crawler-automation/SKILL.md)<br>An automation skill for crawler/scraper/worker/scheduler producer-consumer seams and side effects | Touching crawlers, scrapers, workers, schedulers, or browser automation | Fragile automation, unclear producer/consumer boundaries, hidden side effects |
 | [`jhste-red-team-review`](skills/jhste-red-team-review/SKILL.md)<br>A read-only red-team code review skill that aggressively re-checks changed code before completion | Before declaring non-trivial code work complete | Premature “done”, missed null/auth/env/write/API/performance risks |
@@ -210,7 +220,7 @@ See [`docs/CLI.md`](docs/CLI.md) for detailed command behavior.
 2. Keep advisory hooks at first. Use `--skip-hooks` if you do not want commit-time checks, and enable blocking mode only after reviewing noise and false positives.
 3. Start with the default 300-line advisory limit. Use `--line-limit-mode blocking` only when the team is ready for warning-level hook enforcement.
 4. During code changes, run `guard --scope changed --format text --fail-on error` manually.
-5. Before non-trivial code changes, use `jhste-engineering-judgment` to check scope, seam, failure path, data contract, assumptions, and each changed class/module/function's main responsibility.
+5. Before non-trivial code changes, use `jhste-engineering-judgment` to check scope, seam, failure path, data contract, assumptions, and the SOLID-informed review lens for changed classes/modules/functions.
 6. Before declaring non-trivial code work complete, use `jhste-red-team-review`. Skip docs-only, comment-only, formatting-only, and trivial rename-only changes.
 7. Limit fix + re-review loops to two cycles, then report remaining risks instead of looping indefinitely.
 8. Create a baseline only after reviewing existing debt. Treat the baseline as a known-issues ledger and use ratchet behavior to stop new debt, not to hide scanner failures.
@@ -245,7 +255,7 @@ See [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.md) for release acceptanc
 - Do not agree blindly.
 - Do not overwrite local project authority.
 - Keep changes scoped.
-- Name responsibility boundaries from an SRP perspective.
+- Use SOLID-informed coding discipline: name responsibilities, review extension seams, preserve caller contracts, keep interfaces right-sized, and make concrete dependencies visible.
 - Make failures observable.
 - Treat automated guard output as evidence, not proof.
 - Run a red-team code review before calling non-trivial work complete.

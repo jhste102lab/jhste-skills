@@ -1,0 +1,27 @@
+id: extension_seam_advisory
+title: Extension seam advisory
+description: Repeated variant, provider, or policy branching should be reviewed for an extension seam without introducing premature strategy or registry abstractions.
+pack: core
+default_mode: advisory
+severity: medium
+applies_to:
+  languages: [typescript, javascript, python]
+  paths: [src, app, apps, packages, scripts, cli]
+scan:
+  type: solid_extension_seam
+  signals:
+    - variant_switch_branch_count
+implementation:
+  guard:
+    status: builtin
+    scanner: scanExtensionSeamAdvisory
+    confidence: heuristic
+    finding_ids:
+      - solid.ocp.variant_branching_hotspot
+recommendation:
+  changed_files: true
+  baseline_supported: true
+  default_enforcement: review_only
+public_safe_examples:
+  bad: Keep adding provider, variant, or policy cases to core branching every time a new implementation is introduced, or add a registry abstraction before the domain variants are stable.
+  good: Review whether an extension seam such as a registry, strategy, adapter, or explicit policy table would reduce repeated core edits while preserving locality and avoiding pass-through wrappers.

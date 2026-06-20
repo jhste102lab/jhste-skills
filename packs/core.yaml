@@ -8,6 +8,10 @@ rules:
   - rules/core/file_size_advisory.yaml
   - rules/core/responsibility_budget.yaml
   - rules/core/single_responsibility_advisory.yaml
+  - rules/core/extension_seam_advisory.yaml
+  - rules/core/substitutability_advisory.yaml
+  - rules/core/interface_segregation_advisory.yaml
+  - rules/core/dependency_boundary_advisory.yaml
   - rules/core/external_input_validation.yaml
   - rules/core/side_effect_boundary.yaml
   - rules/core/null_state_safety.yaml

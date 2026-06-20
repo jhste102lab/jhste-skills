@@ -236,7 +236,7 @@ for (const forbidden of ['.github/workflows', '.git/hooks', 'package-lock.json',
 if (/writeFileSync\([^\n]+package\.json/.test(install)) fail('installer must not write target package.json');
 
 const pkg = safeParse('package.json');
-for (const script of ['syntax:check', 'public-safety:check', 'vendor:check', 'docs:check', 'guard-fixtures:test', 'single-responsibility-fixtures:test', 'smoke:test', 'release:gates']) {
+for (const script of ['syntax:check', 'public-safety:check', 'vendor:check', 'docs:check', 'guard-fixtures:test', 'single-responsibility-fixtures:test', 'solid-design-fixtures:test', 'smoke:test', 'release:gates']) {
   if (!pkg.scripts?.[script]) fail(`package script missing: ${script}`);
 }
 

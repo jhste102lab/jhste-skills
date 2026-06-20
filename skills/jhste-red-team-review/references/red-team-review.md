@@ -6,6 +6,7 @@ Use an objective red-team checklist. Prefer concrete findings over broad praise.
 
 - Inspect the changed files or diff directly. Do not pass from summaries, test output, or guard output alone.
 - Responsibility is separated cleanly enough that changed classes, modules, functions, and UI components each have a clear main job and one main reason to change.
+- SOLID-informed risks are checked as review prompts, not proof: extension seams for repeated variants, substitutability contracts, broad interfaces, and concrete dependency direction.
 - Data flow is predictable and easy to trace through the changed code.
 - Null, undefined, empty, loading, and error states are handled safely for the affected paths.
 - Failure handling is observable and does not silently pretend success.
@@ -81,3 +82,7 @@ When shared tooling reports rule families, interpret them as prompts rather than
 - `write_safety_idempotency` → inspect duplicate execution, batching, and partial-write risks
 - `api_contract_compatibility` → inspect schema, parsing, DTO mapping, and caller drift
 - `performance_duplicate_fetch` → inspect duplicate requests and hot-path work
+- `extension_seam_advisory` → inspect repeated variant/provider/policy branching as an OCP-informed candidate, not a demand for abstraction
+- `dependency_boundary_advisory` → inspect concrete side-effect dependencies in high-level policy/service paths as a DIP-informed candidate
+- `substitutability_advisory` → human-review caller-visible return shape, nullability, error behavior, side effects, and invariants; there is no default guard proof
+- `interface_segregation_advisory` → human-review broad config/interface/props bags against cohesive-contract locality; there is no default guard proof

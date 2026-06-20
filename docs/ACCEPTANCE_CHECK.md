@@ -30,7 +30,7 @@ Core skills implemented:
 
 ## Rule/profile model
 
-Rule modes are documented in `docs/RULES.md`, example profile defaults to advisory with a 300-line file-size policy, guard text output includes concise meaning/remediation guidance for warnings, and rule metadata covers file size, silent failure, secret logging, workflow security, external input validation, null/state safety, auth/data isolation, build/runtime env safety, write safety/idempotency, API contract compatibility, performance duplication, DB/API boundaries, side effects, type escapes, and crawler producer seams. Each rule declares whether guard support is built in or metadata-only.
+Rule modes are documented in `docs/RULES.md`, example profile defaults to advisory with a 300-line file-size policy, guard text output includes concise meaning/remediation guidance for warnings, and rule metadata covers file size, silent failure, secret logging, workflow security, external input validation, SOLID-informed extension seams/substitutability/interface segregation/dependency boundaries, null/state safety, auth/data isolation, build/runtime env safety, write safety/idempotency, API contract compatibility, performance duplication, DB/API boundaries, side effects, type escapes, and crawler producer seams. Each rule declares whether guard support is built in or metadata-only.
 
 ## Conflict handling
 

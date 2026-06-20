@@ -1,6 +1,6 @@
 ---
 name: jhste-architecture-review
-description: Advisory architecture review guidance for module boundaries, seams, side effects, route/service/page responsibility, and avoiding pass-through abstraction. Use before or during non-trivial code changes.
+description: Advisory architecture review guidance for module boundaries, SOLID-informed design review, seams, side effects, route/service/page responsibility, and avoiding pass-through abstraction. Use before or during non-trivial code changes.
 ---
 
 # jhste-architecture-review
@@ -16,6 +16,10 @@ Repo-local architecture docs remain authoritative. Use this skill to keep common
 - For changed classes, modules, and functions, name one main responsibility and one main reason to change before adding behavior.
 - For large or mixed modules, identify the responsibility that can move behind a tested seam without creating shallow pass-through wrappers.
 - Treat responsibility budget findings as review prompts, not proof of a bug: look for mixed loading, UI, persistence, orchestration, reporting, and side effects.
+- Apply SOLID-informed design review as a lens, not a compliance checklist: SRP responsibility, OCP extension seams, LSP caller-contract stability, ISP right-sized contracts, and DIP dependency direction.
+- For OCP, review repeated variant/provider/policy branching only when it creates repeated core edits; avoid premature strategy or registry abstractions.
+- For LSP and ISP, rely on contract review and tests rather than automatic violation claims.
+- For DIP, keep high-level policy from directly owning concrete side effects unless the dependency is intentionally local, visible, and testable.
 
 ## References
 
@@ -24,5 +28,9 @@ Repo-local architecture docs remain authoritative. Use this skill to keep common
 - `../../rules/core/side_effect_boundary.yaml`
 - `../../rules/core/responsibility_budget.yaml`
 - `../../rules/core/single_responsibility_advisory.yaml`
+- `../../rules/core/extension_seam_advisory.yaml`
+- `../../rules/core/substitutability_advisory.yaml`
+- `../../rules/core/interface_segregation_advisory.yaml`
+- `../../rules/core/dependency_boundary_advisory.yaml`
 - `../../rules/nextjs/thin_api_route.yaml`
 - `../../rules/react/component_responsibility.yaml`

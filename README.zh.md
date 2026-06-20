@@ -4,7 +4,17 @@ Languages: [English](README.md) · [한국어](README.ko.md) · [中文](README.
 
 一套可安装的工作规则工具包，帮助 AI 编程代理稳定遵循你设定的工程标准。
 
-`jhste-skills` 为 Codex、Claude Code 等 AI 编程代理提供一套共享的工程工作流。它帮助代理在修改代码前验证前提，优先遵循仓库本地说明，保持 API/database/automation 边界清晰，从 SRP（Single Responsibility Principle，单一职责原则）的角度检查每个模块是否只有一个明确职责，运行 changed-file guard，并在声明完成前执行 red-team code review。
+`jhste-skills` 为 Codex、Claude Code 等 AI 编程代理提供一套共享的工程工作流。它帮助代理在修改代码前验证前提，优先遵循仓库本地说明，保持 API/database/automation 边界清晰，应用 SOLID-informed coding discipline 和 design review lens，运行 changed-file guard，并在声明完成前执行 red-team code review。guard finding 是 review candidate，不是自动 SOLID 证明。
+
+## 这里的 SOLID 是什么意思
+
+这里的 SOLID 是设计 review lens，不是自动合规检查表。
+
+- **S — Single Responsibility:** 被修改的 function、module、class 应该有一个主要职责和一个主要变更理由。
+- **O — Open/Closed:** 如果每次新增 variant、provider、policy 都要反复修改 core branching，就要检查是否需要真实的 extension seam。
+- **L — Liskov Substitution:** implementation 不应削弱 caller 对 return shape、nullability、error、side effect 或已文档化行为的期待。
+- **I — Interface Segregation:** caller 只需要小而稳定的一部分时，不应依赖过大的 config、interface 或 props object。
+- **D — Dependency Inversion:** high-level policy 不应强绑定到 DB、API、browser、filesystem、email、payment、queue 等 concrete side effect；必要时应通过有意图且可见的 seam 暴露。
 
 这个工具不会接管你的项目。仓库内的 `AGENTS.md`、`CLAUDE.md` 和 docs 始终是权威来源。默认设置是 advisory 模式，使用 marker-managed 方式管理变更，设计目标是低风险、容易试用。
 
@@ -16,7 +26,7 @@ AI 编程代理很快，但经常以可预测的方式失败：
 
 - 默默接受不清晰的需求或错误前提。
 - 为了“帮忙”而扩大修改范围。
-- 把 UI、route/controller、service、database、side effect 职责混在一个地方，破坏“一个模块，一个职责”原则（SRP）。
+- 把 UI、route/controller、service、database、side effect 职责混在一个地方，或以 SOLID 为名加入没有真实 seam 的抽象。
 - 隐藏失败，或产生不安全的日志。
 - 在变更代码尚未检查前就说“完成”。
 - 当你切换机器或仓库时，忘记仓库特定规则。
@@ -25,7 +35,7 @@ AI 编程代理很快，但经常以可预测的方式失败：
 
 ```text
 在 non-trivial code change 前：
-  检查目标、前提、ownership seam、data contract、failure path、SRP 职责
+  检查目标、前提、ownership seam、data contract、failure path、SOLID-informed review lens
 
 修改过程中：
   将 repo-local instructions 视为权威
@@ -40,7 +50,7 @@ AI 编程代理很快，但经常以可预测的方式失败：
   尝试 bounded fix，重新检查，然后停止，避免无限循环
 ```
 
-预期结果是更小的 diff、更清晰的 SRP 边界、更安全的 API/database 代码、更少的 silent assumption，以及更诚实的完成报告。
+预期结果是更小的 diff、更清晰的 SOLID-informed seam、更安全的 API/database 代码、更少的 silent assumption，以及更诚实的完成报告。
 
 ## 谁适合安装？
 
@@ -50,7 +60,7 @@ AI 编程代理很快，但经常以可预测的方式失败：
 - 希望代理在 non-trivial code change 前验证前提；
 - 希望现有 repo docs 继续作为权威来源；
 - 希望在提交前或声明完成前加入轻量 advisory check；
-- 重视 SRP、API/database boundary、safe logging、input validation、side effect、automation reliability；
+- 重视 SOLID-informed coding discipline、API/database boundary、safe logging、input validation、side effect、automation reliability；
 - 希望在不同机器和仓库之间快速恢复相同的 AI 编程工作习惯。
 
 如果你只想要一个 prompt 文件，或希望安装后立即启用 strict CI enforcement，或不想生成 `.jhste/` 文件和 bridge block，或期待这个工具自动重构代码，那它可能不适合你。
@@ -147,7 +157,7 @@ Custom   - 通过面向效果的问题自定义安装范围
 | [`setup`](skills/setup/SKILL.md)<br>安全安装 skill，避免 install/connect/update 覆盖现有项目说明 | 安装 kit 或连接仓库时 | Unsafe overwrite, unmanaged hook conflict, repo instruction replacement |
 | [`jhste-engineering-judgment`](skills/jhste-engineering-judgment/SKILL.md)<br>pre-change 判断 skill，在改代码前验证目标、前提、scope、seam 和 failure path | non-trivial code change 前 | Blind agreement, scope creep, unverified assumption, unclear seam |
 | [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>检查 input validation、observable failure handling、secret-safe logging 的代码质量 skill | 编写或 review application code 时 | Unvalidated input, silent failure, secret logging, oversized file |
-| [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>检查 module boundary、side-effect placement 和 SRP 风险的架构 review skill | 修改 module boundary 或 app structure 时 | Pass-through abstraction, mixed responsibility, side-effect leakage |
+| [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>检查 module boundary、side-effect placement 和 SOLID-informed design risk 的架构 review skill | 修改 module boundary 或 app structure 时 | Pass-through abstraction, mixed responsibility, side-effect leakage |
 | [`jhste-db-api-boundary`](skills/jhste-db-api-boundary/SKILL.md)<br>检查 API route、service、repository、SQL 之间职责和 data contract 的 boundary skill | 修改 API、controller、service、repository、SQL、persistence code 时 | Fat route, unsafe SQL, missing auth/data scoping, leaky DTO |
 | [`jhste-crawler-automation`](skills/jhste-crawler-automation/SKILL.md)<br>检查 crawler/scraper/worker/scheduler 的 producer-consumer seam 和 side effect 的 automation skill | 修改 crawler、scraper、worker、scheduler、browser automation 时 | Fragile automation, unclear producer/consumer boundary, hidden side effect |
 | [`jhste-red-team-review`](skills/jhste-red-team-review/SKILL.md)<br>read-only red-team code review skill，在完成前主动攻击性复查变更代码 | non-trivial code work 完成声明前 | Premature “done”, missed null/auth/env/write/API/performance risk |
@@ -210,7 +220,7 @@ jhste-skills uninstall
 2. 一开始保留 advisory hook。如果不想要 commit-time check，使用 `--skip-hooks`；只有在充分检查 noise 和 false positive 后才启用 blocking mode。
 3. 先使用默认 300-line advisory limit。只有团队准备接受 warning-level hook enforcement 时，才使用 `--line-limit-mode blocking`。
 4. 修改代码时，手动运行 `guard --scope changed --format text --fail-on error`。
-5. non-trivial code change 前，用 `jhste-engineering-judgment` 检查 scope、seam、failure path、data contract、assumption，以及每个 changed class/module/function 的 main responsibility。
+5. non-trivial code change 前，用 `jhste-engineering-judgment` 检查 scope、seam、failure path、data contract、assumption，以及 changed class/module/function 的 SOLID-informed review lens。
 6. non-trivial code work 完成声明前，使用 `jhste-red-team-review`。跳过 docs-only、comment-only、formatting-only、trivial rename-only 变更。
 7. fix + re-review 最多重复两轮，然后报告剩余 risk，避免无限循环。
 8. 只有在审查 existing debt 后才创建 baseline。将 baseline 视为 known-issues ledger，用 ratchet 阻止 new debt，而不是隐藏 scanner failure。
@@ -245,7 +255,7 @@ Release acceptance notes 请参考 [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_
 - 不盲目同意。
 - 不覆盖 local project authority。
 - 保持变更范围受控。
-- 从 SRP 角度命名 responsibility boundary。
+- 使用 SOLID-informed coding discipline 来命名 responsibility，并检查 extension seam、caller contract、interface 大小和 concrete dependency 方向。
 - 让 failure observable。
 - 将 automated guard output 视为 evidence，而不是 proof。
 - 在称 non-trivial work 完成前执行 red-team code review。

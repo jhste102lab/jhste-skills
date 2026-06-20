@@ -43,8 +43,8 @@ Each rule metadata file declares `implementation.guard.status` as one of `builti
 
 | Coverage class | Status value | Current examples | How to interpret |
 |---|---|---|---|
-| Built-in heuristic scanner | `builtin` | silent failure, secret logging, external input validation candidates, workflow security, file size/responsibility budget/single responsibility, null/state, auth/data isolation, runtime env, write safety, API contract, performance, SQL, DB row, thin route, type escape, side-effect, crawler, broad Python exception | Guard emits pattern-based findings with confidence/category metadata; review context before treating heuristic candidates as proof. External input validation coverage is intentionally partial and low-confidence. |
-| Metadata-only / human-review required | `metadata_only` | none currently | Skills and rule docs describe the concern, but guard does not yet have built-in scanner coverage. Do not claim automated coverage for metadata-only rules. |
+| Built-in heuristic scanner | `builtin` | silent failure, secret logging, external input validation candidates, workflow security, file size/responsibility budget/single responsibility, SOLID-informed extension seam and dependency boundary candidates, null/state, auth/data isolation, runtime env, write safety, API contract, performance, SQL, DB row, thin route, type escape, side-effect, crawler, broad Python exception | Guard emits pattern-based findings with confidence/category metadata; review context before treating heuristic candidates as proof. SOLID-informed findings are advisory review candidates, not compliance proof. External input validation coverage is intentionally partial and low-confidence. |
+| Metadata-only / human-review required | `metadata_only` | substitutability advisory, interface segregation advisory | Skills and rule docs describe the concern, but guard does not yet have built-in scanner coverage. Do not claim automated coverage for metadata-only rules. |
 | Deep-scan-only | `deep_scan_only` | Reserved for future repo-wide analysis rules | Findings, if introduced, come from opt-in deep scan rather than commit-time guard. |
 | Profile-command sourced | `profile_command` | Reserved for repo-local command-backed rules | Repo-local profile commands can report violations when `--run-profile-commands` is explicitly enabled. |
 
@@ -90,6 +90,19 @@ The rule should be used with `advisory`, `changed-files`, or `baseline-new-only`
 `single_responsibility_advisory` is a heuristic review signal for changed classes, modules, and functions. It looks for long functions, functions that appear to mix several concern categories, and modules whose exports look like unrelated helper families. Treat findings as prompts to name one main responsibility and one reason to change; do not extract pass-through wrappers just to silence the warning. The rule remains advisory by default, but repositories can opt into changed-file blocking by setting the rule mode and `guard.fail_on: warning`.
 
 SRP is not a "one function per file" or "smallest possible file" rule. A split is useful when the separated code has an independent reason to change, an understandable file-level responsibility, and a natural behavior or side-effect seam to test. If type definitions, select aliases, mappers, constants, or tiny wrappers always change together and force readers to chase several files to understand one contract, prefer a cohesive contract module instead. The built-in scanner only emits low-confidence static candidates; co-change history, call graphs, and reader navigation cost still require human review.
+
+## SOLID-informed design advisory
+
+SOLID is a coding discipline and review lens in this kit, not an automated compliance standard. `single_responsibility_advisory` remains the existing built-in SRP rule and is the S in the SOLID review model; do not rename it to a broader rule id just for branding.
+
+The added SOLID advisory families are intentionally split by principle so messages stay actionable:
+
+- `extension_seam_advisory` (OCP-informed) has a low-confidence guard candidate, `solid.ocp.variant_branching_hotspot`, for repeated variant, provider, or policy branching. Treat it as a prompt to review whether an extension seam would reduce repeated core edits, not as a demand to add a strategy or registry abstraction.
+- `substitutability_advisory` (LSP-informed) is metadata-only and human-review required. Review caller-visible return shapes, nullability, error behavior, side effects, and documented invariants before treating an implementation as substitutable.
+- `interface_segregation_advisory` (ISP-informed) is metadata-only and human-review required. Review broad config/interface/props bags, but keep cohesive public contracts together when they are read and changed together.
+- `dependency_boundary_advisory` (DIP-informed) has a low-confidence guard candidate, `solid.dip.concrete_side_effect_dependency`, for concrete DB/API/filesystem/payment/notification/queue/browser dependencies in policy-like paths. Treat it as a prompt to inspect the seam; an intentionally local dependency can be acceptable when visible and tested.
+
+Do not describe these rules as `SOLID compliance`, `SOLID rule enforcement`, or a `SOLID violation` detector. Guard findings are review candidates, not proof, and metadata-only SOLID rules provide no automated guard coverage.
 
 ## Restricted profile format
 

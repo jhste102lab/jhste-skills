@@ -19,6 +19,10 @@ rules:
     function_review_lines: 80
     mixed_responsibility_hints: 3
     module_export_family_hints: 4
+  extension_seam_advisory:
+    mode: advisory
+  dependency_boundary_advisory:
+    mode: advisory
 baseline:
   enabled: false
   path: .jhste/baseline.json

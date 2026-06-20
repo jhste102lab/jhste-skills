@@ -9,6 +9,11 @@ When reviewing a proposed change, ask:
 - Does this module hide complexity or merely pass it through?
 - Are repo-local docs using a more specific term or rule?
 - Where do caller contracts, mutation safety, or hot-path performance assumptions belong so they stay visible instead of leaking across seams?
+- Which SOLID-informed question is actually relevant: SRP responsibility, OCP extension seam, LSP caller contract, ISP contract size, or DIP dependency direction?
+- Does repeated variant/provider/policy branching force core edits, or is the explicit branch still the clearest domain model?
+- Does an implementation weaken return shape, nullability, error behavior, side-effect expectations, or documented invariants promised to callers?
+- Is a caller coupled to a broad config/interface/props bag it barely uses, or is that bag one cohesive public contract?
+- Does high-level policy directly own concrete DB/API/browser/filesystem/email/payment effects without an intentional visible seam?
 - Do the proposed files change independently, or do they always move together as one cohesive contract?
 - Would the split reduce the number of files touched for a typical change, or merely make readers chase more files?
 
@@ -47,3 +52,34 @@ Change adjacent code only when it sits on the changed execution path and leaving
 - Bad: one function parses input, validates it, reads files, transforms data, writes output, prints a report, and decides exit behavior.
 - Better: keep orchestration thin and move parsing, validation, side effects, transformation, and reporting behind named functions or modules when those responsibilities change independently.
 - Why: tests can target the responsibility that changed, and side effects stay visible at the seam that owns them.
+
+### SOLID-informed design review
+
+- Bad: treat SOLID as a compliance checklist and add interfaces, registries, strategies, or wrappers that only rename calls.
+- Better: use SOLID as a review lens: SRP names one responsibility, OCP looks for extension seams, LSP checks caller contracts, ISP keeps contracts right-sized, and DIP makes concrete side effects visible.
+- Why: the useful outcome is lower change risk and clearer seams, not more abstraction.
+
+### Extension seam review
+
+- Bad: every new provider, channel, variant, or policy requires editing the same core branching in several places.
+- Better: review whether a registry, strategy, adapter, or explicit policy table would localize new variants; keep the branch when it is the clearest domain model.
+- Why: OCP is about reducing repeated core edits, not hiding simple logic behind premature abstraction.
+
+### Dependency boundary review
+
+- Bad: service or policy code creates concrete database, payment, email, filesystem, browser, or network clients inline while also owning business decisions.
+- Better: put concrete side effects behind a repository, adapter, injected dependency, or intentionally local seam with tests around the caller-visible behavior.
+- Why: DIP keeps high-level policy testable and replaceable without forcing every caller to know infrastructure details.
+
+### Substitutability review
+
+- Bad: a subtype or implementation returns a different shape, weakens nullability guarantees, throws unsupported errors, or skips promised side effects.
+- Better: preserve the caller-visible contract or make the contract change explicit at the boundary with tests.
+- Why: LSP risk is about broken caller expectations, and static pattern matching alone cannot prove it.
+
+### Interface segregation review
+
+- Bad: a caller accepts a broad config, interface, or props bag while using only a small slice, creating unrelated coupling.
+- Better: depend on the smallest useful contract, while keeping cohesive public contracts together when they are read and changed together.
+- Why: ISP should reduce coupling, not fragment a contract that always moves as one unit.
+

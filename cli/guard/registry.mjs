@@ -24,6 +24,8 @@ export const FINDING_METADATA = {
   'srp.function.length': { family: 'single_responsibility_advisory', pack: 'core', scanner: 'scanSingleResponsibility' },
   'srp.function.mixed_responsibility': { family: 'single_responsibility_advisory', pack: 'core', scanner: 'scanSingleResponsibility' },
   'srp.module.mixed_exports': { family: 'single_responsibility_advisory', pack: 'core', scanner: 'scanSingleResponsibility' },
+  'solid.ocp.variant_branching_hotspot': { family: 'extension_seam_advisory', pack: 'core', scanner: 'scanExtensionSeamAdvisory' },
+  'solid.dip.concrete_side_effect_dependency': { family: 'dependency_boundary_advisory', pack: 'core', scanner: 'scanDependencyBoundaryAdvisory' },
   'state.non_null_assertion': { family: 'null_state_safety', pack: 'core', scanner: 'scanStateSafety' },
   'state.async_ui_missing_fallback': { family: 'null_state_safety', pack: 'core', scanner: 'scanStateSafety' },
   'authz.scope_not_visible': { family: 'authz_data_isolation', pack: 'core', scanner: 'scanAuthzDataIsolation' },

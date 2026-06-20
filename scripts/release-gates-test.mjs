@@ -12,6 +12,12 @@ function fail(message) {
   process.exit(1);
 }
 
+function releaseGateNpmEnv() {
+  const env = { ...process.env };
+  delete env.npm_config_allow_scripts;
+  return env;
+}
+
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, { cwd: root, encoding: 'utf8', ...options });
   if (result.status !== 0) {
@@ -44,7 +50,7 @@ if (!tarballName) fail('npm pack did not report a tarball filename');
 const installRoot = path.join(tmp, 'install-root');
 fs.mkdirSync(installRoot);
 run('npm', ['init', '-y'], { cwd: installRoot });
-run('npm', ['install', '--silent', path.join(tmp, tarballName)], { cwd: installRoot });
+run('npm', ['install', '--silent', path.join(tmp, tarballName)], { cwd: installRoot, env: releaseGateNpmEnv() });
 const binPath = path.join(installRoot, 'node_modules', '.bin', process.platform === 'win32' ? 'jhste-skills.cmd' : 'jhste-skills');
 const help = run(binPath, ['--help'], { cwd: installRoot });
 if (!help.stdout.includes('jhste-skills') || !help.stdout.includes('Usage:')) fail('installed bin did not print CLI help');
