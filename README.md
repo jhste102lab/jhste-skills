@@ -154,11 +154,10 @@ These are the jhste-authored guardrail skills. They are installed by default as 
 
 ## Bundled workflow skills
 
-Normal install also includes 14 workflow skills vendored from Matt Pocock's [`mattpocock/skills`](https://github.com/mattpocock/skills). These are useful for debugging, planning, architecture, issue workflows, prototyping, and handoffs. Use `--skill-set core` if you do not want them installed.
+Normal install also includes 13 workflow skills vendored from Matt Pocock's [`mattpocock/skills`](https://github.com/mattpocock/skills). These are useful for debugging, planning, architecture, issue workflows, prototyping, and handoffs. Use `--skill-set core` if you do not want them installed.
 
 | Skill | Use it when |
 |---|---|
-| [`diagnose`](skills/diagnose/SKILL.md)<br>A diagnosis-loop skill that forces reproduce, minimize, hypothesize, instrument, fix, and regression-check steps | Diagnosing a hard bug or performance regression systematically |
 | [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md)<br>A debugging skill that narrows root cause around a fast pass/fail feedback loop | You need a reproduce → minimise → hypothesise → instrument → fix loop |
 | [`grill-me`](skills/grill-me/SKILL.md)<br>A skill that asks persistent questions until a plan or design has no obvious gaps | You want the agent to question your plan or design until it becomes clear |
 | [`grill-with-docs`](skills/grill-with-docs/SKILL.md)<br>A design-challenge skill that documents domain terms and decisions while questioning the plan | You want project vocabulary and docs/ADRs updated during the questioning process |
@@ -175,7 +174,7 @@ Normal install also includes 14 workflow skills vendored from Matt Pocock's [`ma
 
 ## Attribution: Matt Pocock skills
 
-This repository vendors the 14 skills listed above from Matt Pocock's [`mattpocock/skills`](https://github.com/mattpocock/skills).
+This repository vendors the 13 skills listed above from Matt Pocock's [`mattpocock/skills`](https://github.com/mattpocock/skills).
 
 Those skills are vendored under the upstream MIT License. This repository preserves the required copyright/license notice and records the imported sources.
 
@@ -253,4 +252,4 @@ See [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.md) for release acceptanc
 
 Fast agents need guardrails. `jhste-skills` gives them a repo-respecting engineering workflow.
 
-Installed skill directories are tracked with `.jhste-skills-manifest.json`. `--force` refreshes manifest-managed skill copies; overwriting unmanaged differing skill directories still requires the separate `--allow-unmanaged-skill-overwrite` flag after review. `sync` and `update` can also adopt additional known jhste skills into an already managed skills directory so older mixed installs can be reconciled without a manual overwrite flag.
+Installed skill directories are tracked with `.jhste-skills-manifest.json`. `--force` refreshes manifest-managed skill copies; overwriting unmanaged differing skill directories still requires the separate `--allow-unmanaged-skill-overwrite` flag after review. `sync` and `update` can also adopt additional known jhste skills into an already managed skills directory so older mixed installs can be reconciled without a manual overwrite flag. Legacy vendored renames are also reconciled during `sync` and `update`, so older managed installs that still have `diagnose` are migrated to `diagnosing-bugs` without leaving duplicate skill directories.

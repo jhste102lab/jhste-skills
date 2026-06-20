@@ -6,7 +6,6 @@ import { readJsonFile, validateJsonObject, validateStringArray } from '../cli/js
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const expected = [
-  'diagnose',
   'grill-with-docs',
   'triage',
   'improve-codebase-architecture',
@@ -39,12 +38,12 @@ function readJson(file) {
 
 const allowlist = readJson('vendor/matt-pocock/allowlist.json');
 if (JSON.stringify(allowlist) !== JSON.stringify(expected)) {
-  fail('allowlist does not match the exact 14 selected skills');
+  fail('allowlist does not match the exact 13 selected skills');
 }
 
 const sourceLock = readJson('vendor/matt-pocock/source-lock.json');
 if (!Array.isArray(sourceLock.skills) || sourceLock.skills.length !== expected.length) {
-  fail('source-lock must contain exactly 14 skills');
+  fail('source-lock must contain exactly 13 skills');
 }
 
 const seen = new Set();

@@ -28,6 +28,15 @@ function initRepo(repo) {
   run('git', ['init'], { cwd: repo });
 }
 
+function readManagedSkillsManifest(skillsDir) {
+  const manifestPath = path.join(skillsDir, '.jhste-skills-manifest.json');
+  const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) fail('skills manifest is not an object');
+  if (parsed.managed_by !== 'jhste-skills') fail('skills manifest managed_by is invalid');
+  if (!parsed.skills || typeof parsed.skills !== 'object' || Array.isArray(parsed.skills)) fail('skills manifest skills map is invalid');
+  return parsed;
+}
+
 function runRefusalScenarios({ root, tmp }) {
   const nonInteractiveRepo = path.join(tmp, 'noninteractive-repo');
   const nonInteractiveSkills = path.join(tmp, 'noninteractive-skills');
@@ -103,10 +112,10 @@ function runDefaultInstall(ctx) {
   if (!fs.readFileSync(defaultPreCommit, 'utf8').includes(`# jhste-skills version=${version}`)) fail('default pre-commit hook missing version comment');
   if (!fs.existsSync(path.join(skillsDir, 'jhste-red-team-review', 'SKILL.md'))) fail('install did not copy jhste-red-team-review skill');
   if (!fs.existsSync(path.join(skillsDir, '.jhste-skills-manifest.json'))) fail('install did not write skills manifest');
-  const manifest = JSON.parse(fs.readFileSync(path.join(skillsDir, '.jhste-skills-manifest.json'), 'utf8'));
+  const manifest = readManagedSkillsManifest(skillsDir);
   if (manifest.managed_by !== 'jhste-skills' || !manifest.skills?.['jhste-red-team-review']?.digest) fail('skills manifest missing managed skill digest');
   const defaultSkillDirs = skillDirs(skillsDir);
-  if (defaultSkillDirs.length !== 21) fail(`default install should copy 21 bundled skills, got ${defaultSkillDirs.length}`);
+  if (defaultSkillDirs.length !== 20) fail(`default install should copy 20 bundled skills, got ${defaultSkillDirs.length}`);
   if (!defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should copy vendored workflow skills');
 }
 
@@ -162,8 +171,27 @@ run_jhste_skills guard --scope staged --format text --fail-on warning
   if (!updatedPreCommit.includes(`# jhste-skills version=${version}`)) fail('update did not refresh hook version comment');
   if (updatedPreCommit.includes('stale hook')) fail('update did not replace stale managed hook content');
 
-  const managedManifest = JSON.parse(fs.readFileSync(path.join(skillsDir, '.jhste-skills-manifest.json'), 'utf8'));
+  const managedManifest = readManagedSkillsManifest(skillsDir);
   if (!managedManifest.skills?.[adoptedSkillName]?.digest) fail('update did not record adopted known skill in manifest');
+
+  const legacySkillName = 'diagnose';
+  const canonicalSkillName = 'diagnosing-bugs';
+  const legacySkillDir = path.join(skillsDir, legacySkillName);
+  fs.mkdirSync(legacySkillDir, { recursive: true });
+  fs.writeFileSync(path.join(legacySkillDir, 'SKILL.md'), '# stale legacy diagnose copy\n');
+  managedManifest.skills[legacySkillName] = { digest: 'legacy-digest' };
+  fs.writeFileSync(path.join(skillsDir, '.jhste-skills-manifest.json'), `${JSON.stringify(managedManifest, null, 2)}\n`);
+
+  run(process.execPath, [path.join(root, 'cli/update.mjs'), '--yes', '--repo', repo, '--skills-dir', skillsDir], { cwd: repo });
+
+  if (fs.existsSync(legacySkillDir)) fail('update did not remove legacy diagnose skill directory');
+  const canonicalSkillPath = path.join(skillsDir, canonicalSkillName, 'SKILL.md');
+  if (fs.readFileSync(canonicalSkillPath, 'utf8') !== fs.readFileSync(path.join(root, 'skills', canonicalSkillName, 'SKILL.md'), 'utf8')) {
+    fail('update did not keep canonical diagnosing-bugs skill content after legacy migration');
+  }
+  const migratedManifest = readManagedSkillsManifest(skillsDir);
+  if (migratedManifest.skills?.[legacySkillName]) fail('update left legacy diagnose entry in manifest after migration');
+  if (!migratedManifest.skills?.[canonicalSkillName]?.digest) fail('update did not keep canonical diagnosing-bugs entry in manifest after migration');
 
   const unmanagedSkills = path.join(path.dirname(skillsDir), 'unmanaged-skills');
   fs.mkdirSync(path.join(unmanagedSkills, 'jhste-code-quality'), { recursive: true });
@@ -218,7 +246,7 @@ function runSkillSetScenarios({ root, tmp }) {
   fs.writeFileSync(path.join(vendorRepo, 'AGENTS.md'), '# Vendor skill repo\n');
   run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', vendorRepo, '--skills-dir', vendorSkillsDir, '--skip-deep-scan', '--skip-hooks', '--skill-set', 'vendor'], { cwd: vendorRepo });
   const vendorSkillDirs = skillDirs(vendorSkillsDir);
-  if (vendorSkillDirs.length !== 14) fail(`--skill-set vendor should copy 14 skills, got ${vendorSkillDirs.length}`);
+  if (vendorSkillDirs.length !== 13) fail(`--skill-set vendor should copy 13 skills, got ${vendorSkillDirs.length}`);
   if (!vendorSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set vendor did not copy expected vendored skill');
   if (vendorSkillDirs.includes('jhste-red-team-review')) fail('--skill-set vendor copied core skill');
 
@@ -228,7 +256,7 @@ function runSkillSetScenarios({ root, tmp }) {
   fs.writeFileSync(path.join(allRepo, 'AGENTS.md'), '# All skill repo\n');
   run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', allRepo, '--skills-dir', allSkillsDir, '--skip-deep-scan', '--skip-hooks', '--skill-set', 'all'], { cwd: allRepo });
   const allSkillDirs = skillDirs(allSkillsDir);
-  if (allSkillDirs.length !== 21) fail(`--skill-set all should copy 21 skills, got ${allSkillDirs.length}`);
+  if (allSkillDirs.length !== 20) fail(`--skill-set all should copy 20 skills, got ${allSkillDirs.length}`);
   if (!allSkillDirs.includes('jhste-red-team-review') || !allSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set all missing core or vendored skill');
 }
 

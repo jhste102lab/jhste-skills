@@ -47,7 +47,7 @@ function runFullModeScenarios({ root, tmp }) {
   fs.writeFileSync(path.join(fullModeRepo, 'AGENTS.md'), '# Full mode repo\n');
   run(process.execPath, [path.join(root, 'cli/install.mjs'), '--mode', 'full', '--yes', '--repo', fullModeRepo, '--skills-dir', fullModeSkillsDir, '--skip-deep-scan'], { cwd: fullModeRepo });
   const fullModeSkillDirs = skillDirs(fullModeSkillsDir);
-  if (fullModeSkillDirs.length !== 21) fail(`--mode full should copy 21 skills, got ${fullModeSkillDirs.length}`);
+  if (fullModeSkillDirs.length !== 20) fail(`--mode full should copy 20 skills, got ${fullModeSkillDirs.length}`);
   const fullPreCommit = path.join(fullModeRepo, '.git', 'hooks', 'pre-commit');
   const fullPrePush = path.join(fullModeRepo, '.git', 'hooks', 'pre-push');
   if (!fs.existsSync(fullPreCommit) || !fs.existsSync(fullPrePush)) fail('--mode full did not install pre-commit and pre-push');

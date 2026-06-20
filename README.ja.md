@@ -158,7 +158,6 @@ Normal install では、Matt Pocock の [`mattpocock/skills`](https://github.com
 
 | Skill | いつ使うか |
 |---|---|
-| [`diagnose`](skills/diagnose/SKILL.md)<br>reproduce、minimize、hypothesize、instrument、fix、regression-check を強制する診断ループ skill | hard bug や performance regression を体系的に診断するとき |
 | [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md)<br>高速な pass/fail feedback loop を中心に root cause を絞り込む debugging skill | reproduce → minimise → hypothesise → instrument → fix ループが必要なとき |
 | [`grill-me`](skills/grill-me/SKILL.md)<br>計画や設計の穴がなくなるまで粘り強く質問する skill | agent に計画や設計を明確になるまで質問させたいとき |
 | [`grill-with-docs`](skills/grill-with-docs/SKILL.md)<br>質問しながら domain terms と decisions を文書化する design validation skill | 質問プロセスで project vocabulary や docs/ADR も更新したいとき |

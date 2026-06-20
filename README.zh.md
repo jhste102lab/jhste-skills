@@ -158,7 +158,6 @@ Normal install 还会安装 14 个从 Matt Pocock 的 [`mattpocock/skills`](http
 
 | Skill | 何时使用 |
 |---|---|
-| [`diagnose`](skills/diagnose/SKILL.md)<br>强制执行 reproduce、minimize、hypothesize、instrument、fix、regression-check 的诊断循环 skill | 系统性诊断 hard bug 或 performance regression 时 |
 | [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md)<br>围绕快速 pass/fail feedback loop 缩小 root cause 的 debugging skill | 需要 reproduce → minimise → hypothesise → instrument → fix 循环时 |
 | [`grill-me`](skills/grill-me/SKILL.md)<br>持续提问，直到计划或设计没有明显空洞的 skill | 希望 agent 持续追问计划或设计直到清晰时 |
 | [`grill-with-docs`](skills/grill-with-docs/SKILL.md)<br>在提问过程中记录 domain terms 和 decisions 的设计验证 skill | 希望在提问过程中更新 project vocabulary 和 docs/ADR 时 |

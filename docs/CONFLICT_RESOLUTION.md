@@ -56,3 +56,5 @@ If a similar section exists, the installer prints the snippet instead of editing
 ## Existing hooks
 
 Managed hooks are identified by the jhste-skills hook markers. Existing non-managed hooks are never overwritten, including in `Full` mode and with `--force`. Full may install multiple hook targets, but each target is reported separately as installed, refreshed, skipped because non-managed, or failed.
+
+Legacy vendored renames are treated differently from unmanaged conflicts. During `sync` and `update`, an older managed `diagnose` install is migrated to `diagnosing-bugs` automatically so the skills directory does not keep both names.

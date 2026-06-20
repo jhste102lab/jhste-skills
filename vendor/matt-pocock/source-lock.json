@@ -4,14 +4,6 @@
   "license": "MIT",
   "skills": [
     {
-      "name": "diagnose",
-      "source": "https://github.com/mattpocock/skills/tree/main/skills/engineering/diagnose",
-      "commit": "694fa30311e02c2639942308513555e61ee84a6f",
-      "license": "MIT; see vendor/matt-pocock/LICENSE",
-      "vendored_path": "skills/diagnose",
-      "imported_at": "2026-06-17T10:11:18Z"
-    },
-    {
       "name": "grill-with-docs",
       "source": "https://github.com/mattpocock/skills/tree/main/skills/engineering/grill-with-docs",
       "commit": "694fa30311e02c2639942308513555e61ee84a6f",

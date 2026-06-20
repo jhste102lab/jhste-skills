@@ -158,7 +158,6 @@ Normal install은 Matt Pocock의 [`mattpocock/skills`](https://github.com/mattpo
 
 | Skill | 언제 쓰나 |
 |---|---|
-| [`diagnose`](skills/diagnose/SKILL.md)<br>재현, 축소, 가설, 계측, 수정, 회귀 확인을 강제하는 진단 루프 스킬 | hard bug 또는 performance regression을 체계적으로 진단할 때 |
 | [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md)<br>빠른 pass/fail feedback loop를 중심으로 원인을 좁혀가는 debugging 스킬 | reproduce → minimise → hypothesise → instrument → fix 루프가 필요할 때 |
 | [`grill-me`](skills/grill-me/SKILL.md)<br>계획이나 설계의 빈틈이 사라질 때까지 집요하게 질문하는 스킬 | agent가 계획이나 설계를 명확해질 때까지 질문하게 하고 싶을 때 |
 | [`grill-with-docs`](skills/grill-with-docs/SKILL.md)<br>질문 과정에서 도메인 용어와 의사결정을 문서화하는 설계 검증 스킬 | 질문 과정에서 project vocabulary와 docs/ADR까지 함께 정리하고 싶을 때 |

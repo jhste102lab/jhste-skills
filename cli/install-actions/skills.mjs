@@ -5,6 +5,13 @@ import { readJsonFile, validateJsonObject, validateStringArray } from '../json-f
 
 export const SKILLS_MANIFEST_NAME = '.jhste-skills-manifest.json';
 export const MANIFEST_MANAGED_BY = 'jhste-skills';
+export const LEGACY_SKILL_RENAMES = Object.freeze({
+  diagnose: 'diagnosing-bugs',
+});
+
+export function canonicalSkillName(name) {
+  return LEGACY_SKILL_RENAMES[name] || name;
+}
 
 function vendoredSkillNames() {
   const allowlistPath = path.join(KIT_ROOT, 'vendor', 'matt-pocock', 'allowlist.json');
@@ -16,7 +23,7 @@ function vendoredSkillNames() {
 
 export function skillNamesForSet(skillSet) {
   const sourceRoot = path.join(KIT_ROOT, 'skills');
-  const all = listDirectories(sourceRoot);
+  const all = listDirectories(sourceRoot).filter((name) => !Object.prototype.hasOwnProperty.call(LEGACY_SKILL_RENAMES, name));
   const vendored = vendoredSkillNames();
   if (skillSet === 'all') return all;
   if (skillSet === 'vendor') return all.filter((name) => vendored.has(name));
@@ -72,6 +79,27 @@ function canAdoptKnownSkill({ manifest = null, adoptKnownSkills = false } = {}) 
   return Boolean(adoptKnownSkills && manifest && !manifest.invalid);
 }
 
+function canMigrateLegacySkill({ currentManifest, legacyName, allowUnmanagedOverwrite = false, adoptKnownSkills = false }) {
+  if (allowUnmanagedOverwrite) return true;
+  if (currentManifest?.skills?.[legacyName]) return true;
+  return canAdoptKnownSkill({ manifest: currentManifest, adoptKnownSkills });
+}
+
+function removeLegacySkillDirectories(skillsDir, selected, currentManifest, nextManifest, { allowUnmanagedOverwrite = false, adoptKnownSkills = false } = {}) {
+  const selectedSet = new Set(selected.map((name) => canonicalSkillName(name)));
+  const results = [];
+  for (const [legacyName, canonicalName] of Object.entries(LEGACY_SKILL_RENAMES)) {
+    delete nextManifest.skills[legacyName];
+    if (!selectedSet.has(canonicalName)) continue;
+    const legacyPath = path.join(skillsDir, legacyName);
+    if (!fs.existsSync(legacyPath)) continue;
+    if (!canMigrateLegacySkill({ currentManifest, legacyName, allowUnmanagedOverwrite, adoptKnownSkills })) continue;
+    fs.rmSync(legacyPath, { recursive: true, force: true });
+    results.push({ status: 'removed-legacy-renamed-skill', source: legacyPath, destination: path.join(skillsDir, canonicalName), legacyName, canonicalName });
+  }
+  return results;
+}
+
 function copyManagedSkill(source, destination, name, {
   force = false,
   allowUnmanagedOverwrite = false,
@@ -124,9 +152,7 @@ function unmanagedSkillConflicts(selected, sourceRoot, skillsDir, currentManifes
   for (const name of selected) {
     const source = path.join(sourceRoot, name);
     const destination = path.join(skillsDir, name);
-    if (!fs.existsSync(source) || !fs.existsSync(destination)) continue;
-    if (directoryDigest(source) === directoryDigest(destination)) continue;
-    if (!currentManifest?.skills?.[name] && !canAdopt) {
+    if (fs.existsSync(source) && fs.existsSync(destination) && directoryDigest(source) !== directoryDigest(destination) && !currentManifest?.skills?.[name] && !canAdopt) {
       out.push({
         status: 'skipped-unmanaged-different',
         source,
@@ -134,6 +160,18 @@ function unmanagedSkillConflicts(selected, sourceRoot, skillsDir, currentManifes
         reason: `${name} differs and is not recorded as managed by ${MANIFEST_MANAGED_BY}; pass --allow-unmanaged-skill-overwrite only after review`,
       });
     }
+  }
+  for (const [legacyName, canonicalName] of Object.entries(LEGACY_SKILL_RENAMES)) {
+    if (!selected.includes(canonicalName)) continue;
+    const legacyPath = path.join(skillsDir, legacyName);
+    if (!fs.existsSync(legacyPath)) continue;
+    if (canMigrateLegacySkill({ currentManifest, legacyName, adoptKnownSkills })) continue;
+    out.push({
+      status: 'skipped-unmanaged-different',
+      source: legacyPath,
+      destination: path.join(skillsDir, canonicalName),
+      reason: `${legacyName} is an older skill name that is not recorded as managed by ${MANIFEST_MANAGED_BY}; pass --allow-unmanaged-skill-overwrite only after review`,
+    });
   }
   return out;
 }
@@ -146,7 +184,7 @@ export function installSkills(skillsDir, {
 } = {}) {
   const sourceRoot = path.join(KIT_ROOT, 'skills');
   ensureDir(skillsDir);
-  const selected = Array.isArray(skillSet) ? skillSet : skillNamesForSet(skillSet);
+  const selected = (Array.isArray(skillSet) ? skillSet : skillNamesForSet(skillSet)).map((name) => canonicalSkillName(name));
   const currentManifest = loadSkillsManifest(skillsDir);
   if (currentManifest?.invalid) return [{ status: 'invalid-manifest', source: '', destination: manifestPath(skillsDir), reason: currentManifest.reason }];
   const nextManifest = currentManifest || { managed_by: MANIFEST_MANAGED_BY, version: packageVersion(), installed_at: nowIso(), skills: {} };
@@ -158,6 +196,10 @@ export function installSkills(skillsDir, {
     ? unmanagedSkillConflicts(selected, sourceRoot, skillsDir, currentManifest, { adoptKnownSkills })
     : [];
   if (conflicts.length) return conflicts;
+  const legacyResults = removeLegacySkillDirectories(skillsDir, selected, currentManifest, nextManifest, {
+    allowUnmanagedOverwrite,
+    adoptKnownSkills,
+  });
   const results = selected.map((name) => copyManagedSkill(path.join(sourceRoot, name), path.join(skillsDir, name), name, {
     force,
     allowUnmanagedOverwrite,
@@ -166,5 +208,5 @@ export function installSkills(skillsDir, {
     nextManifest,
   }));
   writeSkillsManifest(skillsDir, nextManifest);
-  return results;
+  return [...legacyResults, ...results];
 }

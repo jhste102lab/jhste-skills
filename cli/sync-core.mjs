@@ -12,6 +12,7 @@ import {
   readIfExists,
 } from './shared.mjs';
 import { applyPlan, preflightPlan, printApplyResult } from './install-actions.mjs';
+import { LEGACY_SKILL_RENAMES, canonicalSkillName } from './install-actions/skills.mjs';
 import { gitHooksDir, HOOKS, isManagedHook } from './hook-utils.mjs';
 import { printConfigErrors, printPlanSummary } from './install-flow/output.mjs';
 import { readJsonFile, validateStringArray } from './json-file.mjs';
@@ -91,7 +92,14 @@ function sourceSkillNames() {
 
 function detectInstalledSkillNames(skillsDir) {
   const known = new Set(sourceSkillNames());
-  return listDirectories(skillsDir).filter((name) => known.has(name));
+  const detected = new Set();
+  for (const name of listDirectories(skillsDir)) {
+    const canonicalName = canonicalSkillName(name);
+    if (known.has(canonicalName) || Object.prototype.hasOwnProperty.call(LEGACY_SKILL_RENAMES, name)) {
+      detected.add(canonicalName);
+    }
+  }
+  return [...detected];
 }
 
 function skillNamesForSet(skillSet) {
