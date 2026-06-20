@@ -1,7 +1,7 @@
 {
   "name": "jhste-skills",
   "version": "0.1.0",
-  "description": "Portable AI coding skills kit with safe setup, shared rules, and optional deep scan.",
+  "description": "Installable engineering guardrails and workflow skills for AI coding agents.",
   "type": "module",
   "license": "MIT",
   "repository": {
