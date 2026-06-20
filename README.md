@@ -252,3 +252,5 @@ See [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.md) for release acceptanc
 - Run a red-team code review before calling non-trivial work complete.
 
 Fast agents need guardrails. `jhste-skills` gives them a repo-respecting engineering workflow.
+
+Installed skill directories are tracked with `.jhste-skills-manifest.json`. `--force` refreshes manifest-managed skill copies; overwriting unmanaged differing skill directories still requires the separate `--allow-unmanaged-skill-overwrite` flag after review. `sync` and `update` can also adopt additional known jhste skills into an already managed skills directory so older mixed installs can be reconciled without a manual overwrite flag.

@@ -68,7 +68,17 @@ function packageVersion() {
   }
 }
 
-function copyManagedSkill(source, destination, name, { force = false, allowUnmanagedOverwrite = false, manifest = null, nextManifest } = {}) {
+function canAdoptKnownSkill({ manifest = null, adoptKnownSkills = false } = {}) {
+  return Boolean(adoptKnownSkills && manifest && !manifest.invalid);
+}
+
+function copyManagedSkill(source, destination, name, {
+  force = false,
+  allowUnmanagedOverwrite = false,
+  adoptKnownSkills = false,
+  manifest = null,
+  nextManifest,
+} = {}) {
   if (!fs.existsSync(source)) return { status: 'missing-source', source, destination };
   const sourceHash = directoryDigest(source);
   const destinationExists = fs.existsSync(destination);
@@ -91,7 +101,8 @@ function copyManagedSkill(source, destination, name, { force = false, allowUnman
     return { status: 'unchanged', source, destination };
   }
   if (!force) return { status: 'skipped-existing-different', source, destination };
-  if (!manifestOwnsDestination && !allowUnmanagedOverwrite) {
+  const adoptKnownSkill = !manifestOwnsDestination && canAdoptKnownSkill({ manifest, adoptKnownSkills });
+  if (!manifestOwnsDestination && !allowUnmanagedOverwrite && !adoptKnownSkill) {
     return {
       status: 'skipped-unmanaged-different',
       source,
@@ -102,17 +113,20 @@ function copyManagedSkill(source, destination, name, { force = false, allowUnman
   fs.rmSync(destination, { recursive: true, force: true });
   fs.cpSync(source, destination, { recursive: true });
   recordManaged();
-  return { status: manifestOwnsDestination ? 'overwritten-managed' : 'overwritten-unmanaged', source, destination };
+  if (manifestOwnsDestination) return { status: 'overwritten-managed', source, destination };
+  if (adoptKnownSkill) return { status: 'adopted-managed', source, destination };
+  return { status: 'overwritten-unmanaged', source, destination };
 }
 
-function unmanagedSkillConflicts(selected, sourceRoot, skillsDir, currentManifest) {
+function unmanagedSkillConflicts(selected, sourceRoot, skillsDir, currentManifest, { adoptKnownSkills = false } = {}) {
+  const canAdopt = canAdoptKnownSkill({ manifest: currentManifest, adoptKnownSkills });
   const out = [];
   for (const name of selected) {
     const source = path.join(sourceRoot, name);
     const destination = path.join(skillsDir, name);
     if (!fs.existsSync(source) || !fs.existsSync(destination)) continue;
     if (directoryDigest(source) === directoryDigest(destination)) continue;
-    if (!currentManifest?.skills?.[name]) {
+    if (!currentManifest?.skills?.[name] && !canAdopt) {
       out.push({
         status: 'skipped-unmanaged-different',
         source,
@@ -124,7 +138,12 @@ function unmanagedSkillConflicts(selected, sourceRoot, skillsDir, currentManifes
   return out;
 }
 
-export function installSkills(skillsDir, { force = false, skillSet = 'core', allowUnmanagedOverwrite = false } = {}) {
+export function installSkills(skillsDir, {
+  force = false,
+  skillSet = 'core',
+  allowUnmanagedOverwrite = false,
+  adoptKnownSkills = false,
+} = {}) {
   const sourceRoot = path.join(KIT_ROOT, 'skills');
   ensureDir(skillsDir);
   const selected = Array.isArray(skillSet) ? skillSet : skillNamesForSet(skillSet);
@@ -135,11 +154,14 @@ export function installSkills(skillsDir, { force = false, skillSet = 'core', all
   nextManifest.version = packageVersion() || String(nextManifest.version || '0.0.0');
   nextManifest.updated_at = nowIso();
   nextManifest.skills ||= {};
-  const conflicts = force && !allowUnmanagedOverwrite ? unmanagedSkillConflicts(selected, sourceRoot, skillsDir, currentManifest) : [];
+  const conflicts = force && !allowUnmanagedOverwrite
+    ? unmanagedSkillConflicts(selected, sourceRoot, skillsDir, currentManifest, { adoptKnownSkills })
+    : [];
   if (conflicts.length) return conflicts;
   const results = selected.map((name) => copyManagedSkill(path.join(sourceRoot, name), path.join(skillsDir, name), name, {
     force,
     allowUnmanagedOverwrite,
+    adoptKnownSkills,
     manifest: currentManifest,
     nextManifest,
   }));

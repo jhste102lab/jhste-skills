@@ -18,7 +18,7 @@ If `.jhste/profile.yaml` exists, default install keeps it. Overwrite requires `-
 
 ## Existing skills
 
-Installed skill directories are tracked in `.jhste-skills-manifest.json` inside the skills directory. If a target skill directory already exists and differs, default install skips it; `--force` can refresh manifest-managed copies, but unmanaged differing directories are refused unless `--allow-unmanaged-skill-overwrite` is also explicit. The manifest stores skill digests, not absolute local paths.
+Installed skill directories are tracked in `.jhste-skills-manifest.json` inside the skills directory. If a target skill directory already exists and differs, default install skips it; `--force` can refresh manifest-managed copies, but unmanaged differing directories are refused unless `--allow-unmanaged-skill-overwrite` is also explicit. During `sync`/`update`, an already managed skills directory may adopt additional known jhste skills into the manifest and refresh them without the extra overwrite flag. The manifest stores skill digests, not absolute local paths.
 
 ## Bridge block
 

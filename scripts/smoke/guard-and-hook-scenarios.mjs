@@ -3,6 +3,7 @@ import path from 'node:path';
 import {
   fail,
   hashFile,
+  packageVersion,
   parseJsonOutput,
   run,
   runAny,
@@ -105,10 +106,11 @@ function assertDeepScanReport(report) {
 
 function runGuardContracts(ctx) {
   const { root, repo, report, tmp } = ctx;
+  const version = packageVersion(root);
   const guardJson = run(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'json', '--fail-on', 'none'], { cwd: repo }).stdout;
   const guardResult = parseJsonOutput(guardJson, 'guard result');
   if (guardResult.schema_version !== 1) fail('guard JSON schema_version missing');
-  if (guardResult.meta?.tool_version !== '0.1.0') fail('guard JSON meta tool_version missing');
+  if (guardResult.meta?.tool_version !== version) fail('guard JSON meta tool_version missing');
   if (typeof guardResult.meta?.files_considered !== 'number') fail('guard JSON meta files_considered missing');
   for (const [ruleId, message] of [
     ['silent.catch.empty', 'guard did not report empty catch'],
@@ -154,6 +156,7 @@ function assertGuardFailureModes({ root, repo, tmp }) {
 }
 
 function runProfileCommandAndHookContracts({ root, repo, profilePath, packageHashBefore }) {
+  const version = packageVersion(root);
   const fakeOpenAiKey = 'sk-' + 'A'.repeat(24);
   const fakeGithubToken = 'gh' + 'p_' + 'B'.repeat(36);
   const fakeGenericSecret = 'C'.repeat(16);
@@ -191,7 +194,7 @@ function runProfileCommandAndHookContracts({ root, repo, profilePath, packageHas
   const preCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
   const preCommitText = fs.readFileSync(preCommit, 'utf8');
   if (!preCommitText.includes('jhste-skills managed hook start')) fail('managed pre-commit hook missing marker');
-  if (!preCommitText.includes('# jhste-skills version=0.1.0')) fail('managed pre-commit hook missing version comment');
+  if (!preCommitText.includes(`# jhste-skills version=${version}`)) fail('managed pre-commit hook missing version comment');
   if (preCommitText.indexOf("node '") > preCommitText.indexOf('command -v jhste-skills')) fail('managed hook should prefer local CLI before global fallback');
   const fakeBin = path.join(path.dirname(preCommit), 'fake-bin');
   fs.mkdirSync(fakeBin);

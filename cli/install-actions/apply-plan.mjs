@@ -15,6 +15,7 @@ export function applyPlan(plan) {
     result.skillResults = installSkills(plan.skillsDir, {
       force: plan.forceSkills ?? plan.force,
       allowUnmanagedOverwrite: plan.allowUnmanagedSkillOverwrite,
+      adoptKnownSkills: Boolean(plan.adoptKnownSkills),
       skillSet: plan.skillNames ?? plan.skillSet,
     });
     if (result.skillResults.some((item) => ['skipped-unmanaged-different', 'invalid-manifest'].includes(item.status))) {

@@ -95,7 +95,8 @@ Stable contract:
 - only refreshes repo outputs that already look managed by jhste-skills (`.jhste/profile.yaml`, managed bridge markers, or managed hooks);
 - does not bootstrap unmanaged repositories; use `install` or `connect` for first-time setup;
 - preserves non-managed hooks and does not touch source files, CI, `package.json`, or lockfiles;
-- `--force` still applies only to repo-managed outputs such as overwriting an existing managed profile; unmanaged differing skill directories require `--allow-unmanaged-skill-overwrite`.
+- `--force` still applies only to repo-managed outputs such as overwriting an existing managed profile; unmanaged differing skill directories require `--allow-unmanaged-skill-overwrite`;
+- `sync`/`update` may adopt additional known jhste skills into an already managed skills directory and refresh them without the extra overwrite flag.
 
 ## `update`
 
@@ -144,7 +145,7 @@ The JSON output starts with:
   "schema_version": 1,
   "summary": { "error": 0, "warning": 0, "info": 0, "baseline_matched": 0, "suppressed": 0, "failures": 0 },
   "meta": {
-    "tool_version": "0.1.0",
+    "tool_version": "0.1.1",
     "scope": "changed",
     "files_considered": 0,
     "files_scanned": 0,

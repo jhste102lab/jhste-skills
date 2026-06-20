@@ -36,6 +36,10 @@ export function hashFile(file) {
   return fs.existsSync(file) ? crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex') : null;
 }
 
+export function packageVersion(root) {
+  return JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version;
+}
+
 export function skillDirs(dir) {
   return fs.readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())

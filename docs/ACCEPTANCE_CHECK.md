@@ -34,7 +34,7 @@ Rule modes are documented in `docs/RULES.md`, example profile defaults to adviso
 
 ## Conflict handling
 
-`docs/CONFLICT_RESOLUTION.md` and installer behavior preserve existing repo instructions, skip existing differing profiles/skills by default, make bridge insertion marker-managed and idempotent, and refuse to overwrite non-managed hooks even in Full mode or with `--force`, and refuse unmanaged skill-directory overwrites without `--allow-unmanaged-skill-overwrite`.
+`docs/CONFLICT_RESOLUTION.md` and installer behavior preserve existing repo instructions, skip existing differing profiles/skills by default, make bridge insertion marker-managed and idempotent, refuse to overwrite non-managed hooks even in Full mode or with `--force`, refuse unmanaged skill-directory overwrites without `--allow-unmanaged-skill-overwrite`, and let `sync`/`update` adopt additional known jhste skills into an already managed skills directory.
 
 ## Verification commands
 

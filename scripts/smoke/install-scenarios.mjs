@@ -4,6 +4,7 @@ import {
   assertNoInstallSideEffects,
   fail,
   hashFile,
+  packageVersion,
   run,
   runAny,
   skillDirs,
@@ -77,6 +78,7 @@ function runRefusalScenarios({ root, tmp }) {
 
 function runDefaultInstall(ctx) {
   const { root, repo, skillsDir } = ctx;
+  const version = packageVersion(root);
   ctx.packageHashBefore = hashFile(path.join(repo, 'package.json'));
   ctx.lockHashBefore = hashFile(path.join(repo, 'package-lock.json'));
   const started = Date.now();
@@ -98,7 +100,7 @@ function runDefaultInstall(ctx) {
   const defaultPreCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
   if (!fs.existsSync(defaultPreCommit)) fail('install did not create default advisory pre-commit hook');
   if (!fs.readFileSync(defaultPreCommit, 'utf8').includes('mode=advisory')) fail('default pre-commit hook is not advisory');
-  if (!fs.readFileSync(defaultPreCommit, 'utf8').includes('# jhste-skills version=0.1.0')) fail('default pre-commit hook missing version comment');
+  if (!fs.readFileSync(defaultPreCommit, 'utf8').includes(`# jhste-skills version=${version}`)) fail('default pre-commit hook missing version comment');
   if (!fs.existsSync(path.join(skillsDir, 'jhste-red-team-review', 'SKILL.md'))) fail('install did not copy jhste-red-team-review skill');
   if (!fs.existsSync(path.join(skillsDir, '.jhste-skills-manifest.json'))) fail('install did not write skills manifest');
   const manifest = JSON.parse(fs.readFileSync(path.join(skillsDir, '.jhste-skills-manifest.json'), 'utf8'));
@@ -109,12 +111,18 @@ function runDefaultInstall(ctx) {
 }
 
 function runUpdateScenarios({ root, repo, skillsDir }) {
+  const version = packageVersion(root);
   const skillPath = path.join(skillsDir, 'jhste-code-quality', 'SKILL.md');
   const sourceSkillPath = path.join(root, 'skills', 'jhste-code-quality', 'SKILL.md');
+  const adoptedSkillName = 'triage';
+  const adoptedSkillPath = path.join(skillsDir, adoptedSkillName, 'SKILL.md');
+  const adoptedSourceSkillPath = path.join(root, 'skills', adoptedSkillName, 'SKILL.md');
   const agentsPath = path.join(repo, 'AGENTS.md');
   const preCommitPath = path.join(repo, '.git', 'hooks', 'pre-commit');
 
   fs.writeFileSync(skillPath, '# stale local copy\n');
+  fs.mkdirSync(path.dirname(adoptedSkillPath), { recursive: true });
+  fs.writeFileSync(adoptedSkillPath, '# unmanaged but known skill copy\n');
 
   const existingAgents = fs.readFileSync(agentsPath, 'utf8');
   const staleAgents = existingAgents.replace(
@@ -136,6 +144,9 @@ run_jhste_skills guard --scope staged --format text --fail-on warning
   if (fs.readFileSync(skillPath, 'utf8') !== fs.readFileSync(sourceSkillPath, 'utf8')) {
     fail('update did not refresh an installed skill back to the current source version');
   }
+  if (fs.readFileSync(adoptedSkillPath, 'utf8') !== fs.readFileSync(adoptedSourceSkillPath, 'utf8')) {
+    fail('update did not adopt and refresh a known jhste skill into an existing managed installation');
+  }
 
   const updatedAgents = fs.readFileSync(agentsPath, 'utf8');
   if (updatedAgents.includes('Old bridge text that should be replaced.')) {
@@ -148,8 +159,11 @@ run_jhste_skills guard --scope staged --format text --fail-on warning
   const updatedPreCommit = fs.readFileSync(preCommitPath, 'utf8');
   if (!updatedPreCommit.includes('mode=blocking')) fail('update did not preserve managed hook mode');
   if (!updatedPreCommit.includes('--fail-on warning')) fail('update did not preserve managed hook fail-on behavior');
-  if (!updatedPreCommit.includes('# jhste-skills version=0.1.0')) fail('update did not refresh hook version comment');
+  if (!updatedPreCommit.includes(`# jhste-skills version=${version}`)) fail('update did not refresh hook version comment');
   if (updatedPreCommit.includes('stale hook')) fail('update did not replace stale managed hook content');
+
+  const managedManifest = JSON.parse(fs.readFileSync(path.join(skillsDir, '.jhste-skills-manifest.json'), 'utf8'));
+  if (!managedManifest.skills?.[adoptedSkillName]?.digest) fail('update did not record adopted known skill in manifest');
 
   const unmanagedSkills = path.join(path.dirname(skillsDir), 'unmanaged-skills');
   fs.mkdirSync(path.join(unmanagedSkills, 'jhste-code-quality'), { recursive: true });

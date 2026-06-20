@@ -159,6 +159,7 @@ function buildSyncPlan(options, command) {
     mode: 'sync',
     yes: options.yes,
     force: options.force,
+    adoptKnownSkills: true,
     allowUnmanagedSkillOverwrite: options.allowUnmanagedSkillOverwrite,
     forceSkills: true,
     installMissing: false,
