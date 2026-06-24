@@ -9,7 +9,7 @@ Use this skill for API and persistence boundary changes. Repo-local API contract
 
 ## Checkpoints
 
-- For non-trivial API or persistence changes, apply `jhste-engineering-judgment` before writing code.
+- For non-trivial API or persistence changes, apply `jhste-engineering-groundwork` before writing code.
 - Keep API routes/controllers focused on auth, input parsing, service calls, and response mapping.
 - Make auth context and tenant or owner scoping visible when a route reads or mutates user data.
 - Use parameter binding or a safe query abstraction for SQL.
@@ -21,7 +21,7 @@ Use this skill for API and persistence boundary changes. Repo-local API contract
 ## References
 
 - `references/db-api-boundary.md`
-- `../jhste-engineering-judgment/SKILL.md`
+- `../jhste-engineering-groundwork/SKILL.md`
 - `../../rules/database/sql_parameter_binding.yaml`
 - `../../rules/database/db_row_validation.yaml`
 - `../../rules/nextjs/thin_api_route.yaml`

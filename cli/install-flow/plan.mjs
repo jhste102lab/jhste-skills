@@ -13,72 +13,63 @@ import {
   customInstallPlan,
 } from './prompts.mjs';
 
-function presetPlan(command, mode) {
-  if (command === 'connect') return presetConnectPlan(mode);
-  if (mode === 'minimal') {
-    return {
-      mode,
-      installSkills: true,
-      skillSet: 'core',
-      connectRepo: false,
-      writeProfile: false,
-      writeBridge: false,
-      hooks: [],
-      deepScan: false,
-      lineLimit: disabledLineLimit(),
-    };
-  }
-  if (mode === 'full') {
-    return {
-      mode,
-      installSkills: true,
-      skillSet: 'all',
-      connectRepo: true,
-      writeProfile: true,
-      writeBridge: true,
-      hooks: hookActions(['pre-commit', 'pre-push'], 'advisory'),
-      deepScan: true,
-      lineLimit: defaultLineLimit(),
-    };
-  }
+function installMinimalPlan(mode) {
   return {
     mode,
     installSkills: true,
+    skillSet: 'core',
+    connectRepo: false,
+    writeProfile: false,
+    writeBridge: false,
+    hooks: [],
+    deepScan: false,
+    lineLimit: disabledLineLimit(),
+  };
+}
+
+function connectedPlan(mode, { installSkills, hookTargets, deepScan }) {
+  return {
+    mode,
+    installSkills,
     skillSet: 'all',
     connectRepo: true,
     writeProfile: true,
     writeBridge: true,
-    hooks: hookActions(['pre-commit'], 'advisory'),
-    deepScan: false,
+    hooks: hookActions(hookTargets, 'advisory'),
+    deepScan,
     lineLimit: defaultLineLimit(),
   };
 }
 
-function presetConnectPlan(mode) {
-  if (mode === 'full') {
-    return {
-      mode,
-      installSkills: false,
-      skillSet: 'all',
-      connectRepo: true,
-      writeProfile: true,
-      writeBridge: true,
-      hooks: hookActions(['pre-commit', 'pre-push'], 'advisory'),
-      deepScan: true,
-      lineLimit: defaultLineLimit(),
-    };
-  }
-  return {
-    mode,
-    installSkills: false,
-    skillSet: 'all',
-    connectRepo: true,
-    writeProfile: true,
-    writeBridge: true,
-    hooks: hookActions(['pre-commit'], 'advisory'),
-    deepScan: false,
-    lineLimit: defaultLineLimit(),
-  };
+function installDefaultPlan(mode) {
+  return connectedPlan(mode, { installSkills: true, hookTargets: ['pre-commit'], deepScan: false });
+}
+
+function installFullPlan(mode) {
+  return connectedPlan(mode, { installSkills: true, hookTargets: ['pre-commit', 'pre-push'], deepScan: true });
+}
+
+function connectDefaultPlan(mode) {
+  return connectedPlan(mode, { installSkills: false, hookTargets: ['pre-commit'], deepScan: false });
+}
+
+function connectFullPlan(mode) {
+  return connectedPlan(mode, { installSkills: false, hookTargets: ['pre-commit', 'pre-push'], deepScan: true });
+}
+
+const INSTALL_MODE_PRESETS = Object.freeze({
+  minimal: installMinimalPlan,
+  full: installFullPlan,
+});
+
+const CONNECT_MODE_PRESETS = Object.freeze({
+  full: connectFullPlan,
+});
+
+function presetPlan(command, mode) {
+  const presets = command === 'connect' ? CONNECT_MODE_PRESETS : INSTALL_MODE_PRESETS;
+  const fallback = command === 'connect' ? connectDefaultPlan : installDefaultPlan;
+  return (presets[mode] || fallback)(mode);
 }
 
 function applyOptionOverrides(plan, options) {
@@ -113,6 +104,7 @@ function attachCommonPlanState(plan, options, overrides) {
   plan.command = options.command;
   plan.force = options.force;
   plan.allowUnmanagedSkillOverwrite = options.allowUnmanagedSkillOverwrite;
+  plan.allowProfileOverwrite = options.allowProfileOverwrite;
   plan.installMissing = options.installMissing;
   plan.overrides = overrides;
   plan.skillsDir = options.skillsDir;

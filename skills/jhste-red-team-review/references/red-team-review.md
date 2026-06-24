@@ -6,7 +6,7 @@ Use an objective red-team checklist. Prefer concrete findings over broad praise.
 
 - Inspect the changed files or diff directly. Do not pass from summaries, test output, or guard output alone.
 - Responsibility is separated cleanly enough that changed classes, modules, functions, and UI components each have a clear main job and one main reason to change.
-- SOLID-informed risks are checked as review prompts, not proof: extension seams for repeated variants, substitutability contracts, broad interfaces, and concrete dependency direction.
+- SOLID-informed risks are checked as review prompts, not proof: extension boundaries for repeated variants, substitutability contracts, broad interfaces, and concrete dependency direction.
 - Data flow is predictable and easy to trace through the changed code.
 - Null, undefined, empty, loading, and error states are handled safely for the affected paths.
 - Failure handling is observable and does not silently pretend success.
@@ -17,12 +17,12 @@ Use an objective red-team checklist. Prefer concrete findings over broad praise.
 - Performance risks such as duplicate requests, avoidable rerenders, or obviously heavy work on hot paths are called out when relevant.
 - Tests for changed behavior assert observable outcomes through the relevant interface, not implementation details or incidental strings.
 - Changed behavior is not covered only by a happy path when a meaningful edge, failure, side-effect, idempotency, or regression case is relevant.
-- Mocks, if present, sit at external seams rather than internal collaborators owned by the codebase.
+- Mocks, if present, sit at external boundaries rather than internal collaborators owned by the codebase.
 - Temporary patches, hidden dependencies, and risky assumptions are identified explicitly instead of being waved through.
 - Unrelated refactors are not requested unless they sit on the changed execution path and are required for safety.
 - Material follow-up work that should be tracked separately is emitted as an `Issue candidate`, not silently filed or updated.
 - Heuristic findings, including regex matches, are labeled as candidates rather than proof.
-- New guard or review warnings on changed files require a bounded fix attempt before completion when the fix stays on the changed execution path.
+- New guard or review warnings on changed files require a bounded fix attempt before completion when the fix stays on the changed execution path; routine fix/re-review follow-up is covered by repo-local standing approval.
 - Do not commit automatically; commit/push remains an explicit user-requested publish action.
 - Issue text never includes raw secrets, tokens, credentials, or private data.
 
@@ -55,13 +55,13 @@ Include:
 - **Redaction note** — confirm secrets/private data are omitted.
 - **Suggested action** — `new issue`, `update existing issue`, or `no issue`.
 
-Ask for explicit approval before creating or updating an issue unless the user already authorized that exact tracker side effect.
+Ask for explicit approval before creating or updating an issue unless the user directly requested that tracker workflow or repo-local standing approval covers it.
 
 ## Review shape
 
-Summarize the result in this order, but write it as direct prose or short bullets rather than label-prefixed sections unless the user asks for a structured block:
+Summarize the result with:
 
-1. Start directly with `pass`, `changes required`, or `residual risk`
+1. `pass`, `changes required`, or `residual risk`
 2. Short finding bullets with the concrete problem and impact
 3. Issue candidates only when separate tracked follow-up is warranted
 4. Tests, guard output, builds, or other checks that support the conclusion, plus checks not run

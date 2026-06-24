@@ -15,7 +15,7 @@ Risky fallback patterns include `catch` blocks that return `[]`, `null`, `undefi
 
 ## SOLID-informed coding discipline
 
-Use SOLID as a design review lens, not as automatic compliance. Keep each changed function, module, or class focused on one responsibility and one reason to change. Review extension seams when new variants repeatedly edit core branching, but avoid premature strategies or registries. Preserve caller-visible return shapes, nullability, error behavior, and side-effect expectations. Prefer right-sized contracts over broad config/interface/props bags, while keeping cohesive public contracts together. Keep concrete DB, API, browser, filesystem, email, payment, and queue effects visible through adapters, repositories, injected dependencies, or intentionally local seams.
+Use SOLID as a design review lens, not as automatic compliance. Keep each changed function, module, or class focused on one responsibility and one reason to change. Review extension boundaries when new variants repeatedly edit core branching, but avoid premature strategies or registries. Preserve caller-visible return shapes, nullability, error behavior, and side-effect expectations. Prefer right-sized contracts over broad config/interface/props bags, while keeping cohesive public contracts together. Keep concrete DB, API, browser, filesystem, email, payment, and queue effects visible through adapters, repositories, injected dependencies, or intentionally local boundaries.
 
 ## Test quality
 
@@ -23,7 +23,7 @@ Tests should verify observable behavior through the module interface. They shoul
 
 Happy-path tests are useful, but happy-path-only coverage is usually too weak for changed behavior. Add the most relevant non-happy-path check: empty input, null or undefined input, boundary values, failure paths, side effects, idempotency, concurrency, or a regression case.
 
-Mock at external seams such as network, time, filesystem, third-party APIs, and sometimes databases when a test database is impractical. Avoid mocking internal collaborators owned by the codebase. If a test fails after an internal refactor while behavior is unchanged, the test is probably coupled to implementation details.
+Mock at external boundaries such as network, time, filesystem, third-party APIs, and sometimes databases when a test database is impractical. Avoid mocking internal collaborators owned by the codebase. If a test fails after an internal refactor while behavior is unchanged, the test is probably coupled to implementation details.
 
 Logging should help diagnose behavior without exposing sensitive values. When reporting secret-like matches, show only file, line, and a redacted summary.
 
@@ -35,7 +35,7 @@ When code crosses async UI, env, or persistence paths, be skeptical of fragile a
 
 - Bad: one client component fetches, parses, mutates URL state, maps DTOs, shows toasts, and renders every branch.
 - Better: a loader or adapter owns IO and parsing, a hook owns client state and retry policy, and the view receives shaped data plus explicit loading/empty/error states.
-- Why: caller contracts and null-state invariants are visible, tests can cover the hook/adapter seam, and the view stays reviewable.
+- Why: caller contracts and null-state invariants are visible, tests can cover the hook/adapter boundary, and the view stays reviewable.
 
 ### Mutation write safety
 
@@ -46,5 +46,5 @@ When code crosses async UI, env, or persistence paths, be skeptical of fragile a
 ### Import/ops script
 
 - Bad: a single script parses CLI flags, reads files, transforms rows, writes persistence, and prints a summary inline.
-- Better: split into `parseArgs -> load -> transform -> persist -> report`, with dry-run and failure-result seams.
-- Why: fixtures can test transforms without side effects, while integration tests cover the persistence seam.
+- Better: split into `parseArgs -> load -> transform -> persist -> report`, with dry-run and failure-result boundaries.
+- Why: fixtures can test transforms without side effects, while integration tests cover the persistence boundary.

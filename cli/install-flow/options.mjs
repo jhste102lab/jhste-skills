@@ -28,7 +28,7 @@ const SKILL_SET_ALIASES = new Map([
   ['all', 'all'],
   ['full', 'all'],
 ]);
-const BOOLEAN_OPTIONS = new Set(['yes', 'force', 'skip-hooks', 'no-bridge', 'skip-deep-scan', 'install-missing', 'no-line-limit', 'allow-unmanaged-skill-overwrite']);
+const BOOLEAN_OPTIONS = new Set(['yes', 'force', 'skip-hooks', 'no-bridge', 'skip-deep-scan', 'install-missing', 'no-line-limit', 'allow-unmanaged-skill-overwrite', 'allow-profile-overwrite']);
 const VALUE_OPTIONS = new Set(['repo', 'skills-dir', 'hooks', 'hook', 'skill-set', 'mode', 'line-limit', 'line-limit-mode']);
 const HELP_OPTIONS = new Set(['help', 'h']);
 const COMMON_OPTIONS = new Set([...BOOLEAN_OPTIONS, ...VALUE_OPTIONS, ...HELP_OPTIONS]);
@@ -126,10 +126,12 @@ export function usage(command = 'install') {
 Usage:
   jhste-skills connect [--mode normal|full|custom] [--repo <path>] [--skills-dir <path>]
   jhste-skills connect --yes --mode normal|full [--install-missing] [--skip-hooks | --hooks advisory|blocking]
+  jhste-skills connect --yes --force --allow-profile-overwrite
 Notes:
   connect attaches an existing jhste-skills install to the current git repository.
   connect requires a git repository and never overwrites non-managed hooks.
   --mode minimal is intentionally invalid for connect.
+  --force refreshes generated/managed outputs; modified profiles need --force --allow-profile-overwrite.
 `);
     return;
   }
@@ -145,6 +147,7 @@ Notes:
   Full installs all safe managed features; blocking hooks require an explicit interactive or CLI choice.
   Line limit defaults to 300 lines when repo profile writing is enabled.
   --skip-hooks and --hooks are mutually exclusive.
+  --force refreshes generated/managed outputs; modified profiles need --force --allow-profile-overwrite.
   --force does not overwrite unmanaged skill directories; use --allow-unmanaged-skill-overwrite only after review.
 `);
 }
@@ -165,6 +168,7 @@ export function normalizeOptions(argv, { command, cwd, nonInteractive }) {
   const installMissing = readBooleanOption(args, 'install-missing', errors);
   const noLineLimit = readBooleanOption(args, 'no-line-limit', errors);
   const allowUnmanagedSkillOverwrite = readBooleanOption(args, 'allow-unmanaged-skill-overwrite', errors);
+  const allowProfileOverwrite = readBooleanOption(args, 'allow-profile-overwrite', errors);
   const repoInput = readPathOption(args, 'repo', errors);
   const skillsDirInput = readPathOption(args, 'skills-dir', errors);
   const mode = normalizeMode(hasOption(args, 'mode') ? args.mode : undefined, errors, { command });
@@ -184,6 +188,7 @@ export function normalizeOptions(argv, { command, cwd, nonInteractive }) {
   if (noLineLimit && explicitLineLimit) errors.push('--no-line-limit and --line-limit are mutually exclusive.');
   if (noLineLimit && explicitLineLimitMode && lineLimitMode !== 'off') errors.push('--no-line-limit conflicts with --line-limit-mode unless it is off.');
   if (skipHooks && lineLimitMode === 'blocking') errors.push('--line-limit-mode blocking requires managed hooks; do not combine it with --skip-hooks.');
+  if (allowProfileOverwrite && !force) errors.push('--allow-profile-overwrite requires --force.');
 
   const repoStart = path.resolve(repoInput || cwd);
   if (repoInput) {
@@ -219,6 +224,7 @@ export function normalizeOptions(argv, { command, cwd, nonInteractive }) {
     hookTargets,
     installMissing,
     allowUnmanagedSkillOverwrite,
+    allowProfileOverwrite,
     lineLimit,
     lineLimitMode,
     mode,

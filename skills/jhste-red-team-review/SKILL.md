@@ -7,6 +7,10 @@ description: Read-only completion-time red-team review and issue-candidate hando
 
 Use this skill after non-trivial code changes and before reporting completion. Repo-local instructions remain authoritative.
 
+## Automation and side effects
+
+Perform the changed-code review, inspect guard/test output, and run bounded fix/re-review follow-up without asking when the fix stays inside the changed execution path. The review pass itself is read-only; apply fixes after reporting `changes required`, then re-run verification. Stop after at most two fix + re-review cycles. Ask before scope-out large rewrites, product decisions, destructive migrations, or residual risks that cannot be judged safely.
+
 ## Scope
 
 - Run for application, API, database, automation, or other non-trivial code changes.
@@ -18,12 +22,12 @@ Use this skill after non-trivial code changes and before reporting completion. R
 - New warnings on changed files should be reported as changes required when they can be fixed within the changed execution path; the follow-up fix happens after the review, not inside it.
 - Inspect the actual changed files or diff before assigning `pass`.
 - Check that each changed class, module, and function has one clear main job, and call out mixed responsibilities that create concrete review or failure risk.
-- Apply SOLID-informed review as a coding-discipline lens: extension seams, substitutability, right-sized interfaces, and dependency direction are prompts for concrete failure modes, not automatic violations.
+- Apply SOLID-informed review as a coding-discipline lens: extension boundaries, substitutability, right-sized interfaces, and dependency direction are prompts for concrete failure modes, not automatic violations.
 - Do not assign `pass` from guard/test output alone; guard output is evidence, not a substitute for review.
 - Report `guard` runtime/config failures separately from rule violations.
 - Distinguish **not found** from **not checked**. Use **not found** only after inspecting the relevant path.
 - Avoid recommending unrelated refactors unless they are on the changed execution path and required for safety.
-- When review finds a material follow-up that should become tracked work, emit an `Issue candidate` and ask for explicit approval before creating or updating issues unless already authorized for this exact task.
+- When review finds a material follow-up that should become tracked work, emit an `Issue candidate` and ask for explicit approval before creating or updating issues unless the user directly requested that tracker workflow or repo-local standing approval covers it.
 - Label heuristic findings as candidates, not proof; never include raw secrets or private data in issue text.
 - Do not enter an unbounded fix/review loop. Stop after at most two fix + re-review cycles and report residual risks.
 
@@ -50,15 +54,13 @@ Each `Issue candidate` must include:
 - redaction note for secrets or sensitive data;
 - suggested action: `new issue`, `update existing issue`, or `no issue`.
 
-If an existing issue appears to match, propose updating it and state the match evidence. Ask the user before any tracker write unless they already explicitly authorized issue creation or updates for this exact task.
+If an existing issue appears to match, propose updating it and state the match evidence. Ask the user before any tracker write unless the user directly requested that tracker workflow or repo-local standing approval covers it.
 
 ## Output
 
 - `pass` — no material follow-up found
 - `changes required` — specific follow-up work is still needed
 - `residual risk` — bounded review completed, but some risks remain and are being called out explicitly
-
-Start directly with the result sentence. Do not add a heading, label, or prefix unless the user asks for a structured block.
 
 Findings must include:
 
@@ -99,4 +101,4 @@ Avoid: "Should I create an issue?" without supporting reasoning.
 ## References
 
 - `references/red-team-review.md`
-- `../jhste-engineering-judgment/SKILL.md`
+- `../jhste-engineering-groundwork/SKILL.md`

@@ -212,7 +212,7 @@ export function scanSingleResponsibility(relPath, text, rawSettings = {}) {
         relPath,
         line: lineAt(text, fn.start),
         symbol: fn.name,
-        message: `${fn.name} is ${lineCount} lines; name its one responsibility and consider whether a real seam would improve locality.`,
+        message: `${fn.name} is ${lineCount} lines; name its one responsibility and consider whether a real boundary would improve locality.`,
         confidence: 'medium',
       }));
     }
@@ -224,7 +224,7 @@ export function scanSingleResponsibility(relPath, text, rawSettings = {}) {
         relPath,
         line: lineAt(text, fn.start),
         symbol: fn.name,
-        message: `${fn.name} appears to mix ${hints.slice(0, 5).join(', ')}; review whether one responsibility can move behind a named seam without creating pass-through wrappers.`,
+        message: `${fn.name} appears to mix ${hints.slice(0, 5).join(', ')}; review whether one responsibility can move behind a named boundary without creating pass-through wrappers.`,
         confidence: 'low',
       }));
     }

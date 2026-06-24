@@ -60,9 +60,7 @@ export const RESPONSIBILITY_RULE_KEYS = new Set(['mode', ...Object.keys(DEFAULT_
 export const SINGLE_RESPONSIBILITY_RULE_KEYS = new Set(['mode', ...Object.keys(DEFAULT_SINGLE_RESPONSIBILITY)]);
 export const BASELINE_KEYS = new Set(['enabled', 'path', 'candidate_report']);
 export const GUARD_KEYS = new Set(['default_scope', 'default_format', 'fail_on']);
-export const GUARD_NESTED_KEYS = new Map([
-  ['exit_codes', new Set(['pass', 'violation_failure', 'guard_runtime_failure', 'config_failure'])],
-]);
+export const LEGACY_IGNORED_GUARD_NESTED_KEYS = new Set(['exit_codes']);
 export const COMMAND_KEYS = new Set(['name', 'cmd', 'args', 'run', 'severity', 'timeout_seconds']);
 
 export function defaultProfile() {

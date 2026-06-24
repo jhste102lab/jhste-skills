@@ -5,8 +5,8 @@ import path from 'node:path';
 import {
   BRIDGE_END,
   BRIDGE_START,
-  DEFAULT_PROFILE,
   ask,
+  generatedProfileShape,
   findGitRootInfo,
   parseArgs,
   readIfExists,
@@ -28,7 +28,7 @@ Notes:
   Removes only jhste-skills managed outputs.
   Managed hooks and marker-managed bridge blocks are removed when a git repo is available.
   Manifest-managed skill directories are removed from --skills-dir.
-  .jhste/profile.yaml is removed only when it still looks generated; use --force-profile after review.
+  .jhste/profile.yaml is removed only when it matches the current or legacy generated shape; use --force-profile after review.
 `);
 }
 
@@ -156,24 +156,13 @@ function removeManagedBridge(repoRoot, fileName) {
   return { fileName, status: 'removed-managed-block' };
 }
 
-function generatedProfileShape(text) {
-  const normalize = (value) => value
-    .replace(/^installed_at:.*$/m, 'installed_at: "<installed_at>"')
-    .replace(/  file_size_advisory:\n(?:    .+\n){1,3}/, '  file_size_advisory:\n    <line-limit-block>\n')
-    .trim();
-  const template = DEFAULT_PROFILE
-    .replace(/  file_size_advisory:\n(?:    .+\n){1,3}/, '  file_size_advisory:\n    <line-limit-block>\n')
-    .trim();
-  return normalize(text) === template;
-}
-
 function removeGeneratedProfile(repoRoot, { keepProfile, forceProfile }) {
   const file = path.join(repoRoot, '.jhste', 'profile.yaml');
   if (!fs.existsSync(file)) return { status: 'absent', path: file };
   if (keepProfile) return { status: 'kept', path: file };
   const existing = fs.readFileSync(file, 'utf8');
   if (!forceProfile && !generatedProfileShape(existing)) {
-    return { status: 'left-modified', path: file, reason: 'profile does not match the generated shape; pass --force-profile after review' };
+    return { status: 'left-modified', path: file, reason: 'profile does not match the current or legacy generated shape; pass --force-profile after review' };
   }
   fs.rmSync(file);
   const dir = path.dirname(file);

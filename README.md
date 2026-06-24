@@ -11,14 +11,14 @@ An installable working-rules kit that helps AI coding agents consistently follow
 SOLID is used here as a design review lens, not as an automatic compliance checklist.
 
 - **S — Single Responsibility:** each changed function, module, or class should have one main job and one main reason to change.
-- **O — Open/Closed:** adding a new variant, provider, or policy should not force repeated edits to core branching when a real extension seam would be safer.
+- **O — Open/Closed:** adding a new variant, provider, or policy should not force repeated edits to core branching when a real extension boundary would be safer.
 - **L — Liskov Substitution:** implementations should not weaken caller expectations for return shape, nullability, errors, side effects, or documented behavior.
 - **I — Interface Segregation:** callers should not depend on broad config, interface, or props objects when they only need a small, stable slice.
-- **D — Dependency Inversion:** high-level policy should not be tightly coupled to concrete DB, API, browser, filesystem, email, payment, or queue effects unless that seam is intentional and visible.
+- **D — Dependency Inversion:** high-level policy should not be tightly coupled to concrete DB, API, browser, filesystem, email, payment, or queue effects unless that boundary is intentional and visible.
 
 This tool does **not** take over your project. Repo-local `AGENTS.md`, `CLAUDE.md`, and docs remain authoritative. The default setup is advisory, marker-managed, and designed to be low-risk to try.
 
-Skills are designed to be used automatically when the situation calls for them. For example, when an agent edits API code, it is guided to use the API/database boundary skill; before completion, it is guided to use the red-team review skill. You can also call a skill directly, for example: `use jhste-engineering-judgment to review this change premise`, or `run jhste-red-team-review on this diff`.
+Skills are designed to be used automatically when the situation calls for them. For example, when an agent edits API code, it is guided to use the API/database boundary skill; before completion, it is guided to use the red-team review skill. You can also call a skill directly, for example: `use jhste-engineering-groundwork to review this change premise`, or `run jhste-red-team-review on this diff`.
 
 ## Why install this?
 
@@ -26,7 +26,7 @@ AI coding agents are fast, but they fail in predictable ways:
 
 - They silently accept unclear requirements or incorrect premises.
 - They expand the scope while trying to be helpful.
-- They mix UI, route/controller, service, database, and side-effect responsibilities in one place, or add abstractions without a real SOLID-informed seam.
+- They mix UI, route/controller, service, database, and side-effect responsibilities in one place, or add abstractions without a real SOLID-informed boundary.
 - They hide failures or produce unsafe logs.
 - They say “done” before the changed code has been checked.
 - They forget repo-specific rules when you switch machines or repositories.
@@ -35,7 +35,7 @@ AI coding agents are fast, but they fail in predictable ways:
 
 ```text
 Before a non-trivial code change:
-  check the goal, premise, ownership seam, data contract, failure path, and SOLID-informed review lens
+  check the goal, premise, ownership boundary, data contract, failure path, and SOLID-informed review lens
 
 While editing:
   treat repo-local instructions as the authority
@@ -50,7 +50,7 @@ If warnings appear:
   attempt a bounded fix, re-check, and stop instead of looping forever
 ```
 
-The expected result is smaller diffs, clearer SOLID-informed seams, safer API/database code, fewer silent assumptions, and more honest completion reports.
+The expected result is smaller diffs, clearer SOLID-informed boundaries, safer API/database code, fewer silent assumptions, and more honest completion reports.
 
 ## Who should install this?
 
@@ -83,7 +83,7 @@ Use `npx` when you want a one-off run without a global install. Use `npm install
 The default install uses Normal mode.
 
 - Installs all bundled skills: jhste core skills + vendored workflow skills.
-- Creates `.jhste/profile.yaml` when missing.
+- Creates `.jhste/profile.yaml` when missing; `--force` refreshes generated/managed profiles, while modified profiles require `--force --allow-profile-overwrite`.
 - Adds or refreshes a marker-managed bridge block in `AGENTS.md` or `CLAUDE.md` when project guidance is enabled.
 - Installs an advisory pre-commit hook when safe.
 - Does not modify CI, target `package.json`, lockfiles, or source code.
@@ -119,7 +119,7 @@ To remove managed outputs:
 jhste-skills uninstall --yes --repo /path/to/repo
 ```
 
-`uninstall` removes managed hooks, marker-managed bridge blocks, and manifest-managed skill directories. It does not touch non-managed files. `.jhste/profile.yaml` is removed only when it still matches the generated shape; use `--force-profile` only after reviewing a modified profile.
+`uninstall` removes managed hooks, marker-managed bridge blocks, and manifest-managed skill directories. It does not touch non-managed files. `.jhste/profile.yaml` is removed only when it still matches the current or legacy generated shape; use `--force-profile` only after reviewing a modified profile.
 
 ## Install modes
 
@@ -155,11 +155,11 @@ These are the jhste-authored guardrail skills. They are installed by default as 
 | Skill | Use it when | What it helps reduce |
 |---|---|---|
 | [`setup`](skills/setup/SKILL.md)<br>A safe setup skill that prevents install/connect/update flows from overwriting existing project instructions | Installing or connecting the kit to a repository | Unsafe overwrite, unmanaged hook conflict, repo instruction replacement |
-| [`jhste-engineering-judgment`](skills/jhste-engineering-judgment/SKILL.md)<br>A pre-change judgment skill that verifies goal, premise, scope, seam, and failure path before code edits | Before non-trivial code changes | Blind agreement, scope creep, unverified assumptions, unclear seams |
-| [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>A code-quality skill for input validation, observable failure handling, and secret-safe logging | Writing or reviewing application code | Unvalidated input, silent failure, secret logging, oversized files |
-| [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>An architecture review skill for module boundaries, side-effect placement, and SOLID-informed design risks | Changing module boundaries or app structure | Pass-through abstraction, mixed responsibility, side-effect leakage |
+| [`jhste-engineering-groundwork`](skills/jhste-engineering-groundwork/SKILL.md)<br>A pre-change groundwork skill that verifies goal, premise, scope, boundary, and failure path before code edits | Before non-trivial code changes | Blind agreement, scope creep, unverified assumptions, unclear boundaries |
+| [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>A code-quality skill for input validation, observable failure handling, secret-safe logging, and oversized-file review | Touching external input, failure handling, logging, env/config, or code-quality review paths | Unvalidated input, silent failure, secret logging, oversized files |
+| [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>An architecture review skill for module boundaries, side-effect placement, and SOLID-informed design risks | Changing module boundaries, app structure, side-effect placement, or responsibility splits | Pass-through abstraction, mixed responsibility, side-effect leakage |
 | [`jhste-db-api-boundary`](skills/jhste-db-api-boundary/SKILL.md)<br>A boundary skill that checks responsibility and data contracts across API routes, services, repositories, and SQL | Touching API, controller, service, repository, SQL, or persistence code | Fat routes, unsafe SQL, missing auth/data scoping, leaky DTOs |
-| [`jhste-crawler-automation`](skills/jhste-crawler-automation/SKILL.md)<br>An automation skill for crawler/scraper/worker/scheduler producer-consumer seams and side effects | Touching crawlers, scrapers, workers, schedulers, or browser automation | Fragile automation, unclear producer/consumer boundaries, hidden side effects |
+| [`jhste-crawler-automation`](skills/jhste-crawler-automation/SKILL.md)<br>An automation skill for crawler/scraper/worker/scheduler producer-consumer boundaries and side effects | Touching crawlers, scrapers, workers, schedulers, or browser automation | Fragile automation, unclear producer/consumer boundaries, hidden side effects |
 | [`jhste-red-team-review`](skills/jhste-red-team-review/SKILL.md)<br>A read-only red-team code review skill that aggressively re-checks changed code before completion | Before declaring non-trivial code work complete | Premature “done”, missed null/auth/env/write/API/performance risks |
 
 ## Bundled workflow skills
@@ -169,17 +169,17 @@ Normal install also includes 13 workflow skills vendored from Matt Pocock's [`ma
 | Skill | Use it when |
 |---|---|
 | [`diagnosing-bugs`](skills/diagnosing-bugs/SKILL.md)<br>A debugging skill that narrows root cause around a fast pass/fail feedback loop | You need a reproduce → minimise → hypothesise → instrument → fix loop |
-| [`grill-me`](skills/grill-me/SKILL.md)<br>A skill that asks persistent questions until a plan or design has no obvious gaps | You want the agent to question your plan or design until it becomes clear |
-| [`grill-with-docs`](skills/grill-with-docs/SKILL.md)<br>A design-challenge skill that documents domain terms and decisions while questioning the plan | You want project vocabulary and docs/ADRs updated during the questioning process |
-| [`grilling`](skills/grilling/SKILL.md)<br>A general grilling skill for pressure-testing plans and designs before implementation | You need a general plan/design stress-test questioning loop |
+| [`grill-me`](skills/grill-me/SKILL.md)<br>A direct personal grilling skill for aggressively questioning your own plan or reasoning | You ask to be grilled, challenged, pressure-tested, or questioned aggressively |
+| [`grill-with-docs`](skills/grill-with-docs/SKILL.md)<br>A grilling skill that records resulting domain terms and decisions in CONTEXT.md or ADRs | You want stress-testing plus documentation, ADR, glossary, or CONTEXT updates |
+| [`grilling`](skills/grilling/SKILL.md)<br>A general read-only grilling skill for pressure-testing plans and designs before implementation | You ask to challenge, pressure-test, red-team, grill, or find gaps without docs updates |
 | [`domain-modeling`](skills/domain-modeling/SKILL.md)<br>A skill for sharpening project terminology, domain models, and architectural decisions | Refining domain terms, ubiquitous language, or architectural decisions |
-| [`codebase-design`](skills/codebase-design/SKILL.md)<br>A codebase design skill for deep modules, small interfaces, and clear seams | You need better module interface, seam, and testability vocabulary |
+| [`codebase-design`](skills/codebase-design/SKILL.md)<br>A codebase design skill for deep modules, small interfaces, and clear boundaries | You need better module interface, boundary, and testability vocabulary |
 | [`improve-codebase-architecture`](skills/improve-codebase-architecture/SKILL.md)<br>An architecture skill that finds shallow modules and coupling that can be improved into deeper modules | You want to find deepening opportunities and reduce architectural friction |
-| [`prototype`](skills/prototype/SKILL.md)<br>A prototyping skill for validating logic or UI direction with throwaway code before implementation | You want a throwaway logic/UI prototype before committing to an approach |
-| [`to-prd`](skills/to-prd/SKILL.md)<br>A PRD-writing skill that structures conversation context into product requirements | You want to turn conversation context into a PRD |
-| [`to-issues`](skills/to-issues/SKILL.md)<br>A skill that breaks a plan into independently workable vertical-slice issues | You want to split a plan into implementation issues that can be worked independently |
-| [`triage`](skills/triage/SKILL.md)<br>An issue triage skill that classifies issues and decides next actions through a structured workflow | You want issues handled through a structured triage workflow |
-| [`handoff`](skills/handoff/SKILL.md)<br>A handoff skill that compresses context so the next agent or session can continue | You want to hand context to another agent or session |
+| [`prototype`](skills/prototype/SKILL.md)<br>A prototyping skill for validating logic/state models or UI directions with throwaway local code | You ask to prototype, mock up, try designs, sanity-check behavior, or “let me play with it” |
+| [`to-prd`](skills/to-prd/SKILL.md)<br>A PRD-writing skill that drafts requirements and makes them ready for the normal project workflow | You want a PRD; tracker publication happens only when directly requested or repo-approved |
+| [`to-issues`](skills/to-issues/SKILL.md)<br>A skill that breaks a plan into issue-ready vertical slices | You want implementation tickets or work breakdown; tracker creation follows direct request or repo approval |
+| [`triage`](skills/triage/SKILL.md)<br>An issue triage skill that classifies issues and plans next actions through a structured workflow | You want issue classification, next-action planning, or repo-approved triage writes |
+| [`handoff`](skills/handoff/SKILL.md)<br>A handoff skill that compresses context so the next agent or session can continue | You ask for a handoff, session summary, continuation brief, or next-agent context |
 | [`write-a-skill`](skills/write-a-skill/SKILL.md)<br>A skill-writing skill for creating agent skills with the right structure and progressive disclosure | You want to create or refine an agent skill |
 
 ## Attribution: Matt Pocock skills
@@ -220,7 +220,7 @@ See [`docs/CLI.md`](docs/CLI.md) for detailed command behavior.
 2. Keep advisory hooks at first. Use `--skip-hooks` if you do not want commit-time checks, and enable blocking mode only after reviewing noise and false positives.
 3. Start with the default 300-line advisory limit. Use `--line-limit-mode blocking` only when the team is ready for warning-level hook enforcement.
 4. During code changes, run `guard --scope changed --format text --fail-on error` manually.
-5. Before non-trivial code changes, use `jhste-engineering-judgment` to check scope, seam, failure path, data contract, assumptions, and the SOLID-informed review lens for changed classes/modules/functions.
+5. Before non-trivial code changes, use `jhste-engineering-groundwork` to check scope, boundary, failure path, data contract, assumptions, and the SOLID-informed review lens for changed classes/modules/functions.
 6. Before declaring non-trivial code work complete, use `jhste-red-team-review`. Skip docs-only, comment-only, formatting-only, and trivial rename-only changes.
 7. Limit fix + re-review loops to two cycles, then report remaining risks instead of looping indefinitely.
 8. Create a baseline only after reviewing existing debt. Treat the baseline as a known-issues ledger and use ratchet behavior to stop new debt, not to hide scanner failures.
@@ -255,11 +255,11 @@ See [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.md) for release acceptanc
 - Do not agree blindly.
 - Do not overwrite local project authority.
 - Keep changes scoped.
-- Use SOLID-informed coding discipline: name responsibilities, review extension seams, preserve caller contracts, keep interfaces right-sized, and make concrete dependencies visible.
+- Use SOLID-informed coding discipline: name responsibilities, review extension boundaries, preserve caller contracts, keep interfaces right-sized, and make concrete dependencies visible.
 - Make failures observable.
 - Treat automated guard output as evidence, not proof.
 - Run a red-team code review before calling non-trivial work complete.
 
 Fast agents need guardrails. `jhste-skills` gives them a repo-respecting engineering workflow.
 
-Installed skill directories are tracked with `.jhste-skills-manifest.json`. `--force` refreshes manifest-managed skill copies; overwriting unmanaged differing skill directories still requires the separate `--allow-unmanaged-skill-overwrite` flag after review. `sync` and `update` can also adopt additional known jhste skills into an already managed skills directory so older mixed installs can be reconciled without a manual overwrite flag. Legacy vendored renames are also reconciled during `sync` and `update`, so older managed installs that still have `diagnose` are migrated to `diagnosing-bugs` without leaving duplicate skill directories.
+Installed skill directories are tracked with `.jhste-skills-manifest.json`. `--force` refreshes manifest-managed skill copies and generated/managed profiles; modified profiles need `--force --allow-profile-overwrite`; overwriting unmanaged differing skill directories still requires the separate `--allow-unmanaged-skill-overwrite` flag after review. `sync` and `update` can also adopt additional known jhste skills into an already managed skills directory so older mixed installs can be reconciled without a manual overwrite flag. Legacy managed renames are also reconciled during `sync` and `update`, so older managed installs that still have `diagnose` or `jhste-engineering-judgment` are migrated to `diagnosing-bugs` or `jhste-engineering-groundwork` without leaving duplicate skill directories.

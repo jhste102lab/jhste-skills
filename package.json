@@ -1,6 +1,6 @@
 {
   "name": "jhste-skills",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Installable engineering guardrails and workflow skills for AI coding agents.",
   "type": "module",
   "license": "MIT",
@@ -30,6 +30,7 @@
     "README.ko.md",
     "README.zh.md",
     "README.ja.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {

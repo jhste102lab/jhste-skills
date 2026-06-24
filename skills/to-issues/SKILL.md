@@ -1,14 +1,14 @@
 ---
 name: to-issues
-description: Break a plan, spec, or PRD into independently-grabbable issues on the project issue tracker using tracer-bullet vertical slices. Use when user wants to convert a plan into issues, create implementation tickets, or break down work into issues.
+description: Break a plan, spec, or PRD into issue-ready vertical slices. Use when the user wants implementation tickets or work breakdown; create tracker issues when directly requested or when repo-local workflow gives standing approval for ticket creation.
 ---
 
 ## jhste compatibility
 
 - Repo-local instructions remain authoritative.
-- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Use `jhste-engineering-groundwork` for scope, boundaries, assumptions, and failure paths when it applies.
 - Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
-- File, repo, command, issue, PR, or other external side effects require explicit approval unless the user already requested that exact side effect.
+- File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it. Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
 
 
 # To Issues
@@ -39,7 +39,7 @@ Slices may be 'HITL' or 'AFK'. HITL slices require human interaction, such as an
 - Prefer many thin slices over few thick ones
 </vertical-slice-rules>
 
-### 4. Quiz the user
+### 4. Present the breakdown
 
 Present the proposed breakdown as a numbered list. For each slice, show:
 
@@ -48,20 +48,17 @@ Present the proposed breakdown as a numbered list. For each slice, show:
 - **Blocked by**: which other slices (if any) must complete first
 - **User stories covered**: which user stories this addresses (if the source material has them)
 
-Ask the user:
+Make reasonable assumptions about granularity, dependency order, merging/splitting, and HITL/AFK classification. Ask only when a choice is ambiguous enough to materially change the implementation plan or when tracker writes require confirmation.
 
-- Does the granularity feel right? (too coarse / too fine)
-- Are the dependency relationships correct?
-- Should any slices be merged or split further?
-- Are the correct slices marked as HITL and AFK?
+### 5. Prepare or publish the issues
 
-Iterate until the user approves the breakdown.
+For each slice, prepare an issue-ready ticket body.
 
-### 5. Publish the issues to the issue tracker
+If the user directly requested issue/ticket creation, or repo-local workflow gives standing approval that issue breakdown requests create tracker issues, create the issues in dependency order using the repo's normal labels and tracker vocabulary.
 
-For each approved slice, publish a new issue to the issue tracker. Use the issue body template below. These issues are considered ready for AFK agents, so publish them with the correct triage label unless instructed otherwise.
+Otherwise, present the issue-ready drafts and ask only before writing to the tracker.
 
-Publish issues in dependency order (blockers first) so you can reference real issue identifiers in the "Blocked by" field.
+Approval of the breakdown is not automatically approval to close, overwrite, or materially modify existing tracker items unless repo-local workflow explicitly defines that behavior or the user directly requested that exact side effect.
 
 <issue-template>
 ## Parent

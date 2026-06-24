@@ -171,14 +171,14 @@ export function scanResponsibilityBudget(relPath, text, settings) {
   }
   const routeLike = isRouteLikePath(relPath);
   if (routeLike && lineCount >= settings.route_review_lines) {
-    out.push(violation({ ruleId: 'responsibility.route.budget', severity: 'warning', relPath, symbol: 'route', message: `${lineCount} lines in route/controller-like file; review auth/validation/service/response seams.`, confidence: 'medium' }));
+    out.push(violation({ ruleId: 'responsibility.route.budget', severity: 'warning', relPath, symbol: 'route', message: `${lineCount} lines in route/controller-like file; review auth/validation/service/response boundaries.`, confidence: 'medium' }));
   }
   const scriptPipeline = isScriptPipelinePath(relPath);
   if (scriptPipeline && lineCount >= settings.import_ops_script_review_lines) {
-    out.push(violation({ ruleId: 'responsibility.script.budget', severity: 'warning', relPath, symbol: 'script-pipeline', message: `${lineCount} lines in import/ops-style script; review CLI/loader/transform/persist/report seams.`, confidence: 'medium' }));
+    out.push(violation({ ruleId: 'responsibility.script.budget', severity: 'warning', relPath, symbol: 'script-pipeline', message: `${lineCount} lines in import/ops-style script; review CLI/loader/transform/persist/report boundaries.`, confidence: 'medium' }));
   }
   if (ext === '.py' && /(^|\/)(main|.*orchestrator|.*runner|stage_runner)\.py$/.test(relPath) && lineCount >= settings.python_orchestrator_review_lines) {
-    out.push(violation({ ruleId: 'responsibility.python_orchestrator.budget', severity: 'warning', relPath, symbol: 'python-orchestrator', message: `${lineCount} lines in Python orchestrator/runner; review policy/IO/runtime/notification/result seams.`, confidence: 'medium' }));
+    out.push(violation({ ruleId: 'responsibility.python_orchestrator.budget', severity: 'warning', relPath, symbol: 'python-orchestrator', message: `${lineCount} lines in Python orchestrator/runner; review policy/IO/runtime/notification/result boundaries.`, confidence: 'medium' }));
   }
   if (hasUseClientDirective(text)) {
     const hints = mixedClientResponsibilityHints(text);
@@ -195,7 +195,7 @@ export function scanResponsibilityBudget(relPath, text, settings) {
   if (scriptPipeline) {
     const hints = mixedScriptResponsibilityHints(text);
     if (hints.length >= 4) {
-      out.push(violation({ ruleId: 'responsibility.script.mixed', severity: 'warning', relPath, symbol: 'script-pipeline-mixed', message: `script mixes ${hints.join(', ')}; review CLI/loader/transform/persist/report seams.`, confidence: 'low' }));
+      out.push(violation({ ruleId: 'responsibility.script.mixed', severity: 'warning', relPath, symbol: 'script-pipeline-mixed', message: `script mixes ${hints.join(', ')}; review CLI/loader/transform/persist/report boundaries.`, confidence: 'low' }));
     }
   }
   return out;

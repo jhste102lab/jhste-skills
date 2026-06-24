@@ -24,7 +24,11 @@ export function applyPlan(plan) {
     }
   }
 
-  if (plan.writeProfile && plan.repoRoot) result.profileResult = writeProfile(plan.repoRoot, { force: plan.force, lineLimit: plan.lineLimit });
+  if (plan.writeProfile && plan.repoRoot) result.profileResult = writeProfile(plan.repoRoot, {
+    force: plan.force,
+    allowProfileOverwrite: plan.allowProfileOverwrite,
+    lineLimit: plan.lineLimit,
+  });
   if (plan.writeBridge && plan.repoRoot) result.bridgeResults = bridgeTargetNames(plan).map((name) => writeManagedBridge(plan.repoRoot, name));
   if (plan.hooks.length && plan.repoRoot) {
     result.hookResults = plan.hooks.map((hook) => installHookTarget(plan.repoRoot, hook));

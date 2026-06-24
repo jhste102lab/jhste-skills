@@ -49,7 +49,7 @@ function repeatedComparisonCandidates(text) {
     .map(([discriminator, value]) => ({ index: value.index, discriminator, branchCount: value.count }));
 }
 
-export function scanExtensionSeamAdvisory(relPath, text) {
+export function scanExtensionBoundaryAdvisory(relPath, text) {
   if (!isSourceCodePath(relPath) || !sourceExt(relPath) || isGeneratedOrFixture(relPath)) return [];
   const candidates = [...switchBranchCandidates(text), ...repeatedComparisonCandidates(text)];
   const first = candidates.sort((left, right) => left.index - right.index)[0];
@@ -60,7 +60,7 @@ export function scanExtensionSeamAdvisory(relPath, text) {
     relPath,
     line: lineAt(text, first.index),
     symbol: first.discriminator,
-    message: `Variant branching on ${first.discriminator} has ${first.branchCount} branches; review whether an extension seam would reduce repeated core edits without adding premature abstraction.`,
+    message: `Variant branching on ${first.discriminator} has ${first.branchCount} branches; review whether an extension boundary would reduce repeated core edits without adding premature abstraction.`,
     confidence: 'low',
   })];
 }
@@ -92,7 +92,7 @@ export function scanDependencyBoundaryAdvisory(relPath, text) {
     relPath,
     line: lineAt(text, candidate.index),
     symbol: candidate.label,
-    message: `High-level policy/service path directly touches a ${candidate.label}; review whether the concrete side effect belongs behind an adapter, repository, injected dependency, or intentionally local seam.`,
+    message: `High-level policy/service path directly touches a ${candidate.label}; review whether the concrete side effect belongs behind an adapter, repository, injected dependency, or intentionally local boundary.`,
     confidence: 'low',
   })];
 }

@@ -6,14 +6,20 @@ description: Triage issues through a state machine driven by triage roles. Use w
 ## jhste compatibility
 
 - Repo-local instructions remain authoritative.
-- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Use `jhste-engineering-groundwork` for scope, boundaries, assumptions, and failure paths when it applies.
 - Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
-- File, repo, command, issue, PR, or other external side effects require explicit approval unless the user already requested that exact side effect.
+- File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it. Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
 
 
 # Triage
 
 Move issues on the project issue tracker through a small state machine of triage roles.
+
+## Automation and side effects
+
+Perform classification and next-action planning without asking. Apply tracker writes when the user requested triage writes or repo-local workflow gives standing approval. Do not close, overwrite, bulk-edit, or materially change existing issues without direct approval.
+
+Standing approval covers reading issues, classifying them, identifying questions, deciding whether reproduction is needed, proposing labels/status, proposing next actions, and applying triage labels when repo-local policy allows it. Ask before issue close, issue body overwrite, large relabeling, assignee/milestone changes, multi-issue bulk edits, or posting user-facing tracker comments unless repo-local policy explicitly allows that comment.
 
 Every comment or issue posted to the issue tracker during triage **must** start with this disclaimer:
 
@@ -86,7 +92,7 @@ Show counts and a one-line summary per issue. Let the maintainer pick.
 
 ## Quick state override
 
-If the maintainer says "move #42 to ready-for-agent", trust them and apply the role directly. Confirm what you're about to do (role changes, comment, close), then act. Skip grilling. If moving to `ready-for-agent` without a grilling session, ask whether they want to write an agent brief.
+If the maintainer says "move #42 to ready-for-agent", trust them and apply the role directly when the label mapping and target tracker are clear. Apply only the requested role change without extra confirmation when repo-local policy allows it. Ask before adding a user-facing comment, closing an issue, changing assignees/milestones, or making broader edits. If moving to `ready-for-agent` without a grilling session, ask whether they want to write an agent brief unless repo-local workflow already requires one.
 
 ## Needs-info template
 

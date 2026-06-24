@@ -1,6 +1,6 @@
 # Structure templates
 
-Use these as defaults, not as mandatory architecture. Prefer repo-local names and existing seams.
+Use these as defaults, not as mandatory architecture. Prefer repo-local names and existing boundaries.
 
 ## API route
 
@@ -16,7 +16,7 @@ Use these as defaults, not as mandatory architecture. Prefer repo-local names an
 - Client module: interaction state only.
 - `useXxx` hook: async state and mutations.
 - `XxxView`: pure rendering and empty/loading/error presentation.
-- `adapter.ts`: browser APIs, local storage, or network seams.
+- `adapter.ts`: browser APIs, local storage, or network boundaries.
 
 ## Script or import pipeline
 
@@ -36,6 +36,6 @@ Use these as defaults, not as mandatory architecture. Prefer repo-local names an
 ## Generic module or function
 
 - Module: one named responsibility and one main reason to change.
-- Function: either one cohesive policy/transform or thin orchestration over named seams.
+- Function: either one cohesive policy/transform or thin orchestration over named boundaries.
 - Compatibility facade: allowed only when it contains no policy and prevents import churn during refactors.
 - Avoid: shared utility buckets that mix parsing, git/repo discovery, filesystem IO, prompting, rendering, and templates.

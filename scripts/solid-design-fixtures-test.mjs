@@ -42,7 +42,7 @@ function findRule(result, ruleId, filePart = '') {
 }
 
 {
-  const repo = makeRepo('extension-seam');
+  const repo = makeRepo('extension-boundary');
   write(path.join(repo, 'src/checkout.ts'), `export function feeForProvider(provider: string) {
   switch (provider) {
     case 'stripe':
@@ -58,7 +58,7 @@ function findRule(result, ruleId, filePart = '') {
 `);
   const result = guardJson(repo);
   const item = findRule(result, 'solid.ocp.variant_branching_hotspot', 'checkout.ts');
-  if (!item) fail('OCP extension seam candidate was not reported');
+  if (!item) fail('OCP extension boundary candidate was not reported');
   if (item.rule_family !== 'extension_seam_advisory') fail('OCP candidate should map to extension_seam_advisory');
   if (item.confidence !== 'low' || item.severity !== 'warning') fail('OCP candidate should be low-confidence warning');
 }

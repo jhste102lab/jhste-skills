@@ -219,7 +219,7 @@ export function scanThinApiRoute(relPath, text) {
     severity: 'warning',
     relPath,
     symbol: 'route-db-access',
-    message: 'Route/controller appears to contain direct persistence access; review whether auth, validation, usecase, repository, and response seams are thin enough.',
+    message: 'Route/controller appears to contain direct persistence access; review whether auth, validation, usecase, repository, and response boundaries are thin enough.',
     confidence: 'low',
   })];
 }

@@ -1,6 +1,6 @@
 # Architecture review reference
 
-Good boundaries reduce repeated explanations for AI agents and humans. Prefer modules that own a real decision, policy, or side-effect seam. Be skeptical of wrappers that only rename a call.
+Good boundaries reduce repeated explanations for AI agents and humans. Prefer modules that own a real decision, policy, or side-effect boundary. Be skeptical of wrappers that only rename a call.
 
 When reviewing a proposed change, ask:
 
@@ -8,12 +8,12 @@ When reviewing a proposed change, ask:
 - What side effect becomes easier to test or replace?
 - Does this module hide complexity or merely pass it through?
 - Are repo-local docs using a more specific term or rule?
-- Where do caller contracts, mutation safety, or hot-path performance assumptions belong so they stay visible instead of leaking across seams?
-- Which SOLID-informed question is actually relevant: SRP responsibility, OCP extension seam, LSP caller contract, ISP contract size, or DIP dependency direction?
+- Where do caller contracts, mutation safety, or hot-path performance assumptions belong so they stay visible instead of leaking across boundaries?
+- Which SOLID-informed question is actually relevant: SRP responsibility, OCP extension boundary, LSP caller contract, ISP contract size, or DIP dependency direction?
 - Does repeated variant/provider/policy branching force core edits, or is the explicit branch still the clearest domain model?
 - Does an implementation weaken return shape, nullability, error behavior, side-effect expectations, or documented invariants promised to callers?
 - Is a caller coupled to a broad config/interface/props bag it barely uses, or is that bag one cohesive public contract?
-- Does high-level policy directly own concrete DB/API/browser/filesystem/email/payment effects without an intentional visible seam?
+- Does high-level policy directly own concrete DB/API/browser/filesystem/email/payment effects without an intentional visible boundary?
 - Do the proposed files change independently, or do they always move together as one cohesive contract?
 - Would the split reduce the number of files touched for a typical change, or merely make readers chase more files?
 
@@ -22,8 +22,8 @@ When reviewing a proposed change, ask:
 ### Next.js or API route split
 
 - Bad: `route.ts` performs auth, schema parsing, business rules, database queries, error mapping, and response DTO shaping inline.
-- Better: route/controller does request parsing and response mapping; a usecase owns business invariants; a repository/query owns persistence; errors are mapped through a small public-error seam.
-- Why: caller contracts, authorization, partial-failure handling, and test seams are easier to inspect from entrypoint to side effect.
+- Better: route/controller does request parsing and response mapping; a usecase owns business invariants; a repository/query owns persistence; errors are mapped through a small public-error boundary.
+- Why: caller contracts, authorization, partial-failure handling, and test boundaries are easier to inspect from entrypoint to side effect.
 
 ### React client path split
 
@@ -44,22 +44,22 @@ Change adjacent code only when it sits on the changed execution path and leaving
 ### Over-fragmented contract split
 
 - Bad: a cohesive feature contract is split into separate `*-types`, `*-select`, `*-mapper`, `*-aliases`, and tiny wrapper files that are hard to understand alone and usually change in the same commit.
-- Better: keep type, select/shape alias, mapper, and small constants together when they describe one caller-facing contract; split only the independently changing query, policy, side effect, or behavior seam.
+- Better: keep type, select/shape alias, mapper, and small constants together when they describe one caller-facing contract; split only the independently changing query, policy, side effect, or behavior boundary.
 - Why: SRP is about independent reasons to change, not maximizing file count; good splits reduce change surface and test scope without increasing reader navigation cost.
 
 ### Function responsibility split
 
 - Bad: one function parses input, validates it, reads files, transforms data, writes output, prints a report, and decides exit behavior.
 - Better: keep orchestration thin and move parsing, validation, side effects, transformation, and reporting behind named functions or modules when those responsibilities change independently.
-- Why: tests can target the responsibility that changed, and side effects stay visible at the seam that owns them.
+- Why: tests can target the responsibility that changed, and side effects stay visible at the boundary that owns them.
 
 ### SOLID-informed design review
 
 - Bad: treat SOLID as a compliance checklist and add interfaces, registries, strategies, or wrappers that only rename calls.
-- Better: use SOLID as a review lens: SRP names one responsibility, OCP looks for extension seams, LSP checks caller contracts, ISP keeps contracts right-sized, and DIP makes concrete side effects visible.
-- Why: the useful outcome is lower change risk and clearer seams, not more abstraction.
+- Better: use SOLID as a review lens: SRP names one responsibility, OCP looks for extension boundaries, LSP checks caller contracts, ISP keeps contracts right-sized, and DIP makes concrete side effects visible.
+- Why: the useful outcome is lower change risk and clearer boundaries, not more abstraction.
 
-### Extension seam review
+### Extension boundary review
 
 - Bad: every new provider, channel, variant, or policy requires editing the same core branching in several places.
 - Better: review whether a registry, strategy, adapter, or explicit policy table would localize new variants; keep the branch when it is the clearest domain model.
@@ -68,7 +68,7 @@ Change adjacent code only when it sits on the changed execution path and leaving
 ### Dependency boundary review
 
 - Bad: service or policy code creates concrete database, payment, email, filesystem, browser, or network clients inline while also owning business decisions.
-- Better: put concrete side effects behind a repository, adapter, injected dependency, or intentionally local seam with tests around the caller-visible behavior.
+- Better: put concrete side effects behind a repository, adapter, injected dependency, or intentionally local boundary with tests around the caller-visible behavior.
 - Why: DIP keeps high-level policy testable and replaceable without forcing every caller to know infrastructure details.
 
 ### Substitutability review

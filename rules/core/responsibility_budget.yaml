@@ -44,4 +44,4 @@ recommendation:
   default_enforcement: review_only
 public_safe_examples:
   bad: Keep adding data loading, storage, API calls, mapping, and UI states to one client component.
-  good: Split page shell, model loader, hook/adapter, persistence, and presentation seams when a file has multiple reasons to change.
+  good: Split page shell, model loader, hook/adapter, persistence, and presentation boundaries when a file has multiple reasons to change.

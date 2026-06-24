@@ -6,14 +6,18 @@ description: Build and sharpen a project's domain model. Use when the user wants
 ## jhste compatibility
 
 - Repo-local instructions remain authoritative.
-- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Use `jhste-engineering-groundwork` for scope, boundaries, assumptions, and failure paths when it applies.
 - Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
-- File, repo, command, issue, PR, or other external side effects require explicit approval unless the user already requested that exact side effect.
+- File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it. Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
 
 
 # Domain Modeling
 
 Actively build and sharpen the project's domain model as you design. This is the *active* discipline — challenging terms, inventing edge-case scenarios, and writing the glossary and decisions down the moment they crystallise. (Merely *reading* `CONTEXT.md` for vocabulary is not this skill — that's a one-line habit any skill can do. This skill is for when you're changing the model, not just consuming it.)
+
+## Automation and side effects
+
+When the user asks for domain modeling, proceed with glossary proposals, existing docs/code terminology comparison, and bounded-context analysis without asking. Update CONTEXT.md, ADRs, or glossary docs when the user requested docs updates or repo-local standing approval covers documentation/domain-decision workflow. Ask before a terminology rename would require broad code changes, before reversing the meaning of existing docs, or before recording a large ADR-level architectural commitment when the user's intent is unclear.
 
 ## File structure
 
@@ -67,7 +71,7 @@ When the user states how something works, check whether the code agrees. If you 
 
 ### Update CONTEXT.md inline
 
-When a term is resolved, update `CONTEXT.md` right there. Don't batch these up — capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
+When a term is resolved and docs updates are requested or covered by repo-local standing approval, update `CONTEXT.md` right there. Don't batch these up — capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md). Otherwise, propose the exact glossary wording without writing it.
 
 `CONTEXT.md` should be totally devoid of implementation details. Do not treat `CONTEXT.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
 

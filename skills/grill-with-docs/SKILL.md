@@ -1,14 +1,14 @@
 ---
 name: grill-with-docs
-description: Grilling session that challenges your plan against the existing domain model, sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline as decisions crystallise. Use when user wants to stress-test a plan against their project's language and documented decisions.
+description: Stress-test a plan against project domain language and record resulting decisions in CONTEXT.md or ADRs. Use when the user wants grilling plus documentation, ADR, glossary, or CONTEXT updates.
 ---
 
 ## jhste compatibility
 
 - Repo-local instructions remain authoritative.
-- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Use `jhste-engineering-groundwork` for scope, boundaries, assumptions, and failure paths when it applies.
 - Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
-- File, repo, command, issue, PR, or other external side effects require explicit approval unless the user already requested that exact side effect.
+- File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it. Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
 
 
 <what-to-do>
@@ -18,6 +18,8 @@ Interview me relentlessly about every aspect of this plan until we reach a share
 Ask the questions one at a time, waiting for feedback on each question before continuing.
 
 If a question can be answered by exploring the codebase, explore the codebase instead.
+
+When the user requests documentation, ADR, glossary, or CONTEXT updates as part of the grilling workflow, treat that as standing approval to update the relevant docs during the session. Do not ask before every doc edit. If the user only asked for stress-testing, run read-only grilling and do not write docs unless the user later asks for it.
 
 </what-to-do>
 
@@ -79,7 +81,7 @@ When the user states how something works, check whether the code agrees. If you 
 
 ### Update CONTEXT.md inline
 
-When a term is resolved, update `CONTEXT.md` right there. Don't batch these up — capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md).
+In docs-writing mode, when a term is resolved, update `CONTEXT.md` right there. Don't batch these up — capture them as they happen. Use the format in [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md). In read-only grilling mode, propose the wording instead of writing it.
 
 `CONTEXT.md` should be totally devoid of implementation details. Do not treat `CONTEXT.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
 

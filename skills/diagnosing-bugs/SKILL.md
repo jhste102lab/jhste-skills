@@ -6,9 +6,9 @@ description: Diagnosis loop for hard bugs and performance regressions. Use when 
 ## jhste compatibility
 
 - Repo-local instructions remain authoritative.
-- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Use `jhste-engineering-groundwork` for scope, boundaries, assumptions, and failure paths when it applies.
 - Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
-- File, repo, command, issue, PR, or other external side effects require explicit approval unless the user already requested that exact side effect.
+- File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it. Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
 
 
 # Diagnosing Bugs
@@ -25,7 +25,7 @@ Spend disproportionate effort here. **Be aggressive. Be creative. Refuse to give
 
 ### Ways to construct one — try them in roughly this order
 
-1. **Failing test** at whatever seam reaches the bug — unit, integration, e2e.
+1. **Failing test** at whatever boundary reaches the bug — unit, integration, e2e.
 2. **Curl / HTTP script** against a running dev server.
 3. **CLI invocation** with a fixture input, diffing stdout against a known-good snapshot.
 4. **Headless browser script** (Playwright / Puppeteer) — drives the UI, asserts on DOM/console/network.
@@ -115,15 +115,15 @@ Tool preference:
 
 ## Phase 5 — Fix + regression test
 
-Write the regression test **before the fix** — but only if there is a **correct seam** for it.
+Write the regression test **before the fix** — but only if there is a **correct boundary** for it.
 
-A correct seam is one where the test exercises the **real bug pattern** as it occurs at the call site. If the only available seam is too shallow (single-caller test when the bug needs multiple callers, unit test that can't replicate the chain that triggered the bug), a regression test there gives false confidence.
+A correct boundary is one where the test exercises the **real bug pattern** as it occurs at the call site. If the only available boundary is too shallow (single-caller test when the bug needs multiple callers, unit test that can't replicate the chain that triggered the bug), a regression test there gives false confidence.
 
-**If no correct seam exists, that itself is the finding.** Note it. The codebase architecture is preventing the bug from being locked down. Flag this for the next phase.
+**If no correct boundary exists, that itself is the finding.** Note it. The codebase architecture is preventing the bug from being locked down. Flag this for the next phase.
 
-If a correct seam exists:
+If a correct boundary exists:
 
-1. Turn the minimised repro into a failing test at that seam.
+1. Turn the minimised repro into a failing test at that boundary.
 2. Watch it fail.
 3. Apply the fix.
 4. Watch it pass.
@@ -134,9 +134,9 @@ If a correct seam exists:
 Required before declaring done:
 
 - [ ] Original repro no longer reproduces (re-run the Phase 1 loop)
-- [ ] Regression test passes (or absence of seam is documented)
+- [ ] Regression test passes (or absence of boundary is documented)
 - [ ] All `[DEBUG-...]` instrumentation removed (`grep` the prefix)
 - [ ] Throwaway prototypes deleted (or moved to a clearly-marked debug location)
 - [ ] The hypothesis that turned out correct is stated in the commit / PR message — so the next debugger learns
 
-**Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test seam, tangled callers, hidden coupling) hand off to the `/improve-codebase-architecture` skill with the specifics. Make the recommendation **after** the fix is in, not before — you have more information now than when you started.
+**Then ask: what would have prevented this bug?** If the answer involves architectural change (no good test boundary, tangled callers, hidden coupling) hand off to the `/improve-codebase-architecture` skill with the specifics. Make the recommendation **after** the fix is in, not before — you have more information now than when you started.

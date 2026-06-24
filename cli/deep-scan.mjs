@@ -12,15 +12,26 @@ import {
   loadProfileConfig,
   responsibilityBudgetSettings,
   singleResponsibilitySettings,
+  validateProfileConfig,
 } from './profile.mjs';
 import { collectFiles, detectInstructions, detectStack } from './deep-scan/collect.mjs';
 import { scanFiles } from './deep-scan/analyze.mjs';
 import { renderRecommendedProfile, renderReport } from './deep-scan/report.mjs';
 
+const EXIT_CONFIG_FAILURE = 3;
+
+function failConfig(message, details = []) {
+  console.error(`jhste-skills deep-scan: ${message}`);
+  for (const detail of details) console.error(`- ${detail}`);
+  process.exit(EXIT_CONFIG_FAILURE);
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const repoRoot = findGitRoot(args.repo || process.cwd());
   const profileState = loadProfileConfig(repoRoot);
+  const profileErrors = validateProfileConfig(profileState.profile);
+  if (profileErrors.length) failConfig(`Invalid profile ${relativeDisplay(repoRoot, profileState.path)}.`, profileErrors);
   const thresholds = {
     fileSize: fileSizeSettings(profileState.profile),
     responsibility: responsibilityBudgetSettings(profileState.profile),

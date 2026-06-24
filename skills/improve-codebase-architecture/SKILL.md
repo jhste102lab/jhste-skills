@@ -6,14 +6,18 @@ description: Find deepening opportunities in a codebase, informed by the domain 
 ## jhste compatibility
 
 - Repo-local instructions remain authoritative.
-- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Use `jhste-engineering-groundwork` for scope, boundaries, assumptions, and failure paths when it applies.
 - Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
-- File, repo, command, issue, PR, or other external side effects require explicit approval unless the user already requested that exact side effect.
+- File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it. Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
 
 
 # Improve Codebase Architecture
 
 Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
+
+## Automation and side effects
+
+Proceed without asking for codebase analysis, architecture smell summaries, module/boundary proposals, and tests or small local refactors inside the requested scope. Ask before large rewrites, public API breaking changes, major dependency graph changes, migrations, or expanding feature scope.
 
 ## Glossary
 
@@ -23,8 +27,8 @@ Use these terms as the internal review lens and map them to repo-local terms whe
 - **Interface** — everything a caller must know to use the module: types, invariants, error modes, ordering, config. Not just the type signature.
 - **Implementation** — the code inside.
 - **Depth** — leverage at the interface: a lot of behaviour behind a small interface. **Deep** = high leverage. **Shallow** = interface nearly as complex as the implementation.
-- **Seam** — where an interface lives; a place behaviour can be altered without editing in place. (Use this, not "boundary.")
-- **Adapter** — a concrete thing satisfying an interface at a seam.
+- **Boundary** — where an interface lives; a place behaviour can be altered without editing in place. (Use this, not "boundary.")
+- **Adapter** — a concrete thing satisfying an interface at a boundary.
 - **Leverage** — what callers get from depth.
 - **Locality** — what maintainers get from depth: change, bugs, knowledge concentrated in one place.
 
@@ -32,9 +36,9 @@ Key principles (see [LANGUAGE.md](LANGUAGE.md) for the full list):
 
 - **Deletion test**: imagine deleting the module. If complexity vanishes, it was a pass-through. If complexity reappears across N callers, it was earning its keep.
 - **The interface is the test surface.**
-- **One adapter = hypothetical seam. Two adapters = real seam.**
+- **One adapter = hypothetical boundary. Two adapters = real boundary.**
 
-This skill is _informed_ by the project's domain model. The domain language gives names to good seams; ADRs record decisions the skill should not re-litigate.
+This skill is _informed_ by the project's domain model. The domain language gives names to good boundaries; ADRs record decisions the skill should not re-litigate.
 
 ## Runtime adapter note
 
@@ -51,7 +55,7 @@ Then use the Agent tool with `subagent_type=Explore` to walk the codebase. Don't
 - Where does understanding one concept require bouncing between many small modules?
 - Where are modules **shallow** — interface nearly as complex as the implementation?
 - Where have pure functions been extracted just for testability, but the real bugs hide in how they're called (no **locality**)?
-- Where do tightly-coupled modules leak across their seams?
+- Where do tightly-coupled modules leak across their boundaries?
 - Which parts of the codebase are untested, or hard to test through their current interface?
 
 Apply the **deletion test** to anything you suspect is shallow: would deleting it concentrate complexity, or just move it? A "yes, concentrates" is the signal you want.
@@ -83,11 +87,11 @@ Do NOT propose interfaces yet. After the file is written, ask the user: "Which o
 
 ### 3. Grilling loop
 
-Once the user picks a candidate, drop into a grilling conversation. Walk the design tree with them — constraints, dependencies, the shape of the deepened module, what sits behind the seam, what tests survive.
+Once the user picks a candidate, drop into a grilling conversation. Walk the design tree with them — constraints, dependencies, the shape of the deepened module, what sits behind the boundary, what tests survive.
 
 Side effects happen inline as decisions crystallize:
 
-- **Naming a deepened module after a concept not in `CONTEXT.md`?** Propose the term and ask before editing `CONTEXT.md`, unless the user already requested that exact documentation update. Use the same discipline as `/grill-with-docs` (see [CONTEXT-FORMAT.md](../grill-with-docs/CONTEXT-FORMAT.md)).
-- **Sharpening a fuzzy term during the conversation?** Ask before updating `CONTEXT.md` unless that exact side effect was already requested.
+- **Naming a deepened module after a concept not in `CONTEXT.md`?** Propose the term and edit `CONTEXT.md` when the user requested docs updates or repo-local standing approval covers documentation/domain-decision workflow; otherwise ask before editing. Use the same discipline as `/grill-with-docs` (see [CONTEXT-FORMAT.md](../grill-with-docs/CONTEXT-FORMAT.md)).
+- **Sharpening a fuzzy term during the conversation?** Update `CONTEXT.md` when docs updates are requested or covered by repo-local standing approval; otherwise ask before editing.
 - **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing — skip ephemeral reasons ("not worth it right now") and self-evident ones. See [ADR-FORMAT.md](../grill-with-docs/ADR-FORMAT.md).
 - **Want to explore alternative interfaces for the deepened module?** See [INTERFACE-DESIGN.md](INTERFACE-DESIGN.md).

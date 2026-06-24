@@ -1,19 +1,21 @@
 ---
 name: prototype
-description: Build a throwaway prototype to flesh out a design before committing to it. Routes between two branches — a runnable terminal app for state/business-logic questions, or several radically different UI variations toggleable from one route. Use when the user wants to prototype, sanity-check a data model or state machine, mock up a UI, explore design options, or says "prototype this", "let me play with it", "try a few designs".
+description: Build throwaway prototypes to test logic/state models or explore UI directions before implementation. Use when the user asks to prototype, mock up, try designs, sanity-check behavior, or "let me play with it".
 ---
 
 ## jhste compatibility
 
 - Repo-local instructions remain authoritative.
-- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Use `jhste-engineering-groundwork` for scope, boundaries, assumptions, and failure paths when it applies.
 - Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
-- File, repo, command, issue, PR, or other external side effects require explicit approval unless the user already requested that exact side effect.
+- File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it. Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
 
 
 # Prototype
 
 A prototype is **throwaway code that answers a question**. The question decides the shape.
+
+When the user asks for a prototype, treat that as approval to create throwaway local prototype files and a local run path. Do not ask before routine prototype scaffolding. Ask before adding persistent storage, production integration, major dependencies, or deleting non-generated work.
 
 ## Pick a branch
 

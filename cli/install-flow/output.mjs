@@ -62,7 +62,7 @@ export function printPlanSummary(plan) {
   }
   console.log('- Left untouched: CI, package.json, lockfile, source code, non-managed hooks');
   if (plan.force) {
-    console.log('- Note: --force refreshes only jhste-managed outputs and does not overwrite user-owned hooks, source, or CI files');
+    console.log('- Note: --force refreshes generated/managed outputs; modified profiles are preserved unless --allow-profile-overwrite is also set');
   }
 }
 

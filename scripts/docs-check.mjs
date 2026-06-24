@@ -208,18 +208,18 @@ for (const rel of ['adapters/codex/README.md', 'docs/CONFLICT_RESOLUTION.md', 'c
   if (!text.includes(bridgeText)) {
     fail(`${rel} must include authoritative repo-local bridge wording`);
   }
-  for (const requiredText of ['jhste-engineering-judgment', 'jhste-red-team-review']) {
+  for (const requiredText of ['jhste-engineering-groundwork', 'jhste-red-team-review']) {
     if (!text.includes(requiredText)) fail(`${rel} must mention ${requiredText} in shared workflow guidance`);
   }
 }
 
 const rootAgents = read('AGENTS.md');
-for (const requiredText of ['jhste-engineering-judgment', 'jhste-red-team-review', 'guard --scope changed --format text --fail-on error', 'at most two fix + re-review cycles']) {
+for (const requiredText of ['jhste-engineering-groundwork', 'jhste-red-team-review', 'guard --scope changed --format text --fail-on error', 'at most two fix + re-review cycles']) {
   if (!rootAgents.includes(requiredText)) fail(`AGENTS.md must mention ${requiredText}`);
 }
 
 const issueCandidateDocs = {
-  'skills/jhste-engineering-judgment/SKILL.md': read('skills/jhste-engineering-judgment/SKILL.md'),
+  'skills/jhste-engineering-groundwork/SKILL.md': read('skills/jhste-engineering-groundwork/SKILL.md'),
   'skills/jhste-red-team-review/SKILL.md': read('skills/jhste-red-team-review/SKILL.md'),
   'skills/jhste-red-team-review/references/red-team-review.md': read('skills/jhste-red-team-review/references/red-team-review.md'),
 };

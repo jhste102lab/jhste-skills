@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_PROFILE, ensureDir, nowIso } from '../shared.mjs';
+import { DEFAULT_PROFILE, ensureDir, generatedProfileShape, nowIso } from '../shared.mjs';
 
 function renderProfile(lineLimit) {
   const base = DEFAULT_PROFILE.replace('<installed_at>', nowIso());
@@ -11,11 +11,31 @@ function renderProfile(lineLimit) {
   return base.replace(/  file_size_advisory:\n(?:    .+\n){2,3}/, `${fileSizeBlock}\n`);
 }
 
-export function writeProfile(repoRoot, { force = false, lineLimit = null } = {}) {
+export function writeProfile(repoRoot, { force = false, allowProfileOverwrite = false, lineLimit = null } = {}) {
   const profilePath = path.join(repoRoot, '.jhste', 'profile.yaml');
-  if (fs.existsSync(profilePath) && !force) return { status: 'skipped-existing', path: profilePath };
   const existed = fs.existsSync(profilePath);
+  if (existed) {
+    const existing = fs.readFileSync(profilePath, 'utf8');
+    const managed = generatedProfileShape(existing);
+    if (!force) {
+      return {
+        status: managed ? 'skipped-existing' : 'skipped-modified',
+        path: profilePath,
+        reason: managed ? undefined : 'existing profile does not match the generated shape',
+      };
+    }
+    if (!managed && !allowProfileOverwrite) {
+      return {
+        status: 'skipped-modified',
+        path: profilePath,
+        reason: 'pass --force --allow-profile-overwrite to replace a modified profile',
+      };
+    }
+    ensureDir(path.dirname(profilePath));
+    fs.writeFileSync(profilePath, renderProfile(lineLimit));
+    return { status: managed ? 'overwritten-managed' : 'overwritten-modified', path: profilePath };
+  }
   ensureDir(path.dirname(profilePath));
   fs.writeFileSync(profilePath, renderProfile(lineLimit));
-  return { status: existed ? 'overwritten-managed' : 'created', path: profilePath };
+  return { status: 'created', path: profilePath };
 }

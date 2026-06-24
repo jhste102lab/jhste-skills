@@ -18,7 +18,10 @@ export function printApplyResult(plan, result) {
   } else {
     console.log('- Skills: no changes');
   }
-  if (result.profileResult) console.log(`- Profile: ${result.profileResult.status} (${relativeDisplay(plan.repoRoot, result.profileResult.path)})`);
+  if (result.profileResult) {
+    const reason = result.profileResult.reason ? ` - ${result.profileResult.reason}` : '';
+    console.log(`- Profile: ${result.profileResult.status} (${relativeDisplay(plan.repoRoot, result.profileResult.path)})${reason}`);
+  }
   else console.log('- Profile: no changes');
   for (const bridge of result.bridgeResults) {
     console.log(`- Bridge: ${path.basename(bridge.path)} ${bridge.status}`);

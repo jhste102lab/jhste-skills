@@ -64,18 +64,18 @@ ${tableRows(findings.silentFailures)}
 ${tableRows(findings.typeEscapes)}
 ### Existing raw SQL candidates
 ${tableRows(findings.rawSql)}
-### Existing DB/API seam candidates
+### Existing DB/API boundary candidates
 ${tableRows([...findings.dbInRoutes, ...findings.routeResponsibility])}
 ### Existing responsibility budget candidates
 ${tableRows(findings.responsibilityBudget)}
 ### Existing single-responsibility candidates
 ${tableRows(findings.singleResponsibility)}
-### Existing extension seam candidates
-${tableRows(findings.extensionSeams)}
+### Existing extension boundary candidates
+${tableRows(findings.extensionBoundaries)}
 ### Existing dependency boundary candidates
 ${tableRows(findings.dependencyBoundaries)}
-### Existing client/server seam candidates
-${tableRows(findings.clientServerSeam)}
+### Existing client/server boundary candidates
+${tableRows(findings.clientServerBoundary)}
 ### Existing hidden side-effect candidates
 ${tableRows(findings.hiddenSideEffects)}
 ### Existing null/state safety candidates

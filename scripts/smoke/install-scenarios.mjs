@@ -1,20 +1,24 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
+  assertLegacySkillRenameMigration,
   assertNoInstallSideEffects,
   fail,
   hashFile,
   packageVersion,
+  readManagedSkillsManifest,
   run,
   runAny,
   skillDirs,
 } from './helpers.mjs';
 import { runConnectScenarios } from './connect-scenarios.mjs';
 import { runModeScenarios } from './mode-scenarios.mjs';
+import { runProfileOverwriteScenarios } from './profile-overwrite-scenarios.mjs';
 
 export function runInstallScenarios(ctx) {
   runRefusalScenarios(ctx);
   runDefaultInstall(ctx);
+  runProfileOverwriteScenarios(ctx);
   runUpdateScenarios(ctx);
   runLineLimitScenarios(ctx);
   runSkillSetScenarios(ctx);
@@ -26,15 +30,6 @@ export function runInstallScenarios(ctx) {
 function initRepo(repo) {
   fs.mkdirSync(repo, { recursive: true });
   run('git', ['init'], { cwd: repo });
-}
-
-function readManagedSkillsManifest(skillsDir) {
-  const manifestPath = path.join(skillsDir, '.jhste-skills-manifest.json');
-  const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) fail('skills manifest is not an object');
-  if (parsed.managed_by !== 'jhste-skills') fail('skills manifest managed_by is invalid');
-  if (!parsed.skills || typeof parsed.skills !== 'object' || Array.isArray(parsed.skills)) fail('skills manifest skills map is invalid');
-  return parsed;
 }
 
 function runRefusalScenarios({ root, tmp }) {
@@ -104,12 +99,14 @@ function runDefaultInstall(ctx) {
     fail('profile did not use default 300-line advisory file-size policy');
   }
   if (!profile.includes('auto_for_non_trivial_code_changes: true')) fail('profile missing red-team review workflow guidance');
+  if (profile.includes('exit_codes:')) fail('generated profile should not include guard.exit_codes');
   if (hashFile(path.join(repo, 'package.json')) !== ctx.packageHashBefore) fail('install modified target package.json');
   if (hashFile(path.join(repo, 'package-lock.json')) !== ctx.lockHashBefore) fail('install modified target lockfile');
   const defaultPreCommit = path.join(repo, '.git', 'hooks', 'pre-commit');
   if (!fs.existsSync(defaultPreCommit)) fail('install did not create default advisory pre-commit hook');
   if (!fs.readFileSync(defaultPreCommit, 'utf8').includes('mode=advisory')) fail('default pre-commit hook is not advisory');
   if (!fs.readFileSync(defaultPreCommit, 'utf8').includes(`# jhste-skills version=${version}`)) fail('default pre-commit hook missing version comment');
+  if (!fs.existsSync(path.join(skillsDir, 'jhste-engineering-groundwork', 'SKILL.md'))) fail('install did not copy jhste-engineering-groundwork skill');
   if (!fs.existsSync(path.join(skillsDir, 'jhste-red-team-review', 'SKILL.md'))) fail('install did not copy jhste-red-team-review skill');
   if (!fs.existsSync(path.join(skillsDir, '.jhste-skills-manifest.json'))) fail('install did not write skills manifest');
   const manifest = readManagedSkillsManifest(skillsDir);
@@ -118,6 +115,7 @@ function runDefaultInstall(ctx) {
   if (defaultSkillDirs.length !== 20) fail(`default install should copy 20 bundled skills, got ${defaultSkillDirs.length}`);
   if (!defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should copy vendored workflow skills');
 }
+
 
 function runUpdateScenarios({ root, repo, skillsDir }) {
   const version = packageVersion(root);
@@ -174,24 +172,12 @@ run_jhste_skills guard --scope staged --format text --fail-on warning
   const managedManifest = readManagedSkillsManifest(skillsDir);
   if (!managedManifest.skills?.[adoptedSkillName]?.digest) fail('update did not record adopted known skill in manifest');
 
-  const legacySkillName = 'diagnose';
-  const canonicalSkillName = 'diagnosing-bugs';
-  const legacySkillDir = path.join(skillsDir, legacySkillName);
-  fs.mkdirSync(legacySkillDir, { recursive: true });
-  fs.writeFileSync(path.join(legacySkillDir, 'SKILL.md'), '# stale legacy diagnose copy\n');
-  managedManifest.skills[legacySkillName] = { digest: 'legacy-digest' };
-  fs.writeFileSync(path.join(skillsDir, '.jhste-skills-manifest.json'), `${JSON.stringify(managedManifest, null, 2)}\n`);
-
-  run(process.execPath, [path.join(root, 'cli/update.mjs'), '--yes', '--repo', repo, '--skills-dir', skillsDir], { cwd: repo });
-
-  if (fs.existsSync(legacySkillDir)) fail('update did not remove legacy diagnose skill directory');
-  const canonicalSkillPath = path.join(skillsDir, canonicalSkillName, 'SKILL.md');
-  if (fs.readFileSync(canonicalSkillPath, 'utf8') !== fs.readFileSync(path.join(root, 'skills', canonicalSkillName, 'SKILL.md'), 'utf8')) {
-    fail('update did not keep canonical diagnosing-bugs skill content after legacy migration');
-  }
-  const migratedManifest = readManagedSkillsManifest(skillsDir);
-  if (migratedManifest.skills?.[legacySkillName]) fail('update left legacy diagnose entry in manifest after migration');
-  if (!migratedManifest.skills?.[canonicalSkillName]?.digest) fail('update did not keep canonical diagnosing-bugs entry in manifest after migration');
+  let migratedManifest = assertLegacySkillRenameMigration({
+    root, repo, skillsDir, manifest: managedManifest, legacyName: 'diagnose', canonicalName: 'diagnosing-bugs', digest: 'legacy-digest',
+  });
+  migratedManifest = assertLegacySkillRenameMigration({
+    root, repo, skillsDir, manifest: migratedManifest, legacyName: 'jhste-engineering-judgment', canonicalName: 'jhste-engineering-groundwork', digest: 'legacy-groundwork-digest',
+  });
 
   const unmanagedSkills = path.join(path.dirname(skillsDir), 'unmanaged-skills');
   fs.mkdirSync(path.join(unmanagedSkills, 'jhste-code-quality'), { recursive: true });

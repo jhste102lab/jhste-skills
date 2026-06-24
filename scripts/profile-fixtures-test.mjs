@@ -54,6 +54,93 @@ expectConfigError('unknown-nested-rule-key', `version: 1\nmode: advisory\nrules:
 expectConfigError('invalid-threshold', `version: 1\nmode: advisory\nrules:\n  file_size_advisory:\n    source_file_warning_lines: -1\n`, 'rules.file_size_advisory.source_file_warning_lines must be an integer');
 expectConfigError('unknown-command-key', `version: 1\nmode: advisory\ncommands:\n  - name: local\n    cmd: node\n    unexpected: true\n`, 'Unsupported commands profile key');
 expectConfigError('invalid-command-args', `version: 1\nmode: advisory\ncommands:\n  - name: local\n    cmd: node\n    args: nope\n`, 'args must be an inline string array');
+expectConfigError('unknown-guard-nested-key', `version: 1\nmode: advisory\nguard:\n  some_unknown_nested:\n    value: true\n`, 'Unsupported guard profile key some_unknown_nested');
+
+
+{
+  const generatedProfile = fs.readFileSync(path.join(root, 'cli/shared/templates.mjs'), 'utf8');
+  const exampleProfile = fs.readFileSync(path.join(root, 'examples/profile.yaml'), 'utf8');
+  if (generatedProfile.includes('exit_codes:')) fail('DEFAULT_PROFILE should not include guard.exit_codes');
+  if (exampleProfile.includes('exit_codes:')) fail('example profile should not include guard.exit_codes');
+}
+
+{
+  const repo = makeRepo('legacy-exit-codes-noop');
+  fs.writeFileSync(path.join(repo, '.jhste', 'profile.yaml'), `version: 1
+mode: advisory
+guard:
+  fail_on: warning
+  exit_codes:
+    violation_failure: 7
+`);
+  const result = runAny(process.execPath, [path.join(root, 'cli/guard.mjs'), '--repo', repo, '--scope', 'all', '--format', 'text'], { cwd: repo });
+  if (result.status !== 1) fail(`legacy guard.exit_codes should be ignored and use fixed violation exit 1, got ${result.status}`);
+  if (`${result.stdout}\n${result.stderr}`.includes('guard.config')) fail('legacy guard.exit_codes should not be a config failure');
+}
+
+{
+  const repo = makeRepo('deep-scan-invalid-profile');
+  fs.writeFileSync(path.join(repo, '.jhste', 'profile.yaml'), `version: 1
+mode: advisory
+rules:
+  file_size_advisory:
+    source_file_warning_lines: -1
+    source_file_review_lines: -1
+`);
+  const result = runAny(process.execPath, [path.join(root, 'cli/deep-scan.mjs'), '--repo', repo], { cwd: repo });
+  if (result.status !== 3) fail(`deep-scan invalid profile should exit 3, got ${result.status}`);
+  if (!`${result.stdout}\n${result.stderr}`.includes('Invalid profile .jhste/profile.yaml.')) fail('deep-scan invalid profile output did not name the profile');
+  if (fs.existsSync(path.join(repo, '.jhste', 'deep-scan-report.md'))) fail('deep-scan invalid profile wrote report');
+  if (fs.existsSync(path.join(repo, '.jhste', 'profile.recommended.yaml'))) fail('deep-scan invalid profile wrote recommended profile');
+}
+
+{
+  const repo = makeRepo('deep-scan-valid-profile');
+  fs.writeFileSync(path.join(repo, '.jhste', 'profile.yaml'), `version: 1
+mode: advisory
+`);
+  run(process.execPath, [path.join(root, 'cli/deep-scan.mjs'), '--repo', repo], { cwd: repo });
+  if (!fs.existsSync(path.join(repo, '.jhste', 'deep-scan-report.md'))) fail('deep-scan valid profile did not write report');
+  if (!fs.existsSync(path.join(repo, '.jhste', 'profile.recommended.yaml'))) fail('deep-scan valid profile did not write recommended profile');
+}
+
+{
+  const repo = makeRepo('baseline-custom-path');
+  fs.writeFileSync(path.join(repo, '.jhste', 'profile.yaml'), `version: 1
+mode: advisory
+baseline:
+  path: .jhste/custom-baseline.json
+`);
+  const dryRun = runAny(process.execPath, [path.join(root, 'cli/baseline.mjs'), '--repo', repo, '--dry-run'], { cwd: repo });
+  if (dryRun.status !== 0) fail(`baseline --dry-run should exit 0, got ${dryRun.status}`);
+  if (!dryRun.stdout.includes('Planned changed files:\n- .jhste/custom-baseline.json')) fail('baseline --dry-run did not show custom baseline path');
+  if (dryRun.stdout.includes('.jhste/baseline.json')) fail('baseline --dry-run showed default baseline path despite custom profile path');
+  run(process.execPath, [path.join(root, 'cli/baseline.mjs'), '--repo', repo, '--yes'], { cwd: repo });
+  if (!fs.existsSync(path.join(repo, '.jhste', 'custom-baseline.json'))) fail('baseline did not create custom profile path');
+  if (fs.existsSync(path.join(repo, '.jhste', 'baseline.json'))) fail('baseline created default path instead of custom path');
+}
+
+{
+  const repo = makeRepo('baseline-invalid-profile');
+  fs.writeFileSync(path.join(repo, '.jhste', 'profile.yaml'), `version: 1
+mode: advisory
+rules:
+  file_size_advisory:
+    source_file_warning_lines: -1
+`);
+  const result = runAny(process.execPath, [path.join(root, 'cli/baseline.mjs'), '--repo', repo, '--yes'], { cwd: repo });
+  if (result.status !== 3) fail(`baseline invalid profile should exit 3, got ${result.status}`);
+  if (`${result.stdout}\n${result.stderr}`.includes('Changed files:')) fail('baseline invalid profile should fail before prompting or printing changed files');
+  if (fs.existsSync(path.join(repo, '.jhste', 'baseline.json'))) fail('baseline invalid profile created baseline.json');
+}
+
+{
+  const repo = makeRepo('baseline-outside-path');
+  const outside = path.join(path.dirname(repo), 'outside-baseline.json');
+  const result = runAny(process.execPath, [path.join(root, 'cli/baseline.mjs'), '--repo', repo, '--yes', '--baseline-path', '../outside-baseline.json'], { cwd: repo });
+  if (result.status !== 3) fail(`baseline outside path should exit 3, got ${result.status}`);
+  if (fs.existsSync(outside)) fail('baseline outside path was written');
+}
 
 {
   const repo = makeRepo('tune-idempotent');
@@ -80,4 +167,4 @@ expectConfigError('invalid-command-args', `version: 1\nmode: advisory\ncommands:
   if (fs.existsSync(path.join(repo, '.jhste', 'baseline.json'))) fail('refused baseline created baseline.json');
 }
 
-console.log('profile-fixtures-test passed: profile schema errors and tune idempotent merge verified.');
+console.log('profile-fixtures-test passed: profile schema errors, legacy guard no-ops, deep-scan validation, baseline paths, and tune idempotent merge verified.');

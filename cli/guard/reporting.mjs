@@ -59,7 +59,7 @@ const FAMILY_GUIDANCE = {
   },
   single_responsibility_advisory: {
     means: 'This class, module, or function may have more than one reason to change. The finding is heuristic and should be reviewed, not treated as proof.',
-    next: 'Name the one main responsibility, then move only independently changing work behind a real seam; keep always-cochanging contract pieces together and avoid shallow pass-through wrappers.',
+    next: 'Name the one main responsibility, then move only independently changing work behind a real boundary; keep always-cochanging contract pieces together and avoid shallow pass-through wrappers.',
   },
   extension_seam_advisory: {
     means: 'This is a low-confidence SOLID-informed OCP candidate where variant, provider, or policy branching may keep forcing core edits.',
@@ -67,7 +67,7 @@ const FAMILY_GUIDANCE = {
   },
   dependency_boundary_advisory: {
     means: 'This is a low-confidence SOLID-informed DIP candidate where high-level policy or service code may directly own a concrete side effect.',
-    next: 'Check whether the dependency should be visible behind an adapter, repository, injected dependency, or intentionally local seam.',
+    next: 'Check whether the dependency should be visible behind an adapter, repository, injected dependency, or intentionally local boundary.',
   },
   external_input_validation: {
     means: 'This is a candidate path where external input such as files, request bodies, third-party API data, or env values may be trusted without shape validation.',

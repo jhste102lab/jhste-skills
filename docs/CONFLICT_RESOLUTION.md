@@ -14,7 +14,7 @@ Explicit user instructions can narrow or redirect the task, but they do not sile
 
 ## Existing profile
 
-If `.jhste/profile.yaml` exists, default install keeps it. Overwrite requires `--force` or explicit interactive approval in a future richer workflow. `--force` is limited to jhste-managed outputs; it must not overwrite user source, CI, package files, lockfiles, or non-managed hooks. Invalid profiles should be fixed by the user; the installer should not guess a repair.
+If `.jhste/profile.yaml` is missing, install creates the generated advisory profile. If it exists and matches the current generated shape or the legacy generated shape that contained `guard.exit_codes`, `--force` may refresh it. If it exists and is modified/custom, default install keeps it and `--force` alone still keeps it; overwriting requires `--force --allow-profile-overwrite`. `--allow-profile-overwrite` without `--force` is a config error. `--force` is limited to jhste-managed outputs; it must not overwrite user source, CI, package files, lockfiles, non-managed hooks, or modified profiles without the explicit profile override. Invalid profiles should be fixed by the user; the installer should not guess a repair.
 
 ## Existing skills
 
@@ -38,8 +38,11 @@ Managed block content:
 ## Agent skills
 This repo uses jhste skills as shared guidance.
 Repo-local instructions in this file remain authoritative.
+File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it.
+Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
+For reversible in-scope choices, make a reasonable assumption, proceed, and report it in the final summary.
 See `.jhste/profile.yaml` for local skill preferences.
-Before non-trivial code changes, use the `jhste-engineering-judgment` skill to check scope, seams, failure paths, and assumptions.
+Before non-trivial code changes, use the `jhste-engineering-groundwork` skill to check scope, boundaries, failure paths, and assumptions.
 For changed code, name the one main responsibility of each changed class, module, and function, and reject adjacent responsibilities unless they are on the changed execution path and prevent a concrete failure.
 Use SOLID-informed coding discipline as a review lens, not a compliance claim; guard findings are review candidates, not proof.
 After code changes, run `jhste-skills guard --scope changed --format text --fail-on error` when available.
@@ -58,4 +61,4 @@ If a similar section exists, the installer prints the snippet instead of editing
 
 Managed hooks are identified by the jhste-skills hook markers. Existing non-managed hooks are never overwritten, including in `Full` mode and with `--force`. Full may install multiple hook targets, but each target is reported separately as installed, refreshed, skipped because non-managed, or failed.
 
-Legacy vendored renames are treated differently from unmanaged conflicts. During `sync` and `update`, an older managed `diagnose` install is migrated to `diagnosing-bugs` automatically so the skills directory does not keep both names.
+Legacy managed renames are treated differently from unmanaged conflicts. During `sync` and `update`, older managed `diagnose` and `jhste-engineering-judgment` installs are migrated to `diagnosing-bugs` and `jhste-engineering-groundwork` automatically so the skills directory does not keep both names.

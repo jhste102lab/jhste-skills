@@ -24,4 +24,4 @@ recommendation:
   default_enforcement: review_only
 public_safe_examples:
   bad: Let service or policy code create concrete database, payment, email, filesystem, browser, or network clients inline.
-  good: Make concrete side effects explicit through an adapter, repository, injected dependency, or intentionally local seam that callers and tests can see.
+  good: Make concrete side effects explicit through an adapter, repository, injected dependency, or intentionally local boundary that callers and tests can see.

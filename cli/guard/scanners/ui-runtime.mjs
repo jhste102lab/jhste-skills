@@ -132,7 +132,7 @@ export function scanSideEffectBoundary(relPath, text) {
       severity: 'warning',
       relPath,
       symbol: 'hidden-side-effect',
-      message: 'Generic helper appears to perform a side effect; make the side-effect seam visible in name, directory, or dependency injection.',
+      message: 'Generic helper appears to perform a side effect; make the side-effect boundary visible in name, directory, or dependency injection.',
       confidence: 'low',
     })];
   }

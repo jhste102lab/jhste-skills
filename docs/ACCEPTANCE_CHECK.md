@@ -9,7 +9,7 @@ Implemented directories: `skills/`, `rules/`, `packs/`, `adapters/`, `cli/`, `ve
 Core skills implemented:
 
 - `skills/setup/SKILL.md`
-- `skills/jhste-engineering-judgment/SKILL.md`
+- `skills/jhste-engineering-groundwork/SKILL.md`
 - `skills/jhste-code-quality/SKILL.md`
 - `skills/jhste-architecture-review/SKILL.md`
 - `skills/jhste-db-api-boundary/SKILL.md`
@@ -18,7 +18,7 @@ Core skills implemented:
 
 ## Fast setup
 
-`cli/install.mjs` implements mode-based setup (`Minimal`, `Normal`, `Full`, `Custom`), creates `.jhste/profile.yaml` when project connection is enabled, keeps mode advisory by default, asks for a source-file line limit in interactive repo setup, defaults non-interactive setup to a 300-line advisory policy, uses marker-managed bridge blocks idempotently, and does not touch target CI, `package.json`, lockfiles, or source code. Skill installs write a managed manifest with digests and refuse unmanaged differing overwrites unless a separate explicit override is supplied. Hook automation installs a managed advisory pre-commit hook in Normal and advisory pre-commit/pre-push hooks in Full, with `--skip-hooks` as opt-out and blocking mode as explicit opt-in. `cli/connect.mjs` connects additional git repositories to an existing install without silently mutating global skills unless `--install-missing` is explicit. Installed bridge/profile guidance points agents at `jhste-engineering-judgment` before non-trivial code changes and `jhste-red-team-review` before non-trivial code work is declared complete.
+`cli/install.mjs` implements mode-based setup (`Minimal`, `Normal`, `Full`, `Custom`), creates `.jhste/profile.yaml` when project connection is enabled, keeps mode advisory by default, asks for a source-file line limit in interactive repo setup, defaults non-interactive setup to a 300-line advisory policy, uses marker-managed bridge blocks idempotently, and does not touch target CI, `package.json`, lockfiles, or source code. Skill installs write a managed manifest with digests and refuse unmanaged differing overwrites unless a separate explicit override is supplied. Hook automation installs a managed advisory pre-commit hook in Normal and advisory pre-commit/pre-push hooks in Full, with `--skip-hooks` as opt-out and blocking mode as explicit opt-in. `cli/connect.mjs` connects additional git repositories to an existing install without silently mutating global skills unless `--install-missing` is explicit. Installed bridge/profile guidance points agents at `jhste-engineering-groundwork` before non-trivial code changes and `jhste-red-team-review` before non-trivial code work is declared complete.
 
 ## Deep scan
 
@@ -30,7 +30,7 @@ Core skills implemented:
 
 ## Rule/profile model
 
-Rule modes are documented in `docs/RULES.md`, example profile defaults to advisory with a 300-line file-size policy, guard text output includes concise meaning/remediation guidance for warnings, and rule metadata covers file size, silent failure, secret logging, workflow security, external input validation, SOLID-informed extension seams/substitutability/interface segregation/dependency boundaries, null/state safety, auth/data isolation, build/runtime env safety, write safety/idempotency, API contract compatibility, performance duplication, DB/API boundaries, side effects, type escapes, and crawler producer seams. Each rule declares whether guard support is built in or metadata-only.
+Rule modes are documented in `docs/RULES.md`, example profile defaults to advisory with a 300-line file-size policy, guard text output includes concise meaning/remediation guidance for warnings, and rule metadata covers file size, silent failure, secret logging, workflow security, external input validation, SOLID-informed extension boundaries/substitutability/interface segregation/dependency boundaries, null/state safety, auth/data isolation, build/runtime env safety, write safety/idempotency, API contract compatibility, performance duplication, DB/API boundaries, side effects, type escapes, and crawler producer boundaries. Each rule declares whether guard support is built in or metadata-only.
 
 ## Conflict handling
 
@@ -53,7 +53,7 @@ Record actual command output in release notes before publishing a release.
 
 Release gates include dependency-free syntax checking, a first-run `install -> deep-scan -> tune --yes -> guard` smoke flow, `npm pack --dry-run` contents checks, and packed-tarball bin execution in a fresh temp consumer. These gates are not part of commit-time hooks.
 
-- Verify `sync`/`update` migrates older managed vendored renames without leaving duplicate directories, including `diagnose` → `diagnosing-bugs`.
+- Verify `sync`/`update` migrates older managed renames without leaving duplicate directories, including `diagnose` → `diagnosing-bugs` and `jhste-engineering-judgment` → `jhste-engineering-groundwork`.
 
 ## npm trusted publishing
 

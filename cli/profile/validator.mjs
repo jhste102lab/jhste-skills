@@ -43,9 +43,6 @@ function validateGuard(profile, errors) {
   }
   if (profile.guard?.default_format && !['text', 'json'].includes(String(profile.guard.default_format))) errors.push('guard.default_format must be text or json.');
   if (profile.guard?.fail_on && !['none', 'warning', 'error'].includes(String(profile.guard.fail_on))) errors.push('guard.fail_on must be none, warning, or error.');
-  for (const [key, value] of Object.entries(profile.guard?.exit_codes || {})) {
-    validatePositiveInteger(value, `guard.exit_codes.${key}`, errors, { min: 0, max: 255 });
-  }
 }
 
 function validateCommands(commands, errors) {

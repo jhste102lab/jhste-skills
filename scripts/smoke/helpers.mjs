@@ -47,6 +47,35 @@ export function skillDirs(dir) {
     .sort();
 }
 
+export function readManagedSkillsManifest(skillsDir) {
+  const manifestPath = path.join(skillsDir, '.jhste-skills-manifest.json');
+  const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) fail('skills manifest is not an object');
+  if (parsed.managed_by !== 'jhste-skills') fail('skills manifest managed_by is invalid');
+  if (!parsed.skills || typeof parsed.skills !== 'object' || Array.isArray(parsed.skills)) fail('skills manifest skills map is invalid');
+  return parsed;
+}
+
+export function assertLegacySkillRenameMigration({ root, repo, skillsDir, manifest, legacyName, canonicalName, digest }) {
+  const legacyDir = path.join(skillsDir, legacyName);
+  fs.mkdirSync(legacyDir, { recursive: true });
+  fs.writeFileSync(path.join(legacyDir, 'SKILL.md'), '# stale legacy old-name skill copy\n');
+  manifest.skills[legacyName] = { digest };
+  fs.writeFileSync(path.join(skillsDir, '.jhste-skills-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+
+  run(process.execPath, [path.join(root, 'cli/update.mjs'), '--yes', '--repo', repo, '--skills-dir', skillsDir], { cwd: repo });
+
+  if (fs.existsSync(legacyDir)) fail(`update did not remove legacy ${legacyName} skill directory`);
+  const canonicalSkillPath = path.join(skillsDir, canonicalName, 'SKILL.md');
+  if (fs.readFileSync(canonicalSkillPath, 'utf8') !== fs.readFileSync(path.join(root, 'skills', canonicalName, 'SKILL.md'), 'utf8')) {
+    fail(`update did not keep canonical ${canonicalName} skill content after legacy migration`);
+  }
+  const migratedManifest = readManagedSkillsManifest(skillsDir);
+  if (migratedManifest.skills?.[legacyName]) fail(`update left legacy ${legacyName} entry in manifest after migration`);
+  if (!migratedManifest.skills?.[canonicalName]?.digest) fail(`update did not keep canonical ${canonicalName} entry in manifest after migration`);
+  return migratedManifest;
+}
+
 export function assertNoInstallSideEffects({ repo, skillsDir, agentsBefore, label }) {
   if (fs.existsSync(path.join(repo, '.jhste'))) fail(`${label} created .jhste`);
   if (fs.existsSync(skillsDir)) fail(`${label} touched skills directory`);

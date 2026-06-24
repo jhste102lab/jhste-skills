@@ -15,6 +15,7 @@ node cli/install.mjs --yes --repo /path/to/repo --skip-hooks
 node cli/install.mjs --yes --repo /path/to/repo --hooks blocking
 node cli/install.mjs --yes --repo /path/to/repo --skill-set core|vendor|all
 node cli/install.mjs --yes --repo /path/to/repo --line-limit 300 --line-limit-mode advisory|blocking|off
+node cli/install.mjs --yes --repo /path/to/repo --force --allow-profile-overwrite
 ```
 
 Default behavior:
@@ -40,7 +41,7 @@ Safety and compatibility:
 
 - selected skills copied to a kit-managed skill directory with `.jhste-skills-manifest.json` digests; default `--skill-set all` installs jhste core skills plus vendored workflow skills, while `core` and `vendor` remain explicit narrower choices;
 - `.jhste/profile.yaml` created with `mode: advisory` when missing;
-- existing profile is not overwritten unless `--force` is explicit; `--force` refreshes only jhste-managed outputs and does not overwrite user source, CI, package files, lockfiles, non-managed hooks, or unmanaged differing skill directories; unmanaged skill overwrite requires `--allow-unmanaged-skill-overwrite` after review;
+- existing profile is created when missing; generated/managed profiles can be refreshed with `--force`; modified profiles are preserved unless `--force --allow-profile-overwrite` is explicit; user source, CI, package files, lockfiles, non-managed hooks, and unmanaged differing skill directories are not overwritten; unmanaged skill overwrite requires `--allow-unmanaged-skill-overwrite` after review;
 - `AGENTS.md` and `CLAUDE.md` bridge blocks use `<!-- jhste-skills:start -->` / `<!-- jhste-skills:end -->` markers; only that managed block is updated on later runs;
 - CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default in Normal, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install;
 - installed bridge/profile guidance tells agents to run `jhste-red-team-review` before declaring non-trivial code work complete, while skipping docs-only, comment-only, formatting-only, and trivial rename-only changes.
@@ -69,6 +70,7 @@ jhste-skills connect
 jhste-skills connect --mode normal
 jhste-skills connect --mode full
 jhste-skills connect --mode normal --install-missing
+jhste-skills connect --mode normal --force --allow-profile-overwrite
 ```
 
 Safety contract:
@@ -77,7 +79,7 @@ Safety contract:
 - `connect --mode minimal` is invalid because connect always means project connection;
 - by default, `connect` reuses existing skills and does not silently change the global skills directory;
 - missing required skills fail with an actionable message in `--yes` mode unless `--install-missing` is explicit;
-- repo profile, bridge blocks, and hooks follow the same managed-output safety rules as `install`.
+- repo profile, bridge blocks, and hooks follow the same managed-output safety rules as `install`; modified profiles are preserved unless `--force --allow-profile-overwrite` is explicit.
 
 ## `sync`
 
@@ -87,15 +89,16 @@ Safety contract:
 jhste-skills sync --yes --repo /path/to/repo
 jhste-skills sync --yes --repo /path/to/repo --skills-dir /path/to/skills
 jhste-skills sync --yes --skill-set all
+jhste-skills sync --yes --force --allow-profile-overwrite
 ```
 
 Stable contract:
 
 - refreshes installed skill directories by default when they differ from the current source;
-- only refreshes repo outputs that already look managed by jhste-skills (`.jhste/profile.yaml`, managed bridge markers, or managed hooks);
+- only refreshes repo outputs that already look managed by jhste-skills (generated/legacy-generated `.jhste/profile.yaml`, managed bridge markers, or managed hooks);
 - does not bootstrap unmanaged repositories; use `install` or `connect` for first-time setup;
 - preserves non-managed hooks and does not touch source files, CI, `package.json`, or lockfiles;
-- `--force` still applies only to repo-managed outputs such as overwriting an existing managed profile; unmanaged differing skill directories require `--allow-unmanaged-skill-overwrite`;
+- `--force` refreshes generated/managed profiles but does not overwrite modified profiles unless `--allow-profile-overwrite` is also passed; unmanaged differing skill directories require `--allow-unmanaged-skill-overwrite`;
 - `sync`/`update` may adopt additional known jhste skills into an already managed skills directory and refresh them without the extra overwrite flag.
 
 ## `update`
@@ -115,7 +118,7 @@ It is meant for the common workflow of pulling the latest `jhste-skills` source 
 - `.jhste/deep-scan-report.md`
 - `.jhste/profile.recommended.yaml`
 
-It uses Git-backed file collection by default so `.gitignore` rules are honored, then excludes generated, vendor, build, dependency, lock, large binary-like, and secret/env-like files. Secret-like findings are reported only as redacted summaries.
+It validates `.jhste/profile.yaml` before scanning. Invalid profile config fails with exit `3` and does not write `.jhste/deep-scan-report.md` or `.jhste/profile.recommended.yaml`. It uses Git-backed file collection by default so `.gitignore` rules are honored, then excludes generated, vendor, build, dependency, lock, large binary-like, and secret/env-like files. Secret-like findings are reported only as redacted summaries.
 
 The report includes responsibility budget candidates for large or mixed-responsibility pages, client modules, routes/controllers, import/ops scripts, and Python orchestrators; single-responsibility candidates for long or mixed-concern functions and mixed-export modules; and low-confidence SOLID-informed OCP/DIP candidates for variant branching hotspots and concrete side-effect dependencies in policy-like paths. These are advisory review prompts by default and do not prove a file is wrong.
 
@@ -136,7 +139,7 @@ Stable contract:
 - `--format`: `text` for humans or schema-versioned `json` for AI/hooks/CI.
 - `--fail-on`: `none`, `warning`, or `error`.
 - `--baseline`: `off`, `use`, `update`, or `ratchet`. `ratchet` requires an existing baseline. `update` is refused when guard runtime failures occur, inside managed hooks, or when `--baseline-path` resolves outside the repository. Think of baseline as a known-issues ledger: baseline-matched findings encountered in the selected scope remain visible as remediation queue items rather than being treated as a pass.
-- exit `0`: pass; exit `1`: violations met `--fail-on` or ratchet found new issues; exit `2`: guard runtime/scope/scan failure; exit `3`: config/profile error.
+- exit `0`: pass; exit `1`: violations met `--fail-on` or ratchet found new issues; exit `2`: guard runtime/scope/scan failure; exit `3`: config/profile error. These exit codes are fixed; `guard.exit_codes` is not a supported runtime setting.
 
 The JSON output starts with:
 
@@ -158,7 +161,7 @@ The JSON output starts with:
 Guard failures are not validation success. AI agents should report exit `2` or `3` separately from rule violations.
 Each JSON violation includes `confidence`, `category`, and `why_not_proof`; `heuristic_candidate` findings are review prompts, not proof of a bug.
 `summary.baseline_matched` counts known-issues ledger matches that are still shown in `violations`; `summary.suppressed` is retained only as a schema-version-1 compatibility alias.
-Profile `changed-files` findings are inactive for `--scope all`; `strict` defaults to `scope=all` and `fail_on=error`; `baseline-new-only` defaults to baseline `ratchet`.
+Profile `changed-files` findings are inactive for `--scope all`; `strict` defaults to `scope=all` and `fail_on=error`; `baseline-new-only` defaults to baseline `ratchet`. Legacy generated profiles may still contain `guard.exit_codes`; guard accepts that block as a no-op for compatibility and ignores it.
 
 Managed hook executions are read-only. While `JHSTE_HOOK_ACTIVE=1`, `guard` refuses `--baseline update` and `--run-profile-commands`. Outside hooks, `--run-profile-commands` requires `--trust-repo-profile`; legacy shell `run` commands additionally require `--allow-profile-shell`, while structured `cmd` plus inline string-array `args` runs without a shell.
 
@@ -201,7 +204,7 @@ Safety contract:
 - managed `pre-commit` and `pre-push` hooks are removed, while non-managed hooks are left untouched;
 - marker-managed bridge blocks are removed from `AGENTS.md` and `CLAUDE.md`; other text in those files is preserved;
 - manifest-managed skill directories are removed from the skills directory, while unmanaged skill directories are left untouched;
-- `.jhste/profile.yaml` is removed only when it still matches the generated profile shape; modified profiles are left for manual review unless `--force-profile` is explicit;
+- `.jhste/profile.yaml` is removed only when it still matches the current generated profile shape or the legacy generated shape that contained `guard.exit_codes`; modified profiles are left for manual review unless `--force-profile` is explicit;
 - empty managed directories are cleaned up best-effort.
 
 ## `tune`
@@ -210,4 +213,4 @@ Safety contract:
 
 ## `baseline`
 
-`baseline` creates or updates `.jhste/baseline.json` through `guard --scope all --baseline update`. Non-interactive runs fail closed with exit `3` unless `--yes`/`-y` is explicit; `--dry-run` prints planned changed files without writing. Baseline creation does not enable strict mode. The file is a known-issues ledger/remediation queue with fingerprint, first/last seen, reason, and optional owner/expiry/fix-tracking fields; matched findings encountered in a selected guard scope are still shown until fixed.
+`baseline` creates or updates the configured baseline path through `guard --scope all --baseline update`. Path priority matches guard: CLI `--baseline-path`, then profile `baseline.path`, then `.jhste/baseline.json`. The prompt and `--dry-run` changed-file list show the same path that guard will write, and paths resolving outside the repo fail with exit `3`. Invalid profiles fail before prompting. Non-interactive runs fail closed with exit `3` unless `--yes`/`-y` is explicit; `--dry-run` prints planned changed files without writing. Baseline creation does not enable strict mode. The file is a known-issues ledger/remediation queue with fingerprint, first/last seen, reason, and optional owner/expiry/fix-tracking fields; matched findings encountered in a selected guard scope are still shown until fixed.

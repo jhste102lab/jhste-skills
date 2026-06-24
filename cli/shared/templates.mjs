@@ -9,8 +9,11 @@ export const BRIDGE_END = '<!-- jhste-skills:end -->';
 export const BRIDGE_BLOCK = `## Agent skills
 This repo uses jhste skills as shared guidance.
 Repo-local instructions in this file remain authoritative.
+File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it.
+Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
+For reversible in-scope choices, make a reasonable assumption, proceed, and report it in the final summary.
 See \`.jhste/profile.yaml\` for local skill preferences.
-Before non-trivial code changes, use the \`jhste-engineering-judgment\` skill to check scope, seams, failure paths, and assumptions.
+Before non-trivial code changes, use the \`jhste-engineering-groundwork\` skill to check scope, boundaries, failure paths, and assumptions.
 For changed code, name the one main responsibility of each changed class, module, and function, and reject adjacent responsibilities unless they are on the changed execution path and prevent a concrete failure.
 Use SOLID-informed coding discipline as a review lens, not a compliance claim; guard findings are review candidates, not proof.
 After code changes, run \`jhste-skills guard --scope changed --format text --fail-on error\` when available.
@@ -55,11 +58,6 @@ baseline:
 guard:
   default_scope: changed
   default_format: text
-  exit_codes:
-    pass: 0
-    violation_failure: 1
-    guard_runtime_failure: 2
-    config_failure: 3
 deep_scan:
   last_run: null
   report: .jhste/deep-scan-report.md

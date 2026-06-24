@@ -17,8 +17,8 @@ The architectural review is rendered as a single self-contained HTML file in the
     </script>
     <style>
       /* small custom layer for things Tailwind doesn't cover cleanly:
-         dashed seam lines, hand-drawn-feeling arrow heads, etc. */
-      .seam { stroke-dasharray: 4 4; }
+         dashed boundary lines, hand-drawn-feeling arrow heads, etc. */
+      .boundary { stroke-dasharray: 4 4; }
       .leak { stroke: #dc2626; }
       .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
     </style>
@@ -35,7 +35,7 @@ The architectural review is rendered as a single self-contained HTML file in the
 
 ## Header
 
-Repo name, date, and a compact legend: solid box = module, dashed line = seam, red arrow = leakage, thick dark box = deep module. No introduction paragraph — straight into the candidates.
+Repo name, date, and a compact legend: solid box = module, dashed line = boundary, red arrow = leakage, thick dark box = deep module. No introduction paragraph — straight into the candidates.
 
 ## Candidate card
 
@@ -107,16 +107,16 @@ One larger card. Candidate name, one sentence on why, anchor link to its card. T
 
 Plain English, concise — but the architectural nouns and verbs come straight from [LANGUAGE.md](LANGUAGE.md). Concision is not an excuse to drift.
 
-**Use exactly:** module, interface, implementation, depth, deep, shallow, seam, adapter, leverage, locality.
+**Use exactly:** module, interface, implementation, depth, deep, shallow, boundary, adapter, leverage, locality.
 
-**Never substitute:** component, service, unit (for module) · API, signature (for interface) · boundary (for seam) · layer, wrapper (for module, when you mean module).
+**Never substitute:** component, service, unit (for module) · API, signature (for interface) · boundary (for boundary) · layer, wrapper (for module, when you mean module).
 
 **Phrasings that fit the style:**
 
 - "Order intake module is shallow — interface nearly matches the implementation."
-- "Pricing leaks across the seam."
+- "Pricing leaks across the boundary."
 - "Deepen: one interface, one place to test."
-- "Two adapters justify the seam: HTTP in prod, in-memory in tests."
+- "Two adapters justify the boundary: HTTP in prod, in-memory in tests."
 
 **Wins bullets** name the gain in glossary terms: *"locality: bugs concentrate in one module"*, *"leverage: one interface, N call sites"*, *"interface shrinks; implementation absorbs the wrappers"*. Don't write *"easier to maintain"* or *"cleaner code"* — those terms aren't in the glossary and don't earn their place.
 

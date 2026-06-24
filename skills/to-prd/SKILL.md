@@ -1,14 +1,14 @@
 ---
 name: to-prd
-description: Turn the current conversation context into a PRD and publish it to the project issue tracker. Use when user wants to create a PRD from the current context.
+description: Draft a PRD from the current conversation context and make it ready for the project's normal PRD workflow. Use when the user wants a PRD; publish/create tracker items when directly requested or when repo-local workflow gives standing approval for PRD tracker writes.
 ---
 
 ## jhste compatibility
 
 - Repo-local instructions remain authoritative.
-- Use `jhste-engineering-judgment` for scope, seams, assumptions, and failure paths when it applies.
+- Use `jhste-engineering-groundwork` for scope, boundaries, assumptions, and failure paths when it applies.
 - Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
-- File, repo, command, issue, PR, or other external side effects require explicit approval unless the user already requested that exact side effect.
+- File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it. Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
 
 
 This skill takes the current conversation context and codebase understanding and produces a PRD. Do NOT interview the user — just synthesize what you already know.
@@ -19,11 +19,15 @@ The issue tracker and triage label vocabulary should come from repo-local instru
 
 1. Explore the repo to understand the current state of the codebase, if you haven't already. Use the project's domain glossary vocabulary throughout the PRD, and respect any ADRs in the area you're touching.
 
-2. Sketch out the seams at which you're going to test the feature. Existing seams should be preferred to new ones. Use the highest seam possible. If new seams are needed, propose them at the highest point you can.
+2. Sketch out the boundaries at which you're going to test the feature. Existing boundaries should be preferred to new ones. Use the highest boundary possible. If new boundaries are needed, propose them at the highest point you can.
 
-Check with the user that these seams match their expectations.
+State any boundary assumptions in the PRD. Ask only if the boundary choice is ambiguous enough to materially change the PRD.
 
-3. Write the PRD using the template below, then publish it to the project issue tracker. Apply the `ready-for-agent` triage label - no need for additional triage.
+3. Write the PRD using the template below.
+
+If the user directly requested tracker publication, or repo-local workflow gives standing approval that PRD requests create tracker items, publish/create the PRD in the project issue tracker using the repo's normal labels and tracker vocabulary.
+
+Otherwise, produce a PRD draft that is ready to publish, and ask only before writing to the tracker.
 
 <prd-template>
 

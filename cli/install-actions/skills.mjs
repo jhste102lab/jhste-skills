@@ -7,6 +7,7 @@ export const SKILLS_MANIFEST_NAME = '.jhste-skills-manifest.json';
 export const MANIFEST_MANAGED_BY = 'jhste-skills';
 export const LEGACY_SKILL_RENAMES = Object.freeze({
   diagnose: 'diagnosing-bugs',
+  'jhste-engineering-judgment': 'jhste-engineering-groundwork',
 });
 
 export function canonicalSkillName(name) {

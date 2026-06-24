@@ -1,9 +1,9 @@
 ---
-name: jhste-engineering-judgment
-description: "Pre-change engineering judgment for non-trivial code work: verify user premises against repo instructions and code, reject unnecessary scope expansion, identify ownership seams, failure paths, data contracts, and safer alternatives before implementing."
+name: jhste-engineering-groundwork
+description: "Pre-change engineering groundwork for non-trivial code work: verify user premises against repo instructions and code, reject unnecessary scope expansion, identify ownership boundaries, failure paths, data contracts, and safer alternatives before implementing."
 ---
 
-# jhste-engineering-judgment
+# jhste-engineering-groundwork
 
 Use before non-trivial code changes. Repo-local instructions and architecture docs remain authoritative.
 
@@ -12,16 +12,17 @@ Use before non-trivial code changes. Repo-local instructions and architecture do
 - Restate the goal in concrete terms and reject unnecessary scope expansion.
 - Check the user's premise against code, tests, and repo-local instructions before accepting it.
 - Before editing, run the pre-edit evidence check for non-trivial code changes and report only a concise user-facing summary.
-- Identify the ownership seam: UI, route/controller, usecase/service, repository/query, adapter, job, script, or test fixture.
+- Use this as a pre-edit groundwork check, not as a reason to interrupt the user. Make reasonable assumptions for reversible in-scope work and report them later. Ask only when the assumption changes scope, safety, data ownership, API contract, or user-visible behavior.
+- Identify the ownership boundary: UI, route/controller, usecase/service, repository/query, adapter, job, script, or test fixture.
 - Name the one main responsibility and one main reason to change for each changed class, module, and function.
-- Apply SOLID-informed coding discipline as review guidance, not compliance proof: responsibility, extension seam, substitutability, interface size, and dependency direction.
+- Apply SOLID-informed coding discipline as review guidance, not compliance proof: responsibility, extension boundary, substitutability, interface size, and dependency direction.
 - Reject adjacent responsibilities unless they are on the changed execution path and leaving them out creates a concrete failure mode.
 - List the important failure paths before writing code.
-- State the data contract entering and leaving the changed seam.
+- State the data contract entering and leaving the changed boundary.
 - Prefer the smallest change that preserves future extension.
 - If the requested implementation conflicts with repo architecture, say so directly and propose the safer alternative.
 - When inspection discovers a non-trivial follow-up outside the immediate fix, prepare an `Issue candidate` instead of silently creating or updating tracker issues.
-- Ask for explicit approval before any issue tracker side effect unless the user has already authorized issue writes for this exact task.
+- Ask for explicit approval before any issue tracker side effect unless the user directly requested that tracker workflow or repo-local standing approval covers it.
 - Do not praise, agree, or proceed based on unsupported assumptions.
 - Avoid unrelated refactors unless they are on the changed execution path and required for safety.
 - When guard or review warnings are new on changed files, plan a bounded fix before declaring completion; rerun guard after the fix, and do not commit automatically.
@@ -32,10 +33,10 @@ For non-trivial code changes, check these before editing:
 
 1. **Goal** — concrete behavior or safety property being changed.
 2. **Evidence inspected** — repo instructions, issue/PR context, files, tests, and code paths actually inspected.
-3. **Ownership seam** — the smallest module boundary being changed.
+3. **Ownership boundary** — the smallest module boundary being changed.
 4. **Changed responsibility** — the one main responsibility of each changed class/module/function, plus adjacent responsibilities intentionally rejected.
-5. **SOLID-informed review lens** — whether the change affects extension seams, substitutability contracts, broad interfaces/configs/props, or concrete side-effect dependencies.
-6. **Data in/out** — inputs entering the seam and outputs/errors leaving it.
+5. **SOLID-informed review lens** — whether the change affects extension boundaries, substitutability contracts, broad interfaces/configs/props, or concrete side-effect dependencies.
+6. **Data in/out** — inputs entering the boundary and outputs/errors leaving it.
 7. **Failure paths** — important ways this can fail or mislead users/tools.
 8. **Rejected scope** — adjacent refactors or old problems intentionally not touched.
 9. **Smallest safe change** — why the planned change is minimal.
@@ -48,7 +49,6 @@ Keep these items available as internal review evidence, but do not make the user
 - smallest-change plan;
 - anything important that was **not checked**.
 
-Do not add a heading, label, or prefix unless the user asks for a structured block; start directly with the summary sentence.
 
 If a premise was not checked, say **not checked**. Do not write "not found" unless you actually inspected the relevant path.
 
@@ -80,7 +80,7 @@ Avoid: "Should I create an issue?" without supporting reasoning.
 
 ## Senior-quality pre-edit gate
 
-For non-trivial code changes, compare at least two plausible shapes before editing: the smallest local patch and one cleaner seam-preserving alternative. State the invariant that must remain true, the changed class/module/function responsibility, the caller contract entering and leaving the seam, the test seam that will prove behavior, the rejected alternative, and the partial-failure or rollback path. Keep this quiet for docs-only, comment-only, formatting-only, and trivial rename-only work.
+For non-trivial code changes, compare at least two plausible shapes before editing: the smallest local patch and one cleaner boundary-preserving alternative. State the invariant that must remain true, the changed class/module/function responsibility, the caller contract entering and leaving the boundary, the test boundary that will prove behavior, the rejected alternative, and the partial-failure or rollback path. Keep this quiet for docs-only, comment-only, formatting-only, and trivial rename-only work.
 
 Adjacent-code scope creep is allowed only when the adjacent code is on the changed execution path and leaving it untouched creates a concrete failure mode. Otherwise emit an Issue candidate rather than widening the change.
 

@@ -9,6 +9,7 @@ import {
   findGitRootInfo,
   listDirectories,
   parseArgs,
+  generatedProfileShape,
   readIfExists,
 } from './shared.mjs';
 import { applyPlan, preflightPlan, printApplyResult } from './install-actions.mjs';
@@ -21,12 +22,12 @@ function usage(command = 'sync') {
   console.log(`jhste-skills ${command}
 Usage:
   jhste-skills ${command} [--repo <path>] [--skills-dir <path>] [--yes] [--force]
-  jhste-skills ${command} [--skill-set core|vendor|all] [--skip-hooks] [--no-bridge]
+  jhste-skills ${command} [--skill-set core|vendor|all] [--skip-hooks] [--no-bridge] [--allow-profile-overwrite]
 Notes:
   ${command} reconciles installed skills and already-managed repo outputs using the current local jhste-skills source.
   It does not self-update the jhste-skills source or run git pull automatically.
   Installed skill directories are refreshed by default when they differ from the current source.
-  --force still applies only to repo-managed outputs such as profile overwrites.
+  --force refreshes generated/managed profiles; modified profiles need --force --allow-profile-overwrite.
   Unmanaged skill directories require --allow-unmanaged-skill-overwrite.
 `);
 }
@@ -41,22 +42,35 @@ function parseSkillSet(value, errors) {
   return normalized;
 }
 
+function readBooleanOption(args, key, errors) {
+  if (!Object.prototype.hasOwnProperty.call(args, key)) return false;
+  if (args[key] !== true) errors.push(`--${key} does not take a value.`);
+  return args[key] === true;
+}
+
 function normalizeSyncOptions(argv, cwd) {
   const args = parseArgs(argv);
   if (args.help || args.h) return { help: true, errors: [] };
   const errors = [];
-  const supported = new Set(['repo', 'skills-dir', 'yes', 'y', 'force', 'skill-set', 'skip-hooks', 'no-bridge', 'allow-unmanaged-skill-overwrite', 'help', 'h', '_']);
+  const supported = new Set(['repo', 'skills-dir', 'yes', 'y', 'force', 'skill-set', 'skip-hooks', 'no-bridge', 'allow-unmanaged-skill-overwrite', 'allow-profile-overwrite', 'help', 'h', '_']);
   for (const key of Object.keys(args)) {
     if (!supported.has(key)) errors.push(`unknown option --${key}.`);
   }
   if (args._.length > 0) errors.push(`unexpected positional argument: ${args._[0]}`);
 
+  const force = readBooleanOption(args, 'force', errors);
+  const yes = readBooleanOption(args, 'yes', errors) || readBooleanOption(args, 'y', errors);
+  const skipHooks = readBooleanOption(args, 'skip-hooks', errors);
+  const noBridge = readBooleanOption(args, 'no-bridge', errors);
+  const allowUnmanagedSkillOverwrite = readBooleanOption(args, 'allow-unmanaged-skill-overwrite', errors);
+  const allowProfileOverwrite = readBooleanOption(args, 'allow-profile-overwrite', errors);
   const repoInput = typeof args.repo === 'string' ? args.repo : undefined;
   const skillsDirInput = typeof args['skills-dir'] === 'string' ? args['skills-dir'] : undefined;
   const repoStart = path.resolve(repoInput || cwd);
   const skillsDir = path.resolve(skillsDirInput || path.join(process.env.HOME || cwd, '.jhste', 'skills'));
   const skillSet = parseSkillSet(args['skill-set'], errors);
 
+  if (allowProfileOverwrite && !force) errors.push('--allow-profile-overwrite requires --force.');
   if (args.repo === true) errors.push('--repo requires a path value.');
   if (args['skills-dir'] === true) errors.push('--skills-dir requires a path value.');
   if (repoInput) {
@@ -73,16 +87,17 @@ function normalizeSyncOptions(argv, cwd) {
   return {
     args,
     errors,
-    force: Boolean(args.force),
-    allowUnmanagedSkillOverwrite: Boolean(args['allow-unmanaged-skill-overwrite']),
+    force,
+    allowUnmanagedSkillOverwrite,
+    allowProfileOverwrite,
     help: false,
-    noBridge: Boolean(args['no-bridge']),
+    noBridge,
     repoInfo: findGitRootInfo(repoStart),
     repoStart,
-    skipHooks: Boolean(args['skip-hooks']),
+    skipHooks,
     skillSet,
     skillsDir,
-    yes: Boolean(args.yes || args.y),
+    yes,
   };
 }
 
@@ -130,7 +145,10 @@ function readHookConfig(repoRoot, target) {
 function repoLooksManaged(repoRoot) {
   if (!repoRoot) return false;
   const profilePath = path.join(repoRoot, '.jhste', 'profile.yaml');
-  if (fs.existsSync(profilePath)) return true;
+  if (fs.existsSync(profilePath)) {
+    const profileText = fs.readFileSync(profilePath, 'utf8');
+    if (generatedProfileShape(profileText)) return true;
+  }
   for (const fileName of ['AGENTS.md', 'CLAUDE.md']) {
     const text = readIfExists(path.join(repoRoot, fileName));
     if (!text) continue;
@@ -169,6 +187,7 @@ function buildSyncPlan(options, command) {
     force: options.force,
     adoptKnownSkills: true,
     allowUnmanagedSkillOverwrite: options.allowUnmanagedSkillOverwrite,
+    allowProfileOverwrite: options.allowProfileOverwrite,
     forceSkills: true,
     installMissing: false,
     overrides: [],

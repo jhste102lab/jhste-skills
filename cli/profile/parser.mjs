@@ -4,7 +4,7 @@ import {
   DOCUMENTATION_ONLY_SECTIONS,
   FILE_SIZE_RULE_KEYS,
   GUARD_KEYS,
-  GUARD_NESTED_KEYS,
+  LEGACY_IGNORED_GUARD_NESTED_KEYS,
   PACK_KEYS,
   RESPONSIBILITY_RULE_KEYS,
   RULE_COMMON_KEYS,
@@ -142,14 +142,17 @@ function handleGuardSection(state, line, lineNumber) {
   const nested = /^\s{2}([A-Za-z0-9_-]+):\s*$/.exec(line);
   if (nested) {
     state.guardNested = nested[1];
-    if (!GUARD_NESTED_KEYS.has(state.guardNested)) state.profile.parse_errors.push(`Unsupported guard profile key ${state.guardNested} at line ${lineNumber}`);
-    if (Object.prototype.hasOwnProperty.call(state.profile.guard, state.guardNested)) state.profile.parse_errors.push(`Duplicate guard profile key ${state.guardNested} at line ${lineNumber}`);
-    state.profile.guard[state.guardNested] ||= {};
+    if (!LEGACY_IGNORED_GUARD_NESTED_KEYS.has(state.guardNested)) {
+      state.profile.parse_errors.push(`Unsupported guard profile key ${state.guardNested} at line ${lineNumber}`);
+      state.profile.guard[state.guardNested] ||= {};
+      return;
+    }
     return;
   }
   const nestedSetting = /^\s{4}([A-Za-z0-9_-]+):\s*(.+?)\s*$/.exec(line);
   if (nestedSetting && state.guardNested) {
-    assignSectionValue(state.profile.guard[state.guardNested], nestedSetting[1], nestedSetting[2], state.profile, `guard.${state.guardNested}`, GUARD_NESTED_KEYS.get(state.guardNested) || new Set());
+    if (LEGACY_IGNORED_GUARD_NESTED_KEYS.has(state.guardNested)) return;
+    assignSectionValue(state.profile.guard[state.guardNested], nestedSetting[1], nestedSetting[2], state.profile, `guard.${state.guardNested}`, new Set());
     return;
   }
   const setting = /^\s{2}([A-Za-z0-9_-]+):\s*(.+?)\s*$/.exec(line);
