@@ -1,7 +1,7 @@
 # Changelog
 
 
-## Unreleased
+## 0.3.1 - 2026-06-26
 
 ### Changed
 - Strengthened completion review around current proof, consumer-path and fresh-client verification, skipped checks, checks not run, and residual risk.
