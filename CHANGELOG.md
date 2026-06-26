@@ -1,6 +1,11 @@
 # Changelog
 
 
+## 0.3.2 - 2026-06-26
+
+### Added
+- Added a safe global postinstall sync for existing manifest-managed `~/.jhste/skills` so `npm update -g jhste-skills` refreshes local agent skill copies without touching repositories, hooks, or bridge files.
+
 ## 0.3.1 - 2026-06-26
 
 ### Changed

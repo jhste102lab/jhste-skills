@@ -1,6 +1,6 @@
 {
   "name": "jhste-skills",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Installable engineering guardrails and workflow skills for AI coding agents.",
   "type": "module",
   "license": "MIT",
@@ -34,6 +34,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "postinstall": "node cli/postinstall-sync.mjs",
     "test": "npm run syntax:check && npm run docs:check && npm run vendor:check && npm run public-safety:check && npm run public-safety-fixtures:test && npm run profile-fixtures:test && npm run guard-fixtures:test && npm run responsibility-budget-fixtures:test && npm run single-responsibility-fixtures:test && npm run solid-design-fixtures:test && npm run smoke:test && npm run release:gates",
     "syntax:check": "node scripts/syntax-check.mjs",
     "docs:check": "node scripts/docs-check.mjs",
