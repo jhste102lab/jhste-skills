@@ -37,6 +37,7 @@ AI coding agents are fast, but they fail in predictable ways:
 ```text
 Before a non-trivial code change:
   check the goal, premise, ownership boundary, data contract, failure path, final behavior predicates, and SOLID-informed review lens
+  identify the failure modes that matter for the changed execution path instead of filling out a fixed checklist
 
 While editing:
   treat repo-local instructions as the authority
@@ -106,6 +107,12 @@ To run the changed-file guard manually:
 
 ```bash
 jhste-skills guard --scope changed --format text --fail-on error
+```
+
+To refresh only the installed skill files after pulling this repository, without touching a project bridge, profile, hook, or scan output:
+
+```bash
+jhste-skills update --yes --skills-only
 ```
 
 To run an optional repo-wide advisory scan:

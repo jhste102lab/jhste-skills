@@ -23,7 +23,7 @@ When reviewing a proposed change, ask:
 
 - Bad: `route.ts` performs auth, schema parsing, business rules, database queries, error mapping, and response DTO shaping inline.
 - Better: route/controller does request parsing and response mapping; a usecase owns business invariants; a repository/query owns persistence; errors are mapped through a small public-error boundary.
-- Why: caller contracts, authorization, partial-failure handling, and test boundaries are easier to inspect from entrypoint to side effect.
+- Why: caller contracts, authorization, failure behavior, and test boundaries are easier to inspect from entrypoint to side effect.
 
 ### React client path split
 
@@ -82,4 +82,3 @@ Change adjacent code only when it sits on the changed execution path and leaving
 - Bad: a caller accepts a broad config, interface, or props bag while using only a small slice, creating unrelated coupling.
 - Better: depend on the smallest useful contract, while keeping cohesive public contracts together when they are read and changed together.
 - Why: ISP should reduce coupling, not fragment a contract that always moves as one unit.
-

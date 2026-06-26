@@ -1,6 +1,6 @@
 ---
 name: improve-codebase-architecture
-description: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable.
+description: Repo-wide or area-wide architecture review to find deepening/refactoring opportunities, informed by CONTEXT.md and docs/adr/. Use when the user wants broad architecture improvement, refactoring opportunities, consolidation of tightly-coupled modules, or better testability and AI-navigability. Not for every local code change; use jhste-architecture-review for the current diff.
 ---
 
 ## jhste compatibility

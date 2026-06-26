@@ -1,6 +1,6 @@
 ---
 name: to-prd
-description: Draft a PRD from the current conversation context and make it ready for the project's normal PRD workflow. Use when the user wants a PRD; publish/create tracker items when directly requested or when repo-local workflow gives standing approval for PRD tracker writes.
+description: Draft a PRD from the current conversation context and make it ready for the project's normal PRD workflow. Use when the user asks for a PRD or product requirements document. For issue-ready implementation slices from an existing plan or PRD, use to-issues; publish/create tracker items only when directly requested or when repo-local workflow gives standing approval.
 ---
 
 ## jhste compatibility

@@ -22,11 +22,13 @@ function usage(command = 'sync') {
   console.log(`jhste-skills ${command}
 Usage:
   jhste-skills ${command} [--repo <path>] [--skills-dir <path>] [--yes] [--force]
+  jhste-skills ${command} [--skills-only] [--skills-dir <path>] [--yes]
   jhste-skills ${command} [--skill-set core|vendor|all] [--skip-hooks] [--no-bridge] [--allow-profile-overwrite]
 Notes:
   ${command} reconciles installed skills and already-managed repo outputs using the current local jhste-skills source.
   It does not self-update the jhste-skills source or run git pull automatically.
   Installed skill directories are refreshed by default when they differ from the current source.
+  --skills-only refreshes installed skills without touching repo profile, bridge files, hooks, or deep-scan outputs.
   --force refreshes generated/managed profiles; modified profiles need --force --allow-profile-overwrite.
   Unmanaged skill directories require --allow-unmanaged-skill-overwrite.
 `);
@@ -52,7 +54,7 @@ function normalizeSyncOptions(argv, cwd) {
   const args = parseArgs(argv);
   if (args.help || args.h) return { help: true, errors: [] };
   const errors = [];
-  const supported = new Set(['repo', 'skills-dir', 'yes', 'y', 'force', 'skill-set', 'skip-hooks', 'no-bridge', 'allow-unmanaged-skill-overwrite', 'allow-profile-overwrite', 'help', 'h', '_']);
+  const supported = new Set(['repo', 'skills-dir', 'yes', 'y', 'force', 'skill-set', 'skills-only', 'skip-hooks', 'no-bridge', 'allow-unmanaged-skill-overwrite', 'allow-profile-overwrite', 'help', 'h', '_']);
   for (const key of Object.keys(args)) {
     if (!supported.has(key)) errors.push(`unknown option --${key}.`);
   }
@@ -60,6 +62,7 @@ function normalizeSyncOptions(argv, cwd) {
 
   const force = readBooleanOption(args, 'force', errors);
   const yes = readBooleanOption(args, 'yes', errors) || readBooleanOption(args, 'y', errors);
+  const skillsOnly = readBooleanOption(args, 'skills-only', errors);
   const skipHooks = readBooleanOption(args, 'skip-hooks', errors);
   const noBridge = readBooleanOption(args, 'no-bridge', errors);
   const allowUnmanagedSkillOverwrite = readBooleanOption(args, 'allow-unmanaged-skill-overwrite', errors);
@@ -95,6 +98,7 @@ function normalizeSyncOptions(argv, cwd) {
     repoInfo: findGitRootInfo(repoStart),
     repoStart,
     skipHooks,
+    skillsOnly,
     skillSet,
     skillsDir,
     yes,
@@ -177,8 +181,8 @@ function buildSyncPlan(options, command) {
     ? skillNamesForSet(options.skillSet)
     : (installedSkills.length > 0 ? installedSkills : skillNamesForSet('all'));
   const repoRoot = options.repoInfo.isGitRepo ? options.repoInfo.repoRoot : null;
-  const managedRepo = repoLooksManaged(repoRoot);
-  const hooks = detectSyncHooks(repoRoot, options.skipHooks);
+  const managedRepo = !options.skillsOnly && repoLooksManaged(repoRoot);
+  const hooks = options.skillsOnly ? [] : detectSyncHooks(repoRoot, options.skipHooks);
 
   const plan = {
     command,
@@ -190,7 +194,7 @@ function buildSyncPlan(options, command) {
     allowProfileOverwrite: options.allowProfileOverwrite,
     forceSkills: true,
     installMissing: false,
-    overrides: [],
+    overrides: options.skillsOnly ? ['--skills-only'] : [],
     skillSet: options.skillSet || (installedSkills.length > 0 ? 'detected' : 'all'),
     skillNames,
     installSkills: true,
@@ -200,7 +204,7 @@ function buildSyncPlan(options, command) {
     repoInfo: options.repoInfo,
     repoRoot,
     connectRepo: managedRepo,
-    repoSkippedReason: managedRepo ? null : 'not managed by jhste-skills yet',
+    repoSkippedReason: options.skillsOnly ? 'skills-only requested; not touching repo outputs' : (managedRepo ? null : 'not managed by jhste-skills yet'),
     writeProfile: managedRepo,
     writeBridge: managedRepo && !options.noBridge,
     hooks,

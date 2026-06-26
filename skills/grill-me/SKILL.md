@@ -1,6 +1,6 @@
 ---
 name: grill-me
-description: Direct personal grilling mode for stress-testing the user's own plan or reasoning. Use when the user asks to be grilled, challenged, pressure-tested, or questioned aggressively about their plan.
+description: Direct red-team interrogation of the user's own plan or reasoning. Use when the user asks to be grilled, challenged, pressure-tested, red-teamed, or questioned aggressively about their plan. Not for reviewing an already-changed code diff; use jhste-red-team-review for that.
 ---
 
 ## jhste compatibility

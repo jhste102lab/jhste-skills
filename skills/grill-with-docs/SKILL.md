@@ -1,6 +1,6 @@
 ---
 name: grill-with-docs
-description: Stress-test a plan against project domain language and record resulting decisions in CONTEXT.md or ADRs. Use when the user wants grilling plus documentation, ADR, glossary, or CONTEXT updates.
+description: Red-team questioning of a plan against project domain language, then recording resulting decisions in CONTEXT.md or ADRs. Use when the user wants grilling plus documentation, ADR, glossary, or CONTEXT updates. Not for reviewing an already-changed code diff; use jhste-red-team-review for that.
 ---
 
 ## jhste compatibility

@@ -13,7 +13,10 @@ Use an objective red-team checklist. Prefer concrete findings over broad praise.
 - Failure handling is observable and does not silently pretend success.
 - Type expectations, API contracts, and caller assumptions still line up after the change.
 - Auth, permission, and user-data isolation risks are called out when relevant.
+- API and persistence contracts are checked through the public shape and caller expectations that matter for the changed path.
 - Create/update/delete paths do not appear vulnerable to data loss, duplicate writes, or misleading success states.
+- Mutation and side-effect safety are reviewed through the real write path, including what callers and users see if the path is repeated, interrupted, or only partly succeeds.
+- State transitions are reviewed where stale or inconsistent state would mislead users, leak access, or break the domain rule.
 - Build, import, env, route, and runtime assumptions that could break deployment are called out when relevant.
 - Actual consumer-path proof is preferred when feasible: public API route, CLI command, UI route, worker/scheduler path, service entrypoint, fresh-client flow, or documented acceptance path.
 - Performance risks such as duplicate requests, avoidable rerenders, or obviously heavy work on hot paths are called out when relevant.

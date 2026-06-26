@@ -1,6 +1,6 @@
 ---
 name: to-issues
-description: Break a plan, spec, or PRD into issue-ready vertical slices. Use when the user wants implementation tickets or work breakdown; create tracker issues when directly requested or when repo-local workflow gives standing approval for ticket creation.
+description: Break an existing plan, spec, or PRD into issue-ready vertical implementation slices. Use when the user wants implementation tickets, issue breakdown, or work breakdown from known requirements. For drafting product requirements from conversation context, use to-prd; create tracker issues only when directly requested or when repo-local workflow gives standing approval.
 ---
 
 ## jhste compatibility

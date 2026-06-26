@@ -74,7 +74,7 @@ export const recipeRequirements = {
   'skills/grilling/SKILL.md': ['read-only by default'],
   'skills/grill-me/SKILL.md': ['read-only by default'],
   'skills/improve-codebase-architecture/SKILL.md': ['Default to a concise Markdown architecture review', 'HTML/Tailwind/Mermaid report only when requested'],
-  'skills/jhste-engineering-groundwork/SKILL.md': ['Senior-quality pre-edit gate', 'partial-failure or rollback path', 'Adjacent-code scope creep', 'Changed responsibility', 'bounded fix', 'Final behavior predicates'],
+  'skills/jhste-engineering-groundwork/SKILL.md': ['Senior-quality pre-edit gate', 'recovery or rollback expectation', 'Adjacent-code scope creep', 'Changed responsibility', 'bounded fix', 'Final behavior predicates'],
   'skills/jhste-red-team-review/SKILL.md': ['Severity rubric and path tracing', 'changed execution path', 'changes required', 'actual consumer', 'residual risk'],
   'skills/jhste-red-team-review/references/red-team-review.md': ['Severity rubric', 'Trace at least one changed execution path', 'one main reason to change', 'Current proof'],
 };

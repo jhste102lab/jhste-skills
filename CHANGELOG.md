@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.4 - 2026-06-26
+
+### Changed
+- Shifted groundwork and red-team review guidance away from fixed checklist axes and toward context-based failure-mode review of the changed execution path.
+- Tightened DB/API and code-quality skill guidance around caller-appropriate response shapes, storage-backed invariants, authorization/data-isolation paths, and understandable failure behavior without turning those examples into a mandatory checklist.
+- Clarified red-team review versus red-team questioning/interrogation triggers while preserving the red-team wording and intent.
+- Clarified architecture, PRD, issue-slicing, and triage skill trigger boundaries to reduce accidental over-triggering.
+
+### Added
+- Added `sync`/`update --skills-only` to refresh installed skill files without touching repository profiles, bridge blocks, hooks, or deep-scan outputs.
+
 ## 0.3.3 - 2026-06-26
 
 ### Removed

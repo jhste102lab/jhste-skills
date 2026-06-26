@@ -1,11 +1,11 @@
 ---
 name: jhste-red-team-review
-description: Read-only completion-time red-team review and issue-candidate handoff for non-trivial code changes. Use before declaring code work complete.
+description: Read-only red-team code review for actual diffs or changed files after implementation, with issue-candidate handoff for residual risks. Use before declaring non-trivial code work complete. For pre-implementation red-team questioning or interrogation of a plan, use grilling, grill-me, or grill-with-docs.
 ---
 
 # jhste-red-team-review
 
-Use this skill after non-trivial code changes and before reporting completion. Repo-local instructions remain authoritative.
+Use this skill after non-trivial code changes and before reporting completion. This is red-team code review for changed code, not plan interrogation. Repo-local instructions remain authoritative.
 
 ## Automation and side effects
 
@@ -37,7 +37,7 @@ Perform the changed-code review, inspect guard/test output, and run bounded fix/
 
 ## Severity rubric and path tracing
 
-For non-trivial code changes, name the main responsibility of changed classes/modules/functions, apply the SOLID-informed review lens where relevant, trace at least one changed execution path from entrypoint through validation/auth/state to the side effect or result, and state any changed paths not checked. Use `changes required` for new guard or review warnings on changed files that can be fixed within the changed execution path, and for P0/P1 issues that can cause data loss, security/privacy exposure, misleading success, broken runtime behavior, or failed documented acceptance. Use `residual risk` when the bounded review completed but lower-severity, heuristic, environmental, or out-of-scope risks remain. Use `pass` only after inspecting the relevant diff and finding no material follow-up, with current proof for the changed public behavior or a clear explanation of why consumer-path proof was not feasible.
+For non-trivial code changes, name the main responsibility of changed classes/modules/functions, apply the SOLID-informed review lens where relevant, trace at least one changed execution path from entrypoint through validation/auth/state to the side effect or result, and state any changed paths not checked. Do not stop at a fixed checklist; attack the changed path in the way most likely to reveal real failures for this repo, domain, caller, and runtime. Use `changes required` for new guard or review warnings on changed files that can be fixed within the changed execution path, and for P0/P1 issues that can cause data loss, security/privacy exposure, misleading success, broken runtime behavior, or failed documented acceptance. Use `residual risk` when the bounded review completed but lower-severity, heuristic, environmental, or out-of-scope risks remain. Use `pass` only after inspecting the relevant diff and finding no material follow-up, with current proof for the changed public behavior or a clear explanation of why consumer-path proof was not feasible.
 
 ## Issue candidate protocol
 

@@ -1,6 +1,6 @@
 ---
 name: grilling
-description: General plan/design stress-test interview. Use when the user asks to challenge, pressure-test, red-team, grill, or find gaps in a plan before building, without requesting documentation updates.
+description: Red-team questioning for plans and designs before implementation. Use when the user asks to challenge, pressure-test, red-team, grill, interrogate, or find gaps in a plan, without requesting documentation updates. Not for reviewing an already-changed code diff; use jhste-red-team-review for that.
 ---
 
 ## jhste compatibility

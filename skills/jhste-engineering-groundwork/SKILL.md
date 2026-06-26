@@ -43,7 +43,9 @@ For non-trivial code changes, check these before editing:
 10. **Verification plan** — tests, guards, builds, or manual checks to run, plus any checks likely to be skipped.
 11. **Final behavior predicates** — concrete public behavior that must change, public/API/DB/UI shape that must not change, expected error behavior, persistence or side-effect expectations, and backward-compatibility constraints.
 
-Keep these items available as internal review evidence, but do not make the user read the full evidence block every time. User-facing output should usually be one or two plain sentences covering:
+For changes touching user data, API/DB, permissions, files, external calls, batch writes, async UI actions, exports, or lifecycle state, do not reduce review to a fixed checklist. Follow the changed execution path and use repo-local rules, domain invariants, caller expectations, persistence behavior, side effects, user-visible states, operational impact, and verification evidence to identify the failure modes that matter for this change. Prefer concrete risk statements over named frameworks or exhaustive lists.
+
+Keep the full evidence available internally, but do not make the user read it every time. User-facing output should usually be one or two plain sentences covering:
 
 - scope checked;
 - main risks;
@@ -82,7 +84,7 @@ Avoid: "Should I create an issue?" without supporting reasoning.
 
 ## Senior-quality pre-edit gate
 
-For non-trivial code changes, compare at least two plausible shapes before editing: the smallest local patch and one cleaner boundary-preserving alternative. State the invariant that must remain true, the changed class/module/function responsibility, the caller contract entering and leaving the boundary, the test boundary that will prove behavior, the rejected alternative, and the partial-failure or rollback path. Keep this quiet for docs-only, comment-only, formatting-only, and trivial rename-only work.
+For non-trivial code changes, compare at least two plausible shapes before editing: the smallest local patch and one cleaner boundary-preserving alternative. State the invariant that must remain true, the changed class/module/function responsibility, the caller contract entering and leaving the boundary, the test boundary that will prove behavior, the rejected alternative, and the recovery or rollback expectation for failure after a side effect. Keep this quiet for docs-only, comment-only, formatting-only, and trivial rename-only work.
 
 Adjacent-code scope creep is allowed only when the adjacent code is on the changed execution path and leaving it untouched creates a concrete failure mode. Otherwise emit an Issue candidate rather than widening the change.
 

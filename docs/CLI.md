@@ -88,6 +88,7 @@ Safety contract:
 ```bash
 jhste-skills sync --yes --repo /path/to/repo
 jhste-skills sync --yes --repo /path/to/repo --skills-dir /path/to/skills
+jhste-skills sync --yes --skills-only
 jhste-skills sync --yes --skill-set all
 jhste-skills sync --yes --force --allow-profile-overwrite
 ```
@@ -98,6 +99,7 @@ Stable contract:
 - only refreshes repo outputs that already look managed by jhste-skills (generated/legacy-generated `.jhste/profile.yaml`, managed bridge markers, or managed hooks);
 - does not bootstrap unmanaged repositories; use `install` or `connect` for first-time setup;
 - preserves non-managed hooks and does not touch source files, CI, `package.json`, or lockfiles;
+- `--skills-only` refreshes installed skills only and never writes repo profile, bridge blocks, hooks, or deep-scan outputs, even when `--repo` points at a managed repo;
 - `--force` refreshes generated/managed profiles but does not overwrite modified profiles unless `--allow-profile-overwrite` is also passed; unmanaged differing skill directories require `--allow-unmanaged-skill-overwrite`;
 - `sync`/`update` may adopt additional known jhste skills into an already managed skills directory and refresh them without the extra overwrite flag.
 
@@ -107,9 +109,11 @@ Stable contract:
 
 ```bash
 jhste-skills update --yes --repo /path/to/repo
+jhste-skills update --yes --skills-only
 ```
 
 It is meant for the common workflow of pulling the latest `jhste-skills` source first, then reconciling local installed copies and managed repo outputs. It does not self-update the package or run `git pull` for you.
+Use `--skills-only` when you want the latest skill files in the local skills directory but do not want to touch the current repository's managed profile, bridge block, hooks, or deep-scan outputs.
 
 ## `deep-scan`
 

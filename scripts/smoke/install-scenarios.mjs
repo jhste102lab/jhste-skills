@@ -171,7 +171,33 @@ run_jhste_skills guard --scope staged --format text --fail-on warning
 
   const managedManifest = readManagedSkillsManifest(skillsDir);
   if (!managedManifest.skills?.[adoptedSkillName]?.digest) fail('update did not record adopted known skill in manifest');
-
+  const profilePath = path.join(repo, '.jhste', 'profile.yaml');
+  const profileBeforeSkillsOnly = fs.readFileSync(profilePath, 'utf8');
+  fs.writeFileSync(skillPath, '# stale local copy for skills-only\n');
+  fs.writeFileSync(agentsPath, updatedAgents.replace(
+    'Repo-local instructions in this file remain authoritative.',
+    'Bridge text that skills-only must not replace.',
+  ));
+  fs.writeFileSync(preCommitPath, `#!/usr/bin/env sh
+# jhste-skills managed hook start
+# mode=blocking hook=pre-commit scope=staged
+echo "skills-only must not replace hook"
+run_jhste_skills guard --scope staged --format text --fail-on warning
+# jhste-skills managed hook end
+`, { mode: 0o755 });
+  run(process.execPath, [path.join(root, 'cli/update.mjs'), '--yes', '--repo', repo, '--skills-dir', skillsDir, '--skills-only'], { cwd: repo });
+  if (fs.readFileSync(skillPath, 'utf8') !== fs.readFileSync(sourceSkillPath, 'utf8')) {
+    fail('update --skills-only did not refresh an installed skill');
+  }
+  if (!fs.readFileSync(agentsPath, 'utf8').includes('Bridge text that skills-only must not replace.')) {
+    fail('update --skills-only rewrote a managed bridge block');
+  }
+  if (!fs.readFileSync(preCommitPath, 'utf8').includes('skills-only must not replace hook')) {
+    fail('update --skills-only rewrote a managed hook');
+  }
+  if (fs.readFileSync(profilePath, 'utf8') !== profileBeforeSkillsOnly) {
+    fail('update --skills-only rewrote a managed profile');
+  }
   let migratedManifest = assertLegacySkillRenameMigration({
     root, repo, skillsDir, manifest: managedManifest, legacyName: 'diagnose', canonicalName: 'diagnosing-bugs', digest: 'legacy-digest',
   });

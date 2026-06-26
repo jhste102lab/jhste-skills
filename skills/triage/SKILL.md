@@ -1,6 +1,6 @@
 ---
 name: triage
-description: Triage issues through a state machine driven by triage roles. Use when user wants to create an issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow.
+description: Triage existing or newly requested issues through a state machine driven by triage roles. Use when the user wants to create a specific issue, triage issues, review incoming bugs or feature requests, prepare issues for an AFK agent, or manage issue workflow. For PRDs use to-prd; for bulk implementation slice generation from a plan use to-issues.
 ---
 
 ## jhste compatibility

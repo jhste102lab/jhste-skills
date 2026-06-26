@@ -7,5 +7,5 @@ Routine validation should use fixtures, dry runs, or focused smoke checks. Live 
 ## Producer / consumer recipe
 
 - Bad: a crawler fetches pages, normalizes fields, deduplicates, writes the database, and sends notifications in one loop.
-- Better: the producer emits a versioned artifact; the consumer validates, deduplicates, persists, and reports partial failures with a resumable cursor.
+- Better: the producer emits a versioned artifact; the consumer validates, deduplicates, persists, and reports write outcomes with a resumable cursor.
 - Why: flaky network behavior is separated from write safety, fixtures can replay artifacts, and duplicate writes are easier to prevent.

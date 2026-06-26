@@ -1,6 +1,6 @@
 ---
 name: codebase-design
-description: Shared vocabulary for designing deep modules. Use when the user wants to design or improve a module's interface, find deepening opportunities, decide where a boundary goes, make code more testable or AI-navigable, or when another skill needs the deep-module vocabulary.
+description: Shared vocabulary for designing deep modules and module interfaces. Use when designing or improving a module interface, deciding where a boundary goes, making code more testable or AI-navigable, or when another skill needs deep-module vocabulary. For repo-wide refactor candidate discovery, use improve-codebase-architecture.
 ---
 
 ## jhste compatibility

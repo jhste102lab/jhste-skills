@@ -15,7 +15,9 @@ Use this skill for API and persistence boundary changes. Repo-local API contract
 - Use parameter binding or a safe query abstraction for SQL.
 - Keep request and response contracts explicit enough that caller drift is visible before runtime.
 - Validate database rows or third-party records before treating them as domain objects when shape matters.
-- Make write safety visible for repeated execution, batch mutation, or idempotent retry paths.
+- Map storage rows to response shapes that match the caller's permission and purpose; do not let internal or higher-privilege data leak through convenient reuse.
+- Make write safety visible at the layer that actually preserves the rule; do not rely on app-side checks alone when storage behavior can contradict them.
+- For authorization or data-isolation changes, inspect the actual policy and execution path instead of trusting a single route, role, or helper as proof.
 - Return public-safe errors; do not leak raw database, stack, or secret-like details.
 - For API or persistence changes, verification should prefer the actual contract surface when feasible: route handler behavior, request/response shape, auth or tenant scoping, SQL binding behavior, migration/application path, or service boundary used by callers.
 

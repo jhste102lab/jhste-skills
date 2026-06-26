@@ -36,6 +36,7 @@ AI 编程代理很快，但经常以可预测的方式失败：
 ```text
 在 non-trivial code change 前：
   检查目标、前提、ownership boundary、data contract、failure path、SOLID-informed review lens
+  不填写固定 checklist，而是根据 changed execution path 找出真正重要的 failure mode
 
 修改过程中：
   将 repo-local instructions 视为权威
@@ -105,6 +106,12 @@ npx jhste-skills install --skill-set core
 
 ```bash
 jhste-skills guard --scope changed --format text --fail-on error
+```
+
+拉取本仓库最新内容后，如果只想刷新已安装的 skill 文件，不触碰项目 bridge、profile、hook 或 scan output：
+
+```bash
+jhste-skills update --yes --skills-only
 ```
 
 选择性运行 repo-wide advisory scan：

@@ -16,6 +16,7 @@ Use repo-local instructions first. Treat this skill as shared advisory guidance 
 - Do not log secrets, tokens, passwords, cookies, authorization headers, sessions, or raw sensitive payloads.
 - Tests should verify observable behavior through the module interface, not implementation details, function-name existence, or incidental strings.
 - Do not stop at happy-path-only coverage for changed behavior; include the most relevant edge, failure, side-effect, idempotency, or regression case.
+- For code with side effects or multi-step work, make the failure behavior understandable to callers and users; do not let the code silently imply success when the changed path did not complete safely.
 - Mock external boundaries, not internal collaborators you control.
 - Before adding a new helper, type, or shape, check for the existing source of truth.
 - Use SOLID-informed coding discipline as advisory guidance for concrete maintenance and failure risks: one responsibility, extension boundaries only when variants force repeated edits, stable caller contracts, right-sized interfaces, and visible side-effect dependencies. Do not add abstraction only to satisfy a SOLID label.

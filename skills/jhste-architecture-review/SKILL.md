@@ -1,6 +1,6 @@
 ---
 name: jhste-architecture-review
-description: Advisory architecture review guidance for module boundaries, SOLID-informed design review, side effects, and pass-through abstraction. Use when changing module boundaries, app structure, side-effect placement, or responsibility splits.
+description: Advisory architecture review for current code changes touching module boundaries, app structure, side-effect placement, responsibility splits, or pass-through abstraction. Use during or after local code changes; for repo-wide architecture improvement use improve-codebase-architecture, and for module interface vocabulary use codebase-design.
 ---
 
 # jhste-architecture-review

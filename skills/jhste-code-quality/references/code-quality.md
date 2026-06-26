@@ -48,8 +48,8 @@ When code crosses async UI, env, or persistence paths, be skeptical of fragile a
 ### Mutation write safety
 
 - Bad: a route loops over writes and returns success after the first non-throwing path.
-- Better: define the idempotency key or dedupe rule, use a transaction/batch/upsert where needed, check affected rows, and report partial failure explicitly.
-- Why: duplicate execution, retry, and rollback behavior are observable instead of assumed.
+- Better: define the write rule at the layer that can enforce it, check the outcome that matters to callers, and report unsafe or incomplete results instead of implying success.
+- Why: duplicate execution, retry, and recovery behavior are observable instead of assumed.
 
 ### Import/ops script
 
