@@ -1,6 +1,6 @@
 ---
 name: jhste-code-quality
-description: Public-safe code-quality guidance for input validation, observable failures, secret-safe logging, and oversized-file review. Use when touching external input, failure handling, logging, env/config, or code-quality review paths.
+description: Public-safe code-quality guidance for input validation, observable failures, secret-safe logging, cleanup/search-replace safety, and oversized-file review. Use when touching external input, failure handling, logging, env/config, cleanup or secret-removal work, broad search/replace, or code-quality review paths.
 ---
 
 # jhste-code-quality
@@ -18,10 +18,22 @@ Use repo-local instructions first. Treat this skill as shared advisory guidance 
 - Do not stop at happy-path-only coverage for changed behavior; include the most relevant edge, failure, side-effect, idempotency, or regression case.
 - Mock external boundaries, not internal collaborators you control.
 - Before adding a new helper, type, or shape, check for the existing source of truth.
-- Use SOLID-informed coding discipline as advisory guidance: one responsibility, extension boundaries only when variants force repeated edits, stable caller contracts, right-sized interfaces, and visible side-effect dependencies.
+- Use SOLID-informed coding discipline as advisory guidance for concrete maintenance and failure risks: one responsibility, extension boundaries only when variants force repeated edits, stable caller contracts, right-sized interfaces, and visible side-effect dependencies. Do not add abstraction only to satisfy a SOLID label.
 - If a hand-written source file grows beyond the profile threshold, consider splitting responsibilities before adding more code.
 - If a page, client module, route/controller, import script, or Python orchestrator crosses a responsibility budget, treat it as a review signal to find the next clean boundary.
 - After code changes, prefer `jhste-skills guard --scope changed --format text --fail-on error` when the CLI is available; report warnings and guard runtime/config failures separately.
+
+## Cleanup and secret-removal safety
+
+For secret cleanup, value removal, broad repository cleanup, or search/replace work:
+
+- Do not treat search results as an edit set.
+- First classify `EDIT_PATHS` and `PROTECTED_PATHS`.
+- `EDIT_PATHS` may include only current product files on the changed execution path or paths explicitly named by the user.
+- Treat docs, examples, tests, fixtures, snapshots, generated outputs, reports, diffs, patches, archives, and history-like surfaces as `PROTECTED_PATHS` unless the user explicitly names that exact path as the edit target.
+- Search the broader repo for reporting evidence, but write only inside `EDIT_PATHS`.
+- Report protected residual hits instead of silently editing them.
+- Do not edit history, object stores, reflogs, external copies, or run garbage collection unless the user explicitly scopes destructive purge work and approves the plan.
 
 ## References
 

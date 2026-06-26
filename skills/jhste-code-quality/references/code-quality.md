@@ -15,7 +15,15 @@ Risky fallback patterns include `catch` blocks that return `[]`, `null`, `undefi
 
 ## SOLID-informed coding discipline
 
-Use SOLID as a design review lens, not as automatic compliance. Keep each changed function, module, or class focused on one responsibility and one reason to change. Review extension boundaries when new variants repeatedly edit core branching, but avoid premature strategies or registries. Preserve caller-visible return shapes, nullability, error behavior, and side-effect expectations. Prefer right-sized contracts over broad config/interface/props bags, while keeping cohesive public contracts together. Keep concrete DB, API, browser, filesystem, email, payment, and queue effects visible through adapters, repositories, injected dependencies, or intentionally local boundaries.
+Use SOLID as a design review lens for concrete maintenance and failure risks, not as automatic compliance. Keep each changed function, module, or class focused on one responsibility and one reason to change. Review extension boundaries when new variants repeatedly edit core branching, but avoid premature strategies or registries. Preserve caller-visible return shapes, nullability, error behavior, and side-effect expectations. Prefer right-sized contracts over broad config/interface/props bags, while keeping cohesive public contracts together. Keep concrete DB, API, browser, filesystem, email, payment, and queue effects visible through adapters, repositories, injected dependencies, or intentionally local boundaries. Do not introduce abstraction only to satisfy a SOLID label.
+
+## Cleanup and secret-removal safety
+
+Broad search results are evidence, not an edit plan. Before removing secrets, values, generated noise, or repeated patterns, classify `EDIT_PATHS` and `PROTECTED_PATHS`.
+
+`EDIT_PATHS` should be limited to current product files on the changed execution path or exact paths the user named as editable. Treat docs, examples, tests, fixtures, snapshots, generated outputs, reports, diffs, patches, archives, and history-like surfaces as `PROTECTED_PATHS` unless the user explicitly targets that exact path. Search protected paths for reporting evidence, but report residual hits instead of silently rewriting them.
+
+Never edit history, object stores, reflogs, external copies, or run garbage collection as part of ordinary cleanup. Those are destructive purge operations and need explicit user scope and approval.
 
 ## Test quality
 

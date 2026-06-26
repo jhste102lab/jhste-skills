@@ -59,9 +59,9 @@ Repo-specific policy should stay in repo-local guards or `.jhste/profile.yaml` d
 Shared guidance now distinguishes two review stages:
 
 - commit-time guard: fast, read-only, and safe for hooks;
-- completion-time red-team review: a read-only red-team pass before declaring non-trivial code work complete.
+- completion-time red-team review: a read-only red-team pass before declaring non-trivial code work complete, with current proof, actual consumer-path proof when feasible, skipped/not-run checks, and residual risk separated.
 
-Red-team review should run for non-trivial code changes and may be skipped for docs-only, comment-only, formatting-only, and trivial rename-only changes. Agents should stop after at most two fix + re-review cycles and report residual risks instead of looping indefinitely.
+Red-team review should run for non-trivial code changes and may be skipped for docs-only, comment-only, formatting-only, and trivial rename-only changes. Agents should prefer the actual public entrypoint, CLI, UI route, worker path, service entrypoint, fresh-client flow, or documented acceptance path when feasible. They should stop after at most two fix + re-review cycles and report residual risks instead of looping indefinitely.
 
 The first shared finding families behind red-team review are:
 
@@ -93,7 +93,7 @@ SRP is not a "one function per file" or "smallest possible file" rule. A split i
 
 ## SOLID-informed design advisory
 
-SOLID is a coding discipline and review lens in this kit, not an automated compliance standard. `single_responsibility_advisory` remains the existing built-in SRP rule and is the S in the SOLID review model; do not rename it to a broader rule id just for branding.
+SOLID is a coding discipline and clean-code review lens for concrete maintenance and failure risks in this kit, not an automated compliance standard or abstraction trigger. `single_responsibility_advisory` remains the existing built-in SRP rule and is the S in the SOLID review model; do not rename it to a broader rule id just for branding.
 
 The added SOLID advisory families are intentionally split by principle so messages stay actionable:
 
@@ -102,7 +102,7 @@ The added SOLID advisory families are intentionally split by principle so messag
 - `interface_segregation_advisory` (ISP-informed) is metadata-only and human-review required. Review broad config/interface/props bags, but keep cohesive public contracts together when they are read and changed together.
 - `dependency_boundary_advisory` (DIP-informed) has a low-confidence guard candidate, `solid.dip.concrete_side_effect_dependency`, for concrete DB/API/filesystem/payment/notification/queue/browser dependencies in policy-like paths. Treat it as a prompt to inspect the boundary; an intentionally local dependency can be acceptable when visible and tested.
 
-Do not describe these rules as `SOLID compliance`, `SOLID rule enforcement`, or a `SOLID violation` detector. Guard findings are review candidates, not proof, and metadata-only SOLID rules provide no automated guard coverage.
+Do not describe these rules as `SOLID compliance`, `SOLID rule enforcement`, or a `SOLID violation` detector. Guard findings are review candidates, not proof, metadata-only SOLID rules provide no automated guard coverage, and abstractions should require a concrete caller, variant, side-effect boundary, testability problem, or maintenance failure mode.
 
 ## Restricted profile format
 

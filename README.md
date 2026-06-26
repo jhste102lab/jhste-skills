@@ -4,11 +4,11 @@ Languages: [English](README.md) · [한국어](README.ko.md) · [中文](README.
 
 An installable working-rules kit that helps AI coding agents consistently follow your engineering standards.
 
-`jhste-skills` gives Codex, Claude Code, and other AI coding agents a shared engineering workflow. It helps agents verify assumptions before editing, respect repo-local instructions, keep API/database/automation boundaries clear, apply SOLID-informed coding discipline and design review, run changed-file guards, and perform a red-team code review before claiming work is complete. Guard findings are review candidates, not automatic SOLID proof.
+`jhste-skills` gives Codex, Claude Code, and other AI coding agents a shared engineering workflow. It helps agents verify assumptions before editing, respect repo-local instructions, keep API/database/automation boundaries clear, apply SOLID-informed coding discipline and design review, run changed-file guards, and perform a red-team code review before claiming work is complete. Guard findings are review candidates, not automatic SOLID proof, and completion reports should separate current proof, checks not run, and residual risk.
 
 ## What SOLID means here
 
-SOLID is used here as a design review lens, not as an automatic compliance checklist.
+SOLID is used here as a design review lens for concrete maintenance and failure risks, not as an automatic compliance checklist or abstraction trigger.
 
 - **S — Single Responsibility:** each changed function, module, or class should have one main job and one main reason to change.
 - **O — Open/Closed:** adding a new variant, provider, or policy should not force repeated edits to core branching when a real extension boundary would be safer.
@@ -27,6 +27,7 @@ AI coding agents are fast, but they fail in predictable ways:
 - They silently accept unclear requirements or incorrect premises.
 - They expand the scope while trying to be helpful.
 - They mix UI, route/controller, service, database, and side-effect responsibilities in one place, or add abstractions without a real SOLID-informed boundary.
+- They apply broad cleanup or search/replace edits directly from raw search results.
 - They hide failures or produce unsafe logs.
 - They say “done” before the changed code has been checked.
 - They forget repo-specific rules when you switch machines or repositories.
@@ -35,7 +36,7 @@ AI coding agents are fast, but they fail in predictable ways:
 
 ```text
 Before a non-trivial code change:
-  check the goal, premise, ownership boundary, data contract, failure path, and SOLID-informed review lens
+  check the goal, premise, ownership boundary, data contract, failure path, final behavior predicates, and SOLID-informed review lens
 
 While editing:
   treat repo-local instructions as the authority
@@ -44,13 +45,13 @@ After changing code:
   run a fast changed-file guard when available
 
 Before saying “done”:
-  run a read-only red-team code review
+  run a read-only red-team code review and prefer actual consumer-path proof when feasible
 
 If warnings appear:
   attempt a bounded fix, re-check, and stop instead of looping forever
 ```
 
-The expected result is smaller diffs, clearer SOLID-informed boundaries, safer API/database code, fewer silent assumptions, and more honest completion reports.
+The expected result is smaller diffs, clearer SOLID-informed boundaries, safer API/database code, fewer silent assumptions, safer cleanup/search-replace behavior, and more honest completion reports grounded in current proof of the changed public behavior.
 
 ## Who should install this?
 
@@ -60,7 +61,7 @@ Install `jhste-skills` if you:
 - want agents to verify assumptions before non-trivial code changes;
 - want existing repo docs to remain the source of authority;
 - want lightweight advisory checks before commit or before declaring work complete;
-- care about SOLID-informed coding discipline, API/database boundaries, safe logging, input validation, side effects, and automation reliability;
+- care about SOLID-informed coding discipline, API/database boundaries, safe logging, input validation, cleanup safety, side effects, and automation reliability;
 - want to restore the same AI coding workflow across machines and repositories.
 
 You may not need this if you only want a single prompt file, want strict CI enforcement immediately after installation, do not want generated `.jhste/` files or bridge blocks, or expect this tool to automatically refactor code.
@@ -145,6 +146,8 @@ Custom   - asks effect-oriented questions so you can choose the setup
 - strict mode requires explicit opt-in;
 - bridge blocks use `<!-- jhste-skills:start -->` / `<!-- jhste-skills:end -->` markers;
 - guard output is review evidence, not proof by itself;
+- completion review should prefer actual consumer-path proof when feasible and separate current proof, skipped checks, checks not run, and residual risk;
+- cleanup/search-replace work should classify editable paths separately from protected evidence/history-like paths before writing;
 - guard runtime/config failures must be reported separately from rule violations;
 - install/update/uninstall flows leave non-managed hooks, bridge text, and skill directories untouched.
 
@@ -155,12 +158,12 @@ These are the jhste-authored guardrail skills. They are installed by default as 
 | Skill | Use it when | What it helps reduce |
 |---|---|---|
 | [`setup`](skills/setup/SKILL.md)<br>A safe setup skill that prevents install/connect/update flows from overwriting existing project instructions | Installing or connecting the kit to a repository | Unsafe overwrite, unmanaged hook conflict, repo instruction replacement |
-| [`jhste-engineering-groundwork`](skills/jhste-engineering-groundwork/SKILL.md)<br>A pre-change groundwork skill that verifies goal, premise, scope, boundary, and failure path before code edits | Before non-trivial code changes | Blind agreement, scope creep, unverified assumptions, unclear boundaries |
-| [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>A code-quality skill for input validation, observable failure handling, secret-safe logging, and oversized-file review | Touching external input, failure handling, logging, env/config, or code-quality review paths | Unvalidated input, silent failure, secret logging, oversized files |
+| [`jhste-engineering-groundwork`](skills/jhste-engineering-groundwork/SKILL.md)<br>A pre-change groundwork skill that verifies goal, premise, scope, boundary, failure path, and final behavior predicates before code edits | Before non-trivial code changes | Blind agreement, scope creep, unverified assumptions, unclear boundaries |
+| [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>A code-quality skill for input validation, observable failure handling, secret-safe logging, and oversized-file review | Touching external input, failure handling, logging, env/config, cleanup/search-replace, or code-quality review paths | Unvalidated input, silent failure, secret logging, unsafe broad cleanup, oversized files |
 | [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>An architecture review skill for module boundaries, side-effect placement, and SOLID-informed design risks | Changing module boundaries, app structure, side-effect placement, or responsibility splits | Pass-through abstraction, mixed responsibility, side-effect leakage |
 | [`jhste-db-api-boundary`](skills/jhste-db-api-boundary/SKILL.md)<br>A boundary skill that checks responsibility and data contracts across API routes, services, repositories, and SQL | Touching API, controller, service, repository, SQL, or persistence code | Fat routes, unsafe SQL, missing auth/data scoping, leaky DTOs |
 | [`jhste-crawler-automation`](skills/jhste-crawler-automation/SKILL.md)<br>An automation skill for crawler/scraper/worker/scheduler producer-consumer boundaries and side effects | Touching crawlers, scrapers, workers, schedulers, or browser automation | Fragile automation, unclear producer/consumer boundaries, hidden side effects |
-| [`jhste-red-team-review`](skills/jhste-red-team-review/SKILL.md)<br>A read-only red-team code review skill that aggressively re-checks changed code before completion | Before declaring non-trivial code work complete | Premature “done”, missed null/auth/env/write/API/performance risks |
+| [`jhste-red-team-review`](skills/jhste-red-team-review/SKILL.md)<br>A read-only red-team code review skill that aggressively re-checks changed code before completion | Before declaring non-trivial code work complete | Premature “done”, missing consumer-path proof, missed null/auth/env/write/API/performance risks |
 
 ## Bundled workflow skills
 
@@ -255,7 +258,7 @@ See [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.md) for release acceptanc
 - Do not agree blindly.
 - Do not overwrite local project authority.
 - Keep changes scoped.
-- Use SOLID-informed coding discipline: name responsibilities, review extension boundaries, preserve caller contracts, keep interfaces right-sized, and make concrete dependencies visible.
+- Use SOLID-informed coding discipline as a clean-code review lens: name responsibilities, review extension boundaries, preserve caller contracts, keep interfaces right-sized, and make concrete dependencies visible when they create maintenance or failure risk.
 - Make failures observable.
 - Treat automated guard output as evidence, not proof.
 - Run a red-team code review before calling non-trivial work complete.

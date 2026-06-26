@@ -5,7 +5,7 @@ description: "Pre-change engineering groundwork for non-trivial code work: verif
 
 # jhste-engineering-groundwork
 
-Use before non-trivial code changes. Repo-local instructions and architecture docs remain authoritative.
+Use before non-trivial code changes. Repo-local instructions and architecture docs remain authoritative. For docs-only, comment-only, formatting-only, and trivial rename-only work, skip the full groundwork block unless the change affects user-visible behavior, public API shape, data ownership, safety, or repo architecture. Still keep a short scope and verification note.
 
 ## Contract
 
@@ -15,7 +15,7 @@ Use before non-trivial code changes. Repo-local instructions and architecture do
 - Use this as a pre-edit groundwork check, not as a reason to interrupt the user. Make reasonable assumptions for reversible in-scope work and report them later. Ask only when the assumption changes scope, safety, data ownership, API contract, or user-visible behavior.
 - Identify the ownership boundary: UI, route/controller, usecase/service, repository/query, adapter, job, script, or test fixture.
 - Name the one main responsibility and one main reason to change for each changed class, module, and function.
-- Apply SOLID-informed coding discipline as review guidance, not compliance proof: responsibility, extension boundary, substitutability, interface size, and dependency direction.
+- Use SOLID-informed coding discipline as a clean-code review lens for concrete failure modes, not as compliance proof or a reason to add abstraction by default: responsibility, extension boundary, substitutability, interface size, and dependency direction.
 - Reject adjacent responsibilities unless they are on the changed execution path and leaving them out creates a concrete failure mode.
 - List the important failure paths before writing code.
 - State the data contract entering and leaving the changed boundary.
@@ -41,13 +41,15 @@ For non-trivial code changes, check these before editing:
 8. **Rejected scope** — adjacent refactors or old problems intentionally not touched.
 9. **Smallest safe change** — why the planned change is minimal.
 10. **Verification plan** — tests, guards, builds, or manual checks to run, plus any checks likely to be skipped.
+11. **Final behavior predicates** — concrete public behavior that must change, public/API/DB/UI shape that must not change, expected error behavior, persistence or side-effect expectations, and backward-compatibility constraints.
 
 Keep these items available as internal review evidence, but do not make the user read the full evidence block every time. User-facing output should usually be one or two plain sentences covering:
 
 - scope checked;
 - main risks;
 - smallest-change plan;
-- anything important that was **not checked**.
+- anything important that was **not checked**;
+- the key final behavior predicate when it is useful for the user to review.
 
 
 If a premise was not checked, say **not checked**. Do not write "not found" unless you actually inspected the relevant path.

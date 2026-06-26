@@ -17,6 +17,7 @@ Use this skill for API and persistence boundary changes. Repo-local API contract
 - Validate database rows or third-party records before treating them as domain objects when shape matters.
 - Make write safety visible for repeated execution, batch mutation, or idempotent retry paths.
 - Return public-safe errors; do not leak raw database, stack, or secret-like details.
+- For API or persistence changes, verification should prefer the actual contract surface when feasible: route handler behavior, request/response shape, auth or tenant scoping, SQL binding behavior, migration/application path, or service boundary used by callers.
 
 ## References
 

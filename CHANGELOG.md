@@ -1,5 +1,16 @@
 # Changelog
 
+
+## Unreleased
+
+### Changed
+- Strengthened completion review around current proof, consumer-path and fresh-client verification, skipped checks, checks not run, and residual risk.
+- Added final behavior predicates to pre-change engineering groundwork.
+- Clarified cleanup/search-replace safety by separating editable product paths from protected evidence/history-like surfaces.
+- Kept SOLID-informed coding discipline while emphasizing concrete failure modes over automatic abstraction.
+- Clarified that `grilling` and `grill-me` are read-only by default.
+- Made architecture improvement Markdown-first, with HTML visual reports optional when requested or materially useful.
+
 ## 0.3.0 - 2026-06-24
 
 ### Added

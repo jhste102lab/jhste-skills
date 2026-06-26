@@ -36,6 +36,17 @@ Rule modes are documented in `docs/RULES.md`, example profile defaults to adviso
 
 `docs/CONFLICT_RESOLUTION.md` and installer behavior preserve existing repo instructions, skip existing differing profiles/skills by default, make bridge insertion marker-managed and idempotent, refuse to overwrite non-managed hooks even in Full mode or with `--force`, refuse unmanaged skill-directory overwrites without `--allow-unmanaged-skill-overwrite`, and let `sync`/`update` adopt additional known jhste skills into an already managed skills directory.
 
+## Guardrail behavior updates
+
+Skill guidance now requires these completion and safety properties:
+
+- Red-team review requires current proof and separates checks run, consumer-path proof when feasible, checks not run, checks intentionally skipped, and residual risk.
+- Engineering groundwork records final behavior predicates for non-trivial code changes.
+- Cleanup/search-replace guidance requires editable `EDIT_PATHS` vs protected `PROTECTED_PATHS` classification before writes.
+- Grilling remains read-only by default; docs or tracker writes route to explicit writing workflows such as `grill-with-docs`, `domain-modeling`, `to-issues`, or `triage`.
+- Architecture improvement defaults to Markdown reporting, with HTML visual reports only when requested or materially useful.
+- SOLID-informed coding discipline remains a clean-code review lens for concrete failure modes, not automatic abstraction pressure.
+
 ## Verification commands
 
 ```bash

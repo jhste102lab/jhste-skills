@@ -12,6 +12,7 @@ Repo-local architecture docs remain authoritative. Use this skill to keep common
 - For non-trivial changes, apply `jhste-engineering-groundwork` before proposing or editing architecture.
 - Keep routing, UI composition, service logic, persistence, and side effects in clear boundaries.
 - Avoid pass-through abstraction that adds names without protecting an invariant or simplifying a caller.
+- Do not introduce an abstraction only to satisfy a SOLID label. Require a concrete caller, variant, side-effect boundary, testability problem, or maintenance failure mode.
 - Make side effects visible in names, directories, or injected dependencies.
 - For changed classes, modules, and functions, name one main responsibility and one main reason to change before adding behavior.
 - For large or mixed modules, identify the responsibility that can move behind a tested boundary without creating shallow pass-through wrappers.

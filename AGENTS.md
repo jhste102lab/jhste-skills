@@ -5,9 +5,9 @@ This file is authoritative for work in this repository.
 ## Workflow
 
 1. Keep commit-time hook behavior fast, read-only, and loop-safe.
-2. Before non-trivial code changes, use the `jhste-engineering-groundwork` skill to check scope, boundaries, failure paths, and assumptions.
+2. Before non-trivial code changes, use the `jhste-engineering-groundwork` skill to check scope, boundaries, failure paths, final behavior predicates, and assumptions.
 3. After non-trivial code changes, run `jhste-skills guard --scope changed --format text --fail-on error` when available.
-4. Treat guard output as review evidence, not proof by itself.
+4. Treat guard output as review evidence, not proof by itself; completion review should separate current proof, skipped/not-run checks, consumer-path proof when feasible, and residual risk.
 5. If guard or red-team review reports new warnings on changed files, attempt a bounded fix before declaring completion, then rerun guard. Do not commit automatically.
 6. Before declaring non-trivial code work complete, use the `jhste-red-team-review` skill.
 7. Skip red-team review for docs-only, comment-only, formatting-only, and trivial rename-only changes.
@@ -52,12 +52,12 @@ File, repo, command, issue, PR, or other external side effects are allowed when 
 Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
 For reversible in-scope choices, make a reasonable assumption, proceed, and report it in the final summary.
 See `.jhste/profile.yaml` for local skill preferences.
-Before non-trivial code changes, use the `jhste-engineering-groundwork` skill to check scope, boundaries, failure paths, and assumptions.
+Before non-trivial code changes, use the `jhste-engineering-groundwork` skill to check scope, boundaries, failure paths, final behavior predicates, and assumptions.
 For changed code, name the one main responsibility of each changed class, module, and function, and reject adjacent responsibilities unless they are on the changed execution path and prevent a concrete failure.
-Use SOLID-informed coding discipline as a review lens, not a compliance claim; guard findings are review candidates, not proof.
+Use SOLID-informed coding discipline as a clean-code review lens for concrete failure modes, not a compliance claim or automatic abstraction trigger; guard findings are review candidates, not proof.
 After code changes, run `jhste-skills guard --scope changed --format text --fail-on error` when available.
 Report guard warnings/errors; do not treat guard runtime/config failures as validation success.
-Treat guard output as review evidence, not proof by itself.
+Treat guard output as review evidence, not proof by itself; completion review should separate current proof, skipped/not-run checks, consumer-path proof when feasible, and residual risk.
 If guard or red-team review reports new warnings on changed files, attempt a bounded fix before declaring completion, then rerun guard. Do not commit automatically.
 Before declaring non-trivial code work complete, use the `jhste-red-team-review` skill.
 Skip red-team review for docs-only, comment-only, formatting-only, or trivial rename-only changes.
