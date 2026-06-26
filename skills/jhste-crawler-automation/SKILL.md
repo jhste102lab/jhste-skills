@@ -14,6 +14,7 @@ Use this skill when adding or reviewing crawler, scraper, worker, scheduler, or 
 - Do not depend on a live scheduled crawler run as the only routine validation path.
 - Browser, network, filesystem, clock, sleep, and notification effects should be visible and testable behind boundaries.
 - Store raw sensitive payloads only when the repo has an explicit policy for doing so.
+- Verify artifact handoff through the consumer-facing path when feasible: produced artifact shape, documented handoff location, idempotent retry behavior, and the consumer-side mutation boundary.
 
 ## References
 

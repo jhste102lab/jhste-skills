@@ -67,11 +67,14 @@ export const required = [
 ];
 
 export const recipeRequirements = {
-  'skills/jhste-code-quality/references/code-quality.md': ['React client loader/hook/adapter/view', 'Mutation write safety', 'Import/ops script'],
+  'skills/jhste-code-quality/references/code-quality.md': ['React client loader/hook/adapter/view', 'Mutation write safety', 'Import/ops script', 'EDIT_PATHS', 'PROTECTED_PATHS'],
   'skills/jhste-architecture-review/references/architecture-review.md': ['Next.js or API route split', 'React client path split', 'Generic module or function split', 'Function responsibility split', 'Adjacent-code scope limit'],
   'skills/jhste-db-api-boundary/references/db-api-boundary.md': ['DB row to domain/public DTO', 'Scoped mutation'],
   'skills/jhste-crawler-automation/references/crawler-automation.md': ['Producer / consumer recipe'],
-  'skills/jhste-engineering-groundwork/SKILL.md': ['Senior-quality pre-edit gate', 'partial-failure or rollback path', 'Adjacent-code scope creep', 'Changed responsibility', 'bounded fix'],
-  'skills/jhste-red-team-review/SKILL.md': ['Severity rubric and path tracing', 'changed execution path', 'changes required'],
-  'skills/jhste-red-team-review/references/red-team-review.md': ['Severity rubric', 'Trace at least one changed execution path', 'one main reason to change'],
+  'skills/grilling/SKILL.md': ['read-only by default'],
+  'skills/grill-me/SKILL.md': ['read-only by default'],
+  'skills/improve-codebase-architecture/SKILL.md': ['Default to a concise Markdown architecture review', 'HTML/Tailwind/Mermaid report only when requested'],
+  'skills/jhste-engineering-groundwork/SKILL.md': ['Senior-quality pre-edit gate', 'partial-failure or rollback path', 'Adjacent-code scope creep', 'Changed responsibility', 'bounded fix', 'Final behavior predicates'],
+  'skills/jhste-red-team-review/SKILL.md': ['Severity rubric and path tracing', 'changed execution path', 'changes required', 'actual consumer', 'residual risk'],
+  'skills/jhste-red-team-review/references/red-team-review.md': ['Severity rubric', 'Trace at least one changed execution path', 'one main reason to change', 'Current proof'],
 };

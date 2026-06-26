@@ -22,8 +22,11 @@ Perform the changed-code review, inspect guard/test output, and run bounded fix/
 - New warnings on changed files should be reported as changes required when they can be fixed within the changed execution path; the follow-up fix happens after the review, not inside it.
 - Inspect the actual changed files or diff before assigning `pass`.
 - Check that each changed class, module, and function has one clear main job, and call out mixed responsibilities that create concrete review or failure risk.
-- Apply SOLID-informed review as a coding-discipline lens: extension boundaries, substitutability, right-sized interfaces, and dependency direction are prompts for concrete failure modes, not automatic violations.
+- Apply SOLID-informed review as a coding-discipline lens: extension boundaries, substitutability, right-sized interfaces, and dependency direction are prompts for concrete failure modes, not automatic violations or automatic abstractions.
 - Do not assign `pass` from guard/test output alone; guard output is evidence, not a substitute for review.
+- Treat old passes, intent, skipped checks, partial artifacts, internal reasoning, and guard output alone as current proof gaps, not proof of completion.
+- Prefer proof through the actual consumer path when feasible: public API route, CLI command, UI route, worker/scheduler path, service entrypoint, fresh-client flow, or documented acceptance path.
+- Keep current proof, checks not run, checks intentionally skipped, and residual risks separate in the final report.
 - Report `guard` runtime/config failures separately from rule violations.
 - Distinguish **not found** from **not checked**. Use **not found** only after inspecting the relevant path.
 - Avoid recommending unrelated refactors unless they are on the changed execution path and required for safety.
@@ -34,7 +37,7 @@ Perform the changed-code review, inspect guard/test output, and run bounded fix/
 
 ## Severity rubric and path tracing
 
-For non-trivial code changes, name the main responsibility of changed classes/modules/functions, apply the SOLID-informed review lens where relevant, trace at least one changed execution path from entrypoint through validation/auth/state to the side effect or result, and state any changed paths not checked. Use `changes required` for new guard or review warnings on changed files that can be fixed within the changed execution path, and for P0/P1 issues that can cause data loss, security/privacy exposure, misleading success, broken runtime behavior, or failed documented acceptance. Use `residual risk` when the bounded review completed but lower-severity, heuristic, environmental, or out-of-scope risks remain. Use `pass` only after inspecting the relevant diff and finding no material follow-up.
+For non-trivial code changes, name the main responsibility of changed classes/modules/functions, apply the SOLID-informed review lens where relevant, trace at least one changed execution path from entrypoint through validation/auth/state to the side effect or result, and state any changed paths not checked. Use `changes required` for new guard or review warnings on changed files that can be fixed within the changed execution path, and for P0/P1 issues that can cause data loss, security/privacy exposure, misleading success, broken runtime behavior, or failed documented acceptance. Use `residual risk` when the bounded review completed but lower-severity, heuristic, environmental, or out-of-scope risks remain. Use `pass` only after inspecting the relevant diff and finding no material follow-up, with current proof for the changed public behavior or a clear explanation of why consumer-path proof was not feasible.
 
 ## Issue candidate protocol
 
@@ -72,8 +75,11 @@ Findings must include:
 Verification must state:
 
 - tests/builds/guards actually run;
+- actual consumer, entrypoint, fresh-client, or documented acceptance path checked when feasible;
 - checks not run;
-- whether any guard failures were runtime/config failures or rule violations.
+- checks intentionally skipped and why;
+- whether any guard failures were runtime/config failures or rule violations;
+- residual risk that remains after bounded review.
 
 When reporting warnings or residual risks to the user, keep the write-up to 2-3 short sentences in a natural developer tone:
 

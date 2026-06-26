@@ -4,16 +4,18 @@ Use an objective red-team checklist. Prefer concrete findings over broad praise.
 
 ## Checklist
 
-- Inspect the changed files or diff directly. Do not pass from summaries, test output, or guard output alone.
+- Inspect the changed files or diff directly. Do not pass from summaries, old passes, intent, test output, partial artifacts, internal reasoning, or guard output alone.
 - Responsibility is separated cleanly enough that changed classes, modules, functions, and UI components each have a clear main job and one main reason to change.
 - SOLID-informed risks are checked as review prompts, not proof: extension boundaries for repeated variants, substitutability contracts, broad interfaces, and concrete dependency direction.
 - Data flow is predictable and easy to trace through the changed code.
+- Current proof is identified explicitly: tests, builds, guards, direct inspection, actual consumer path, fresh-client flow, or documented acceptance path checked now.
 - Null, undefined, empty, loading, and error states are handled safely for the affected paths.
 - Failure handling is observable and does not silently pretend success.
 - Type expectations, API contracts, and caller assumptions still line up after the change.
 - Auth, permission, and user-data isolation risks are called out when relevant.
 - Create/update/delete paths do not appear vulnerable to data loss, duplicate writes, or misleading success states.
 - Build, import, env, route, and runtime assumptions that could break deployment are called out when relevant.
+- Actual consumer-path proof is preferred when feasible: public API route, CLI command, UI route, worker/scheduler path, service entrypoint, fresh-client flow, or documented acceptance path.
 - Performance risks such as duplicate requests, avoidable rerenders, or obviously heavy work on hot paths are called out when relevant.
 - Tests for changed behavior assert observable outcomes through the relevant interface, not implementation details or incidental strings.
 - Changed behavior is not covered only by a happy path when a meaningful edge, failure, side-effect, idempotency, or regression case is relevant.
@@ -35,7 +37,7 @@ Use **not found** only for risks whose relevant paths were inspected. Use **not 
 - **P2 -> changes required or residual risk**: contract drift, missing edge-case tests, poor failure observability, or maintainability debt on the changed path; require changes when the failure mode is concrete and immediate.
 - **P3 -> residual risk**: low-confidence heuristic, polish, docs clarity, or follow-up work outside the changed execution path.
 
-Trace at least one changed execution path from entrypoint to side effect/result for non-trivial code changes. Report paths not checked rather than implying broad coverage.
+Trace at least one changed execution path from entrypoint to side effect/result for non-trivial code changes. Report paths not checked rather than implying broad coverage. Keep current proof, skipped checks, not checked areas, and residual risks separate.
 
 ## Issue candidate shape
 
@@ -64,8 +66,9 @@ Summarize the result with:
 1. `pass`, `changes required`, or `residual risk`
 2. Short finding bullets with the concrete problem and impact
 3. Issue candidates only when separate tracked follow-up is warranted
-4. Tests, guard output, builds, or other checks that support the conclusion, plus checks not run
-5. What still might be wrong, if anything
+4. Current proof: tests, guard output, builds, consumer-path/fresh-client checks, or other checks that support the conclusion
+5. Checks intentionally skipped, checks not run, and why
+6. Residual risk: what still might be wrong, if anything
 
 Every finding should name:
 

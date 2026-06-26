@@ -44,8 +44,8 @@ Safety and compatibility:
 - existing profile is created when missing; generated/managed profiles can be refreshed with `--force`; modified profiles are preserved unless `--force --allow-profile-overwrite` is explicit; user source, CI, package files, lockfiles, non-managed hooks, and unmanaged differing skill directories are not overwritten; unmanaged skill overwrite requires `--allow-unmanaged-skill-overwrite` after review;
 - `AGENTS.md` and `CLAUDE.md` bridge blocks use `<!-- jhste-skills:start -->` / `<!-- jhste-skills:end -->` markers; only that managed block is updated on later runs;
 - CI, target `package.json`, and lockfiles are not changed. A local advisory pre-commit hook is installed by default in Normal, unless `--skip-hooks` is passed or an existing non-managed hook prevents safe install;
-- installed bridge/profile guidance tells agents to run `jhste-red-team-review` before declaring non-trivial code work complete, while skipping docs-only, comment-only, formatting-only, and trivial rename-only changes.
-- guard text output includes short `Meaning` and `Next` guidance for warning/info findings so users can understand and address candidates from hook output.
+- installed bridge/profile guidance tells agents to record final behavior predicates during groundwork and run `jhste-red-team-review` before declaring non-trivial code work complete, while skipping docs-only, comment-only, formatting-only, and trivial rename-only changes.
+- guard text output includes short `Meaning` and `Next` guidance for warning/info findings so users can understand and address candidates from hook output. Guard output remains review evidence, not completion proof; completion reports should separate current proof, consumer-path proof when feasible, skipped or not-run checks, and residual risk.
 
 Repo detection:
 

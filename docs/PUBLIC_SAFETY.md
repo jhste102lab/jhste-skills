@@ -12,7 +12,9 @@ Before release, confirm:
 - deep scan is optional and does not modify source code;
 - recommended profile is not applied without user approval;
 - strict mode requires explicit opt-in;
-- Matt skills have allowlist, source lock, and license attribution.
+- Matt skills have allowlist, source lock, and license attribution;
+- cleanup/search-replace guidance does not encourage broad writes from raw search results;
+- protected docs/examples/tests/fixtures/snapshots/generated outputs/reports/diffs/patches/history-like surfaces remain report-only unless explicitly targeted.
 
 Optional local private patterns can be placed in `.jhste/private-safety-patterns.txt` (one literal fragment per line, `#` comments allowed). The file is ignored and skipped by the checker; matches are reported without echoing the private fragment. If the file is absent, generic secret-like filename, token, credential, and local-path checks still run.
 
