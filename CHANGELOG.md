@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.3 - 2026-06-26
+
+### Removed
+- Removed the global npm `postinstall` auto-sync. Updating the npm package no longer requires install-script approval or a persistent user-level `allow-scripts` npm config; run `jhste-skills update --yes --skip-hooks` explicitly when you want to refresh managed local skill copies.
 
 ## 0.3.2 - 2026-06-26
 
