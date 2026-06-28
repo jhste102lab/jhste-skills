@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.5 - 2026-06-28
+
+### Added
+- Added `jhste-long-running-work-loop`, a narrow orchestration skill for multi-session and long-running work that preserves goals, phases, approval boundaries, resume points, and durable-state routing without replacing code-quality, PRD, issue, triage, or handoff workflows.
+
+### Changed
+- Updated smoke-test expected skill counts now that the bundled/core skill set includes the new long-running work loop skill.
+
+### Validation
+- `npm test` passed.
+- `jhste-skills guard --scope changed --format text --fail-on error` passed with 0 warnings/errors.
+
 ## 0.3.4 - 2026-06-26
 
 ### Changed

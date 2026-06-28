@@ -112,7 +112,7 @@ function runDefaultInstall(ctx) {
   const manifest = readManagedSkillsManifest(skillsDir);
   if (manifest.managed_by !== 'jhste-skills' || !manifest.skills?.['jhste-red-team-review']?.digest) fail('skills manifest missing managed skill digest');
   const defaultSkillDirs = skillDirs(skillsDir);
-  if (defaultSkillDirs.length !== 20) fail(`default install should copy 20 bundled skills, got ${defaultSkillDirs.length}`);
+  if (defaultSkillDirs.length !== 21) fail(`default install should copy 21 bundled skills, got ${defaultSkillDirs.length}`);
   if (!defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should copy vendored workflow skills');
 }
 
@@ -268,7 +268,7 @@ function runSkillSetScenarios({ root, tmp }) {
   fs.writeFileSync(path.join(allRepo, 'AGENTS.md'), '# All skill repo\n');
   run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', allRepo, '--skills-dir', allSkillsDir, '--skip-deep-scan', '--skip-hooks', '--skill-set', 'all'], { cwd: allRepo });
   const allSkillDirs = skillDirs(allSkillsDir);
-  if (allSkillDirs.length !== 20) fail(`--skill-set all should copy 20 skills, got ${allSkillDirs.length}`);
+  if (allSkillDirs.length !== 21) fail(`--skill-set all should copy 21 skills, got ${allSkillDirs.length}`);
   if (!allSkillDirs.includes('jhste-red-team-review') || !allSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set all missing core or vendored skill');
 }
 
