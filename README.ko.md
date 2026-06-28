@@ -171,7 +171,7 @@ Custom   - 효과 중심 질문을 통해 설치 범위를 직접 선택
 | [`jhste-db-api-boundary`](skills/jhste-db-api-boundary/SKILL.md)<br>API route, service, repository, SQL 사이의 책임 경계와 데이터 계약을 점검하는 boundary 스킬 | API, controller, service, repository, SQL, persistence code를 만질 때 | fat route, unsafe SQL, missing auth/data scoping, leaky DTO |
 | [`jhste-crawler-automation`](skills/jhste-crawler-automation/SKILL.md)<br>crawler, scraper, worker, scheduler의 producer/consumer boundary와 side effect를 점검하는 자동화 스킬 | crawler, scraper, worker, scheduler, browser automation을 만질 때 | fragile automation, unclear producer/consumer boundary, hidden side effect |
 | [`jhste-red-team-review`](skills/jhste-red-team-review/SKILL.md)<br>완료 선언 전 변경 코드를 공격적으로 재검토하는 read-only red-team code review 스킬 | non-trivial code work 완료 선언 전 | premature “done”, missing consumer-path proof, 놓치기 쉬운 null/auth/env/write/API/performance risk |
-| [`jhste-long-running-work-loop`](skills/jhste-long-running-work-loop/SKILL.md)<br>multi-session 및 long-running work를 위한 좁은 orchestration 스킬 | 여러 세션 작업, 반복 리뷰, 외부 대기 상태, 여러 repo 영향, PRD→issue→구현→리뷰 흐름, durable decision이 있을 때 | lost context, stale scratchpad, unclear approval boundary, unsafe resume point |
+| [`jhste-long-running-work-loop`](skills/jhste-long-running-work-loop/SKILL.md)<br>세션, 대기 상태, durable decision 사이의 작업 상태를 보존하는 좁은 orchestration 스킬 | 상태 손실이 잘못된 작업, 중복 작업, unsafe resume, 재개 어려움으로 이어질 수 있을 때: 여러 세션 작업, 반복 리뷰, 당일 또는 다일 외부 대기 상태, 여러 repo 영향, PRD→issue→구현→리뷰 흐름, durable decision | lost context, stale scratchpad, unclear approval boundary, unsafe resume point |
 
 ## Bundled workflow skills
 

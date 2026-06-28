@@ -1,21 +1,21 @@
 ---
 name: jhste-long-running-work-loop
-description: "Coordinate multi-session or long-running work while preserving state, approval boundaries, and resume points. Use when work spans sessions, wait states, recurring reviews, multiple repos, or durable decisions; does not replace code-quality, PRD, issue, triage, or handoff skills."
+description: "Coordinate durable work loops when losing state would make work unsafe or hard to resume. Use when work spans sessions, wait states, recurring reviews, multiple repos, or durable decisions; does not replace code-quality, PRD, issue, triage, or handoff skills."
 ---
 
 # jhste-long-running-work-loop
 
-Use this skill to decide whether a task needs a durable work loop, then keep the loop small, reviewable, and safe. Repo-local instructions remain authoritative.
+Use this skill when the main risk is losing important work state, not merely because the task may take a long time. Decide whether a task needs a durable work loop, then keep the loop small, reviewable, and safe. Repo-local instructions remain authoritative.
 
 This is an orchestration skill. Do not reimplement code quality review, PRD writing, issue breakdown, triage, or handoff workflows. Route to the narrower skill when that is the actual task.
 
 ## Scope
 
-Use for work that is likely to lose important state across time, tools, repositories, or sessions:
+Use for work where losing state would likely cause wrong, unsafe, duplicated, or hard-to-resume work across time, tools, repositories, or sessions:
 
 - multi-session implementation or review work;
 - recurring review/check-in loops;
-- external waiting states such as CI, preview deploys, reviewer replies, approvals, vendor/API responses, or customer input;
+- same-day or multi-day external waiting states such as CI, preview deploys, reviewer replies, approvals, vendor/API responses, or customer input;
 - workflows spanning PRD, issues, implementation, review, and release notes;
 - work that touches multiple repositories or external systems;
 - hard-to-reverse design decisions that need a durable decision record;
@@ -31,11 +31,11 @@ Skip for:
 - direct requests that are only PRD drafting, issue breakdown, triage, or handoff;
 - work where the changed code path can be handled by `jhste-engineering-groundwork`, guard, and `jhste-red-team-review` alone.
 
-When skipping, use the narrower workflow. If useful, briefly note that a long-running loop is unnecessary.
+When skipping, use the narrower workflow. If useful, briefly note that a durable loop is unnecessary.
 
 ## Contract
 
-1. **Decide if this is actually long-running.**  
+1. **Decide if a durable loop is actually warranted.**
    If not, route to the smallest applicable skill or workflow.
 
 2. **Define the work loop before expanding scope.**  
@@ -81,7 +81,7 @@ When skipping, use the narrower workflow. If useful, briefly note that a long-ru
 When a durable loop is warranted, keep the note compact:
 
 ```md
-## Long-running work loop
+## Durable work loop
 
 Goal:
 - ...
@@ -136,7 +136,7 @@ Record nothing when the information is trivial, already obvious from code/tests/
 
 Be brief. Report:
 
-- whether the long-running loop is warranted;
+- whether the durable loop is warranted;
 - the chosen durable surface, if any;
 - the next checkpoint;
 - any action that requires approval;

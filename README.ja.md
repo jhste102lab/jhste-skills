@@ -168,7 +168,7 @@ Custom   - 効果ベースの質問でセットアップ範囲を選択
 | [`jhste-db-api-boundary`](skills/jhste-db-api-boundary/SKILL.md)<br>API route、service、repository、SQL 間の責任と data contract を確認する boundary skill | API、controller、service、repository、SQL、persistence code を触るとき | Fat route, unsafe SQL, missing auth/data scoping, leaky DTO |
 | [`jhste-crawler-automation`](skills/jhste-crawler-automation/SKILL.md)<br>crawler/scraper/worker/scheduler の producer-consumer boundary と side effect を確認する automation skill | crawler、scraper、worker、scheduler、browser automation を触るとき | Fragile automation, unclear producer/consumer boundary, hidden side effect |
 | [`jhste-red-team-review`](skills/jhste-red-team-review/SKILL.md)<br>完了前に変更コードを攻撃的に再確認する read-only red-team code review skill | non-trivial code work の完了宣言前 | Premature “done”, missed null/auth/env/write/API/performance risk |
-| [`jhste-long-running-work-loop`](skills/jhste-long-running-work-loop/SKILL.md)<br>multi-session / long-running work のための狭い orchestration skill | 複数セッションの作業、繰り返し review、外部待ち状態、複数 repo への影響、PRD→issue→implementation→review の流れ、durable decision があるとき | Lost context, stale scratchpad, unclear approval boundary, unsafe resume point |
+| [`jhste-long-running-work-loop`](skills/jhste-long-running-work-loop/SKILL.md)<br>session、待ち状態、durable decision をまたいで作業状態を保つための狭い orchestration skill | 状態喪失が誤り、重複、不安全、または再開困難な作業につながるとき: 複数セッションの作業、繰り返し review、当日または複数日の外部待ち状態、複数 repo への影響、PRD→issue→implementation→review の流れ、durable decision | Lost context, stale scratchpad, unclear approval boundary, unsafe resume point |
 
 ## Bundled workflow skills
 

@@ -168,7 +168,7 @@ Custom   - 通过面向效果的问题自定义安装范围
 | [`jhste-db-api-boundary`](skills/jhste-db-api-boundary/SKILL.md)<br>检查 API route、service、repository、SQL 之间职责和 data contract 的 boundary skill | 修改 API、controller、service、repository、SQL、persistence code 时 | Fat route, unsafe SQL, missing auth/data scoping, leaky DTO |
 | [`jhste-crawler-automation`](skills/jhste-crawler-automation/SKILL.md)<br>检查 crawler/scraper/worker/scheduler 的 producer-consumer boundary 和 side effect 的 automation skill | 修改 crawler、scraper、worker、scheduler、browser automation 时 | Fragile automation, unclear producer/consumer boundary, hidden side effect |
 | [`jhste-red-team-review`](skills/jhste-red-team-review/SKILL.md)<br>read-only red-team code review skill，在完成前主动攻击性复查变更代码 | non-trivial code work 完成声明前 | Premature “done”, missed null/auth/env/write/API/performance risk |
-| [`jhste-long-running-work-loop`](skills/jhste-long-running-work-loop/SKILL.md)<br>用于 multi-session 和 long-running work 的窄 orchestration skill | 多会话工作、重复 review、外部等待状态、多 repo 影响、PRD→issue→implementation→review 流程或 durable decision | Lost context, stale scratchpad, unclear approval boundary, unsafe resume point |
+| [`jhste-long-running-work-loop`](skills/jhste-long-running-work-loop/SKILL.md)<br>用于在 session、等待状态和 durable decision 间保留工作状态的窄 orchestration skill | 状态丢失可能导致错误、重复、不安全或难以恢复的工作时：多会话工作、重复 review、当天或多天外部等待状态、多 repo 影响、PRD→issue→implementation→review 流程或 durable decision | Lost context, stale scratchpad, unclear approval boundary, unsafe resume point |
 
 ## Bundled workflow skills
 

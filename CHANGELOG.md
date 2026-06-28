@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.6 - 2026-06-28
+
+### Changed
+- Clarified that `jhste-long-running-work-loop` is triggered by state-loss risk rather than elapsed time alone, including same-day external wait states.
+- Updated README skill summaries to describe durable state preservation instead of implying only long-duration work.
+
+### Validation
+- `npm test` passed.
+- `jhste-skills guard --scope changed --format text --fail-on error` passed with 0 warnings/errors.
+- `git diff --check` passed.
+- `npm pack --dry-run` completed for `jhste-skills@0.3.6`.
+
 ## 0.3.5 - 2026-06-28
 
 ### Added
