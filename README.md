@@ -171,6 +171,7 @@ These are the jhste-authored guardrail skills. They are installed by default as 
 | [`jhste-db-api-boundary`](skills/jhste-db-api-boundary/SKILL.md)<br>A boundary skill that checks responsibility and data contracts across API routes, services, repositories, and SQL | Touching API, controller, service, repository, SQL, or persistence code | Fat routes, unsafe SQL, missing auth/data scoping, leaky DTOs |
 | [`jhste-crawler-automation`](skills/jhste-crawler-automation/SKILL.md)<br>An automation skill for crawler/scraper/worker/scheduler producer-consumer boundaries and side effects | Touching crawlers, scrapers, workers, schedulers, or browser automation | Fragile automation, unclear producer/consumer boundaries, hidden side effects |
 | [`jhste-red-team-review`](skills/jhste-red-team-review/SKILL.md)<br>A read-only red-team code review skill that aggressively re-checks changed code before completion | Before declaring non-trivial code work complete | Premature “done”, missing consumer-path proof, missed null/auth/env/write/API/performance risks |
+| [`jhste-long-running-work-loop`](skills/jhste-long-running-work-loop/SKILL.md)<br>A narrow orchestration skill for multi-session and long-running work | Multi-session work, recurring reviews, external wait states, multiple repos, PRD→issue→implementation→review flows, or durable decisions | Lost context, stale scratchpads, unclear approval boundaries, unsafe resume points |
 
 ## Bundled workflow skills
 
