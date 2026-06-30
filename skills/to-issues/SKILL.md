@@ -10,7 +10,6 @@ description: Break an existing plan, spec, or PRD into issue-ready vertical impl
 - Vocabulary in this vendored skill is advisory unless adopted by repo-local docs; do not rename established repo concepts only to match this skill.
 - File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it. Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
 
-
 # To Issues
 
 Break a plan into independently-grabbable issues using vertical slices (tracer bullets).
@@ -27,16 +26,18 @@ Work from whatever is already in the conversation context. If the user passes an
 
 If you have not already explored the codebase, do so to understand the current state of the code. Issue titles and descriptions should use the project's domain glossary vocabulary, and respect ADRs in the area you're touching.
 
+Look for opportunities to prefactor the code to make the implementation easier: make the change easy, then make the easy change. Any prefactoring should be its own first slice when it is valuable and independently verifiable.
+
 ### 3. Draft vertical slices
 
-Break the plan into **tracer bullet** issues. Each issue is a thin vertical slice that cuts through ALL integration layers end-to-end, NOT a horizontal slice of one layer.
-
-Slices may be 'HITL' or 'AFK'. HITL slices require human interaction, such as an architectural decision or a design review. AFK slices can be implemented and merged without human interaction. Prefer AFK over HITL where possible.
+Break the plan into **tracer bullet** issues. Each issue is a thin vertical slice that cuts through all required integration layers end-to-end, not a horizontal slice of one layer.
 
 <vertical-slice-rules>
-- Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests)
-- A completed slice is demoable or verifiable on its own
-- Prefer many thin slices over few thick ones
+- Each slice delivers a narrow but complete path through the affected layers.
+- A completed slice is demoable or verifiable on its own.
+- Prefer many thin slices over few thick ones.
+- Put required prefactoring first when it makes later implementation simpler and safer.
+- Do not add a separate HITL/AFK field by default; represent human decisions, reviews, or external access as blockers, out-of-scope notes, or acceptance criteria.
 </vertical-slice-rules>
 
 ### 4. Present the breakdown
@@ -44,11 +45,10 @@ Slices may be 'HITL' or 'AFK'. HITL slices require human interaction, such as an
 Present the proposed breakdown as a numbered list. For each slice, show:
 
 - **Title**: short descriptive name
-- **Type**: HITL / AFK
-- **Blocked by**: which other slices (if any) must complete first
-- **User stories covered**: which user stories this addresses (if the source material has them)
+- **Blocked by**: which other slices or human decisions, if any, must complete first
+- **User stories covered**: which user stories this addresses, if the source material has them
 
-Make reasonable assumptions about granularity, dependency order, merging/splitting, and HITL/AFK classification. Ask only when a choice is ambiguous enough to materially change the implementation plan or when tracker writes require confirmation.
+Make reasonable assumptions about granularity, dependency order, and merging/splitting. Ask only when a choice is ambiguous enough to materially change the implementation plan or when tracker writes require confirmation.
 
 ### 5. Prepare or publish the issues
 
@@ -79,7 +79,7 @@ Avoid specific file paths or code snippets — they go stale fast. Exception: if
 
 ## Blocked by
 
-- A reference to the blocking ticket (if any)
+- A reference to the blocking ticket or human decision (if any)
 
 Or "None - can start immediately" if no blockers.
 

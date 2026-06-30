@@ -172,7 +172,7 @@ Custom   - 通过面向效果的问题自定义安装范围
 
 ## Bundled workflow skills
 
-Normal install 还会安装 13 个从 Matt Pocock 的 [`mattpocock/skills`](https://github.com/mattpocock/skills) vendoring 的 workflow skills。它们适用于 debugging、planning、architecture、issue workflow、prototyping 和 handoff。若不想安装它们，请使用 `--skill-set core`。
+Normal install 还会安装 14 个从 Matt Pocock 的 [`mattpocock/skills`](https://github.com/mattpocock/skills) vendoring 的 workflow skills。它们适用于 implementation、debugging、planning、architecture、issue workflow、prototyping、handoff 和 skill-writing guidance。若不想安装它们，请使用 `--skill-set core`。
 
 | Skill | 何时使用 |
 |---|---|
@@ -188,11 +188,12 @@ Normal install 还会安装 13 个从 Matt Pocock 的 [`mattpocock/skills`](http
 | [`to-issues`](skills/to-issues/SKILL.md)<br>把计划拆成 issue-ready vertical slices 的 skill | 需要 implementation tickets/work breakdown；tracker creation 需直接请求或 repo approval |
 | [`triage`](skills/triage/SKILL.md)<br>分类 issue 并规划下一步行动的 triage skill | 需要 issue classification、next-action planning 或 repo-approved triage writes 时 |
 | [`handoff`](skills/handoff/SKILL.md)<br>压缩 context，让下一个 agent 或 session 能继续工作的 handoff skill | 请求 handoff、session summary、continuation brief 或 next-agent context 时 |
-| [`write-a-skill`](skills/write-a-skill/SKILL.md)<br>用正确结构和 progressive disclosure 创建 agent skill 的 skill-writing skill | 想创建或改进 agent skill 时 |
+| [`implement`](skills/implement/SKILL.md)<br>使用 jhste groundwork、verification、guard、review 的 scoped PRD/issue/spec implementation workflow skill | 想从 PRD、issue、spec 或 handoff 实现 focused work 时 |
+| [`writing-great-skills`](skills/writing-great-skills/SKILL.md)<br>关于 predictable invocation、progressive disclosure、context load control、pruning 的 skill-writing reference | 想创建、替换或改进 agent skill 时 |
 
 ## Attribution: Matt Pocock skills
 
-本仓库从 Matt Pocock 的 [`mattpocock/skills`](https://github.com/mattpocock/skills) vendoring 了上面列出的 13 个 skills。
+本仓库从 Matt Pocock 的 [`mattpocock/skills`](https://github.com/mattpocock/skills) vendoring 了上面列出的 14 个 skills。
 
 这些 skills 按 upstream MIT License vendoring。本仓库保留所需 copyright/license notice，并记录导入来源。
 

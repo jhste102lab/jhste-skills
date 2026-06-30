@@ -19,7 +19,7 @@ The issue tracker and triage label vocabulary should come from repo-local instru
 
 1. Explore the repo to understand the current state of the codebase, if you haven't already. Use the project's domain glossary vocabulary throughout the PRD, and respect any ADRs in the area you're touching.
 
-2. Sketch out the boundaries at which you're going to test the feature. Existing boundaries should be preferred to new ones. Use the highest boundary possible. If new boundaries are needed, propose them at the highest point you can.
+2. Sketch out the boundaries at which you're going to test the feature. Existing boundaries should be preferred to new ones. Use the highest boundary possible. If new boundaries are needed, propose them at the highest point you can. The fewer boundaries across the codebase, the better; the ideal number is one meaningful proof boundary.
 
 State any boundary assumptions in the PRD. Ask only if the boundary choice is ambiguous enough to materially change the PRD.
 

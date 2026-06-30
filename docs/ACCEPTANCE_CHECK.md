@@ -64,7 +64,7 @@ Record actual command output in release notes before publishing a release.
 
 Release gates include dependency-free syntax checking, a first-run `install -> deep-scan -> tune --yes -> guard` smoke flow, `npm pack --dry-run` contents checks, and packed-tarball bin execution in a fresh temp consumer. These gates are not part of commit-time hooks.
 
-- Verify `sync`/`update` migrates older managed renames without leaving duplicate directories, including `diagnose` → `diagnosing-bugs` and `jhste-engineering-judgment` → `jhste-engineering-groundwork`.
+- Verify `sync`/`update` migrates older managed renames without leaving duplicate directories, including `diagnose` → `diagnosing-bugs`, `jhste-engineering-judgment` → `jhste-engineering-groundwork`, and managed removal of retired `write-a-skill`.
 
 ## npm trusted publishing
 

@@ -172,7 +172,7 @@ Custom   - 効果ベースの質問でセットアップ範囲を選択
 
 ## Bundled workflow skills
 
-Normal install では、Matt Pocock の [`mattpocock/skills`](https://github.com/mattpocock/skills) から vendoring した 13 個の workflow skills もインストールします。これらは debugging、planning、architecture、issue workflow、prototyping、handoff に役立ちます。インストールしたくない場合は `--skill-set core` を使ってください。
+Normal install では、Matt Pocock の [`mattpocock/skills`](https://github.com/mattpocock/skills) から vendoring した 14 個の workflow skills もインストールします。これらは implementation、debugging、planning、architecture、issue workflow、prototyping、handoff、skill-writing guidance に役立ちます。インストールしたくない場合は `--skill-set core` を使ってください。
 
 | Skill | いつ使うか |
 |---|---|
@@ -188,11 +188,12 @@ Normal install では、Matt Pocock の [`mattpocock/skills`](https://github.com
 | [`to-issues`](skills/to-issues/SKILL.md)<br>計画を issue-ready vertical slices に分解する skill | implementation tickets/work breakdown が必要なとき; tracker creation は直接依頼または repo approval がある場合 |
 | [`triage`](skills/triage/SKILL.md)<br>issue を分類し次の action を計画する triage skill | issue classification、next-action planning、repo-approved triage writes が必要なとき |
 | [`handoff`](skills/handoff/SKILL.md)<br>次の agent や session が続けられるよう context を圧縮する handoff skill | handoff、session summary、continuation brief、next-agent context の依頼時 |
-| [`write-a-skill`](skills/write-a-skill/SKILL.md)<br>正しい構造と progressive disclosure で agent skill を作成する skill-writing skill | agent skill を作成または改善したいとき |
+| [`implement`](skills/implement/SKILL.md)<br>jhste groundwork、verification、guard、review を使う scoped PRD/issue/spec implementation workflow skill | PRD、issue、spec、handoff から focused work を実装したいとき |
+| [`writing-great-skills`](skills/writing-great-skills/SKILL.md)<br>predictable invocation、progressive disclosure、context load control、pruning の skill-writing reference | agent skill を作成、置換、改善したいとき |
 
 ## Attribution: Matt Pocock skills
 
-このリポジトリは、上記 13 個の skills を Matt Pocock の [`mattpocock/skills`](https://github.com/mattpocock/skills) から vendoring しています。
+このリポジトリは、上記 14 個の skills を Matt Pocock の [`mattpocock/skills`](https://github.com/mattpocock/skills) から vendoring しています。
 
 これらの skills は upstream MIT License に基づいて vendoring されています。このリポジトリは必要な copyright/license notice を保持し、インポート元を記録しています。
 

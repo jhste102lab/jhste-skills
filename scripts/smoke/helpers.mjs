@@ -76,6 +76,21 @@ export function assertLegacySkillRenameMigration({ root, repo, skillsDir, manife
   return migratedManifest;
 }
 
+export function assertManagedDeletedSkillRemoval({ root, repo, skillsDir, manifest, deletedName, digest }) {
+  const deletedDir = path.join(skillsDir, deletedName);
+  fs.mkdirSync(deletedDir, { recursive: true });
+  fs.writeFileSync(path.join(deletedDir, 'SKILL.md'), '# stale deleted skill copy\n');
+  manifest.skills[deletedName] = { digest };
+  fs.writeFileSync(path.join(skillsDir, '.jhste-skills-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+
+  run(process.execPath, [path.join(root, 'cli/update.mjs'), '--yes', '--repo', repo, '--skills-dir', skillsDir], { cwd: repo });
+
+  if (fs.existsSync(deletedDir)) fail(`update did not remove deleted managed ${deletedName} skill directory`);
+  const updatedManifest = readManagedSkillsManifest(skillsDir);
+  if (updatedManifest.skills?.[deletedName]) fail(`update left deleted ${deletedName} entry in manifest`);
+  return updatedManifest;
+}
+
 export function assertNoInstallSideEffects({ repo, skillsDir, agentsBefore, label }) {
   if (fs.existsSync(path.join(repo, '.jhste'))) fail(`${label} created .jhste`);
   if (fs.existsSync(skillsDir)) fail(`${label} touched skills directory`);

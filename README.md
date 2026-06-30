@@ -175,7 +175,7 @@ These are the jhste-authored guardrail skills. They are installed by default as 
 
 ## Bundled workflow skills
 
-Normal install also includes 13 workflow skills vendored from Matt Pocock's [`mattpocock/skills`](https://github.com/mattpocock/skills). These are useful for debugging, planning, architecture, issue workflows, prototyping, and handoffs. Use `--skill-set core` if you do not want them installed.
+Normal install also includes 14 workflow skills vendored from Matt Pocock's [`mattpocock/skills`](https://github.com/mattpocock/skills). These are useful for implementation, debugging, planning, architecture, issue workflows, prototyping, handoffs, and skill-writing guidance. Use `--skill-set core` if you do not want them installed.
 
 | Skill | Use it when |
 |---|---|
@@ -191,11 +191,12 @@ Normal install also includes 13 workflow skills vendored from Matt Pocock's [`ma
 | [`to-issues`](skills/to-issues/SKILL.md)<br>A skill that breaks a plan into issue-ready vertical slices | You want implementation tickets or work breakdown; tracker creation follows direct request or repo approval |
 | [`triage`](skills/triage/SKILL.md)<br>An issue triage skill that classifies issues and plans next actions through a structured workflow | You want issue classification, next-action planning, or repo-approved triage writes |
 | [`handoff`](skills/handoff/SKILL.md)<br>A handoff skill that compresses context so the next agent or session can continue | You ask for a handoff, session summary, continuation brief, or next-agent context |
-| [`write-a-skill`](skills/write-a-skill/SKILL.md)<br>A skill-writing skill for creating agent skills with the right structure and progressive disclosure | You want to create or refine an agent skill |
+| [`implement`](skills/implement/SKILL.md)<br>An implementation workflow skill for scoped PRD/issue/spec work using jhste groundwork, verification, guard, and review | You want an agent to implement focused work from a PRD, issue, spec, or handoff |
+| [`writing-great-skills`](skills/writing-great-skills/SKILL.md)<br>A skill-writing reference for predictable invocation, progressive disclosure, context load control, and pruning | You want to create, replace, or refine an agent skill |
 
 ## Attribution: Matt Pocock skills
 
-This repository vendors the 13 skills listed above from Matt Pocock's [`mattpocock/skills`](https://github.com/mattpocock/skills).
+This repository vendors the 14 skills listed above from Matt Pocock's [`mattpocock/skills`](https://github.com/mattpocock/skills).
 
 Those skills are vendored under the upstream MIT License. This repository preserves the required copyright/license notice and records the imported sources.
 
@@ -273,4 +274,4 @@ See [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.md) for release acceptanc
 
 Fast agents need guardrails. `jhste-skills` gives them a repo-respecting engineering workflow.
 
-Installed skill directories are tracked with `.jhste-skills-manifest.json`. `--force` refreshes manifest-managed skill copies and generated/managed profiles; modified profiles need `--force --allow-profile-overwrite`; overwriting unmanaged differing skill directories still requires the separate `--allow-unmanaged-skill-overwrite` flag after review. `sync` and `update` can also adopt additional known jhste skills into an already managed skills directory so older mixed installs can be reconciled without a manual overwrite flag. Legacy managed renames are also reconciled during `sync` and `update`, so older managed installs that still have `diagnose` or `jhste-engineering-judgment` are migrated to `diagnosing-bugs` or `jhste-engineering-groundwork` without leaving duplicate skill directories.
+Installed skill directories are tracked with `.jhste-skills-manifest.json`. `--force` refreshes manifest-managed skill copies and generated/managed profiles; modified profiles need `--force --allow-profile-overwrite`; overwriting unmanaged differing skill directories still requires the separate `--allow-unmanaged-skill-overwrite` flag after review. `sync` and `update` can also adopt additional known jhste skills into an already managed skills directory so older mixed installs can be reconciled without a manual overwrite flag. Legacy managed renames are also reconciled during `sync` and `update`, so older managed installs that still have `diagnose` or `jhste-engineering-judgment` are migrated to `diagnosing-bugs` or `jhste-engineering-groundwork`. Managed copies of retired `write-a-skill` are removed rather than kept as a compatibility fallback.

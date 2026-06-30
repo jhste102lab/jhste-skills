@@ -175,7 +175,7 @@ Custom   - 효과 중심 질문을 통해 설치 범위를 직접 선택
 
 ## Bundled workflow skills
 
-Normal install은 Matt Pocock의 [`mattpocock/skills`](https://github.com/mattpocock/skills)에서 vendoring한 workflow skills 13개도 함께 설치합니다. 이 스킬들은 debugging, planning, architecture, issue workflow, prototyping, handoff 작업에 유용합니다. 설치하고 싶지 않다면 `--skill-set core`를 사용하세요.
+Normal install은 Matt Pocock의 [`mattpocock/skills`](https://github.com/mattpocock/skills)에서 vendoring한 workflow skills 14개도 함께 설치합니다. 이 스킬들은 implementation, debugging, planning, architecture, issue workflow, prototyping, handoff, skill-writing guidance 작업에 유용합니다. 설치하고 싶지 않다면 `--skill-set core`를 사용하세요.
 
 | Skill | 언제 쓰나 |
 |---|---|
@@ -191,7 +191,8 @@ Normal install은 Matt Pocock의 [`mattpocock/skills`](https://github.com/mattpo
 | [`to-issues`](skills/to-issues/SKILL.md)<br>계획을 issue-ready vertical slice로 나누는 스킬 | implementation ticket/work breakdown이 필요할 때; tracker creation은 직접 요청이나 repo approval이 있을 때 |
 | [`triage`](skills/triage/SKILL.md)<br>issue를 분류하고 다음 행동을 계획하는 triage 스킬 | issue classification, next-action planning, repo-approved triage write가 필요할 때 |
 | [`handoff`](skills/handoff/SKILL.md)<br>다음 agent나 session이 이어받을 수 있도록 context를 압축하는 handoff 스킬 | handoff, session summary, continuation brief, next-agent context 요청 시 |
-| [`write-a-skill`](skills/write-a-skill/SKILL.md)<br>새로운 agent skill을 올바른 구조와 progressive disclosure 방식으로 작성하는 스킬 | agent skill을 새로 만들거나 다듬고 싶을 때 |
+| [`implement`](skills/implement/SKILL.md)<br>jhste groundwork, verification, guard, review를 사용하는 scoped PRD/issue/spec 구현 workflow 스킬 | PRD, issue, spec, handoff에서 focused work를 구현하고 싶을 때 |
+| [`writing-great-skills`](skills/writing-great-skills/SKILL.md)<br>predictable invocation, progressive disclosure, context load control, pruning을 다루는 skill-writing reference | agent skill을 만들거나, 교체하거나, 다듬고 싶을 때 |
 
 ## Attribution: Matt Pocock skills
 

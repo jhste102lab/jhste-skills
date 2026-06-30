@@ -11,9 +11,6 @@ description: Direct red-team interrogation of the user's own plan or reasoning. 
 - This skill is read-only by default. Do not create or modify files, issues, PRs, commands, or repo state during grilling.
 - If the user wants documentation updates, ADRs, glossary changes, issue creation, or other side effects, switch to the appropriate writing workflow such as `grill-with-docs`, `domain-modeling`, `to-issues`, or `triage`.
 
+# Grill Me
 
-Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
-
-Ask the questions one at a time.
-
-If a question can be answered by exploring the codebase, explore the codebase instead.
+Run the `grilling` workflow for a personal, read-only pressure test. Keep the interaction one question at a time, include your recommended answer with each question, and explore the codebase instead of asking when the answer is discoverable locally.

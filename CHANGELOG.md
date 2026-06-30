@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.7 - 2026-06-30
+
+### Added
+- Added `implement`, a jhste-compatible implementation workflow skill for scoped PRD/issue/spec work.
+- Added `writing-great-skills`, replacing the legacy `write-a-skill` skill with upstream skill-writing guidance.
+
+### Changed
+- Refreshed Matt Pocock vendored workflow skills against upstream `43ea088`, excluding `tdd` and `resolving-merge-conflicts`.
+- Updated `triage` to cover external PRs as a triage surface, including PR diff verification and PR-specific agent briefs.
+- Slimmed duplicated architecture/grilling docs by routing shared vocabulary through `codebase-design`, `grilling`, and `domain-modeling`.
+- Updated issue slicing to prefer prefactoring slices where they make later implementation easier and to represent human decisions as blockers rather than a separate HITL/AFK field.
+- Removed managed legacy `write-a-skill` installs during sync/update; `writing-great-skills` is the replacement skill going forward.
+
+### Validation
+- `npm test` passed.
+- `jhste-skills guard --scope changed --format text --fail-on error` passed with 0 warnings/errors.
+- `git diff --check` passed.
 ## 0.3.6 - 2026-06-28
 
 ### Changed

@@ -10,6 +10,8 @@ export const LEGACY_SKILL_RENAMES = Object.freeze({
   'jhste-engineering-judgment': 'jhste-engineering-groundwork',
 });
 
+export const DELETED_MANAGED_SKILLS = Object.freeze(['write-a-skill']);
+
 export function canonicalSkillName(name) {
   return LEGACY_SKILL_RENAMES[name] || name;
 }
@@ -97,6 +99,19 @@ function removeLegacySkillDirectories(skillsDir, selected, currentManifest, next
     if (!canMigrateLegacySkill({ currentManifest, legacyName, allowUnmanagedOverwrite, adoptKnownSkills })) continue;
     fs.rmSync(legacyPath, { recursive: true, force: true });
     results.push({ status: 'removed-legacy-renamed-skill', source: legacyPath, destination: path.join(skillsDir, canonicalName), legacyName, canonicalName });
+  }
+  return results;
+}
+
+function removeDeletedManagedSkillDirectories(skillsDir, currentManifest, nextManifest) {
+  const results = [];
+  for (const deletedName of DELETED_MANAGED_SKILLS) {
+    const wasManaged = Boolean(currentManifest?.skills?.[deletedName]);
+    delete nextManifest.skills[deletedName];
+    const deletedPath = path.join(skillsDir, deletedName);
+    if (!wasManaged || !fs.existsSync(deletedPath)) continue;
+    fs.rmSync(deletedPath, { recursive: true, force: true });
+    results.push({ status: 'removed-deleted-managed-skill', source: deletedPath, destination: '', deletedName });
   }
   return results;
 }
@@ -201,6 +216,7 @@ export function installSkills(skillsDir, {
     allowUnmanagedOverwrite,
     adoptKnownSkills,
   });
+  const deletedResults = removeDeletedManagedSkillDirectories(skillsDir, currentManifest, nextManifest);
   const results = selected.map((name) => copyManagedSkill(path.join(sourceRoot, name), path.join(skillsDir, name), name, {
     force,
     allowUnmanagedOverwrite,
@@ -209,5 +225,5 @@ export function installSkills(skillsDir, {
     nextManifest,
   }));
   writeSkillsManifest(skillsDir, nextManifest);
-  return [...legacyResults, ...results];
+  return [...legacyResults, ...deletedResults, ...results];
 }
