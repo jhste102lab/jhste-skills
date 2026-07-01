@@ -243,6 +243,7 @@ export function installSkills(skillsDir, {
   const sourceRoot = path.join(KIT_ROOT, 'skills');
   ensureDir(skillsDir);
   const selected = (Array.isArray(skillSet) ? skillSet : skillNamesForSet(skillSet)).map((name) => canonicalSkillName(name));
+  const shared = selected.length ? listSharedResourceNames(sourceRoot) : [];
   const currentManifest = loadSkillsManifest(skillsDir);
   if (currentManifest?.invalid) return [{ status: 'invalid-manifest', source: '', destination: manifestPath(skillsDir), reason: currentManifest.reason }];
   const nextManifest = currentManifest || { managed_by: MANIFEST_MANAGED_BY, version: packageVersion(), installed_at: nowIso(), skills: {} };
@@ -251,7 +252,7 @@ export function installSkills(skillsDir, {
   nextManifest.updated_at = nowIso();
   nextManifest.skills ||= {};
   const conflicts = force && !allowUnmanagedOverwrite
-    ? unmanagedSkillConflicts(selected, sourceRoot, skillsDir, currentManifest, { adoptKnownSkills })
+    ? unmanagedSkillConflicts([...selected, ...shared], sourceRoot, skillsDir, currentManifest, { adoptKnownSkills })
     : [];
   if (conflicts.length) return conflicts;
   const legacyResults = removeLegacySkillDirectories(skillsDir, selected, currentManifest, nextManifest, {
@@ -269,8 +270,8 @@ export function installSkills(skillsDir, {
   // Copy shared companion resources (e.g. `_shared/` doctrine) alongside skills so
   // installed `../_shared/...` references never dangle. These are not skills and are
   // excluded from skill enumeration/status, but reuse managed-copy semantics.
-  const sharedResults = selected.length
-    ? listSharedResourceNames(sourceRoot).map((name) => copyManagedSkill(path.join(sourceRoot, name), path.join(skillsDir, name), name, {
+  const sharedResults = shared.length
+    ? shared.map((name) => copyManagedSkill(path.join(sourceRoot, name), path.join(skillsDir, name), name, {
         force,
         allowUnmanagedOverwrite,
         adoptKnownSkills,

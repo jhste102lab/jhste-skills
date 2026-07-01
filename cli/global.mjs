@@ -53,7 +53,7 @@ function agentTargets(agents, args) {
   }));
 }
 
-function run(argv) {
+function main(argv) {
   const args = parseArgs(argv);
   if (args.help || args.h) return usage();
   const errors = [];
@@ -99,13 +99,20 @@ function run(argv) {
 
   console.log('jhste-skills global install:');
   console.log(`  skills: ${copied} managed under ${skillsDir}${blocked.length ? ` (${blocked.length} skipped; rerun with --force after review)` : ''}`);
+  if (blocked.length) {
+    for (const item of blocked) {
+      console.log(`  blocked: ${item.reason || item.status} (${item.destination || item.source})`);
+    }
+    console.log('  bridges: skipped because skills install did not complete');
+    process.exitCode = 3;
+    return;
+  }
   for (const { agent, file } of targets) {
     const result = writeManagedGlobalBridge(file);
     console.log(`  ${agent}: ${result.status} (${file})`);
   }
   console.log('\nAdvisory only: no git hooks and no per-repo files were written.');
   console.log('Run guard manually anytime: jhste-skills guard --scope changed');
-  if (blocked.length) process.exitCode = 3;
 }
 
-run(process.argv.slice(2));
+main(process.argv.slice(2));
