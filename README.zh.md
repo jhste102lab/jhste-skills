@@ -81,7 +81,7 @@ jhste-skills install
 
 如果只想临时运行一次，请使用 `npx`。如果希望把 `jhste-skills` 作为常用 shell 命令，请使用 `npm install -g`。
 
-### Global setup（Codex + Claude Code，advisory-only）
+### Global setup（Codex + Claude Code + OpenCode，advisory-only）
 
 如果你希望在所有仓库中使用 skills，但不写入每个仓库的文件或 git hooks，可以在用户级别设置一次：
 
@@ -90,9 +90,9 @@ npm install -g jhste-skills
 jhste-skills global
 ```
 
-该命令会把 skills 和 shared companion resources 复制到 `~/.jhste/skills`，并在每个 agent 的 global instruction file（`~/.claude/CLAUDE.md`、`~/.codex/AGENTS.md`）中写入 marker-managed bridge block；文件不存在时会创建。它不会写入 git hooks 或每仓库文件；guard 保持 advisory（`jhste-skills guard --scope changed`）。可用 `--agents codex,claude` 选择 agent，用 `jhste-skills global --uninstall` 移除。
+该命令会把 skills 和 shared companion resources 复制到 `~/.jhste/skills`，并在每个 agent 的 global instruction file（`~/.claude/CLAUDE.md`、`~/.codex/AGENTS.md`、`~/.config/opencode/AGENTS.md`）中写入 marker-managed bridge block；文件不存在时会创建。它不会写入 git hooks 或每仓库文件；guard 保持 advisory（`jhste-skills guard --scope changed`）。可用 `--agents codex,claude,opencode` 选择 agent，用 `jhste-skills global --uninstall` 移除。
 
-之后执行 `npm update -g` 后，请用 `jhste-skills global`（或 `jhste-skills sync --skills-only`）刷新已安装副本。
+完成这一次 global setup 后，之后运行 `npm update -g jhste-skills` 会安全刷新 managed skill copies 和已有 managed global bridge blocks。只有在需要更改 agent 或选项时才重新运行 `jhste-skills global`。
 
 默认安装使用 Normal mode。
 

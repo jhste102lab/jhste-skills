@@ -81,7 +81,7 @@ jhste-skills install
 
 一度だけ試すなら `npx`、普段使う CLI として置いておきたいなら `npm install -g` を使ってください。
 
-### Global setup（Codex + Claude Code、advisory-only）
+### Global setup（Codex + Claude Code + OpenCode、advisory-only）
 
 リポジトリごとのファイルや git hooks を作らず、すべてのリポジトリで skills を使いたい場合は、ユーザーレベルで一度だけ設定します。
 
@@ -90,9 +90,9 @@ npm install -g jhste-skills
 jhste-skills global
 ```
 
-このコマンドは skills と shared companion resources を `~/.jhste/skills` にコピーし、各 agent の global instruction file（`~/.claude/CLAUDE.md`、`~/.codex/AGENTS.md`）に marker-managed bridge block を書き込みます。ファイルがなければ作成します。git hooks やリポジトリごとのファイルは書き込まず、guard は advisory のままです（`jhste-skills guard --scope changed`）。対象 agent は `--agents codex,claude` で選択でき、`jhste-skills global --uninstall` で削除できます。
+このコマンドは skills と shared companion resources を `~/.jhste/skills` にコピーし、各 agent の global instruction file（`~/.claude/CLAUDE.md`、`~/.codex/AGENTS.md`、`~/.config/opencode/AGENTS.md`）に marker-managed bridge block を書き込みます。ファイルがなければ作成します。git hooks やリポジトリごとのファイルは書き込まず、guard は advisory のままです（`jhste-skills guard --scope changed`）。対象 agent は `--agents codex,claude,opencode` で選択でき、`jhste-skills global --uninstall` で削除できます。
 
-後で `npm update -g` を実行したら、`jhste-skills global`（または `jhste-skills sync --skills-only`）でインストール済みコピーを更新してください。
+この一度の global setup 後は、以降の `npm update -g jhste-skills` で managed skill copies と既存の managed global bridge blocks が安全に更新されます。agent やオプションを変更したい場合だけ `jhste-skills global` を再実行してください。
 
 デフォルトインストールは Normal mode を使います。
 

@@ -13,7 +13,7 @@ if (!command || command === '--help' || command === '-h') {
 Usage:
   jhste-skills install [--mode minimal|normal|full|custom] [--yes] [--repo <path>]
   jhste-skills connect [--mode normal|full|custom] [--repo <path>]
-  jhste-skills global [--agents codex,claude] [--skill-set core|all] [--uninstall]
+  jhste-skills global [--agents codex,claude,opencode] [--skill-set core|all] [--uninstall]
   jhste-skills sync [--repo <path>] [--skills-dir <path>] [--yes]
   jhste-skills update [--repo <path>] [--skills-dir <path>] [--yes]
   jhste-skills deep-scan [--repo <path>]

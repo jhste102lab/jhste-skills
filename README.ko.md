@@ -82,7 +82,7 @@ jhste-skills install
 
 한 번만 실행해보고 싶다면 `npx`를 쓰면 되고, 평소에 계속 사용할 CLI로 두고 싶다면 `npm install -g`를 쓰면 됩니다.
 
-### Global setup (Codex + Claude Code, advisory-only)
+### Global setup (Codex + Claude Code + OpenCode, advisory-only)
 
 레포별 파일이나 git hook 없이 모든 레포에서 skills를 쓰고 싶다면, 사용자 수준에서 한 번 설정하세요.
 
@@ -91,9 +91,9 @@ npm install -g jhste-skills
 jhste-skills global
 ```
 
-이 명령은 skills와 shared companion resources를 `~/.jhste/skills`에 복사하고, 각 agent의 global instruction file(`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`)에 marker-managed bridge block을 씁니다. 파일이 없으면 생성합니다. Git hook이나 레포별 파일은 쓰지 않으며, guard는 advisory 상태로 남습니다(`jhste-skills guard --scope changed`). Agent는 `--agents codex,claude`로 선택하고, `jhste-skills global --uninstall`로 제거할 수 있습니다.
+이 명령은 skills와 shared companion resources를 `~/.jhste/skills`에 복사하고, 각 agent의 global instruction file(`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`)에 marker-managed bridge block을 씁니다. 파일이 없으면 생성합니다. Git hook이나 레포별 파일은 쓰지 않으며, guard는 advisory 상태로 남습니다(`jhste-skills guard --scope changed`). Agent는 `--agents codex,claude,opencode`로 선택하고, `jhste-skills global --uninstall`로 제거할 수 있습니다.
 
-나중에 `npm update -g`를 실행한 뒤에는 `jhste-skills global` 또는 `jhste-skills sync --skills-only`로 설치된 copy를 새로고침하세요.
+이 최초 global setup 이후에는 `npm update -g jhste-skills`만으로 managed skill copy와 기존 managed global bridge block이 안전하게 새로고침됩니다. Agent나 옵션을 바꾸고 싶을 때만 `jhste-skills global`을 다시 실행하세요.
 
 기본 설치는 Normal mode를 사용합니다.
 

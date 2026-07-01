@@ -82,7 +82,7 @@ jhste-skills install
 
 Use `npx` when you want a one-off run without a global install. Use `npm install -g` when you want `jhste-skills` available as a normal shell command.
 
-### Global setup (Codex + Claude Code, advisory-only)
+### Global setup (Codex + Claude Code + OpenCode, advisory-only)
 
 If you want the skills available in every repository without per-repo files or git hooks, set up once at the user level:
 
@@ -91,9 +91,9 @@ npm install -g jhste-skills
 jhste-skills global
 ```
 
-This copies the skills (and shared companion resources) to `~/.jhste/skills` and writes a marker-managed bridge block into each agent's global instruction file (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`), creating them if needed. No git hooks and no per-repo files are written; guard stays advisory (`jhste-skills guard --scope changed`). Choose agents with `--agents codex,claude`, and remove everything with `jhste-skills global --uninstall`.
+This copies the skills (and shared companion resources) to `~/.jhste/skills` and writes a marker-managed bridge block into each agent's global instruction file (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`), creating them if needed. No git hooks and no per-repo files are written; guard stays advisory (`jhste-skills guard --scope changed`). Choose agents with `--agents codex,claude,opencode`, and remove everything with `jhste-skills global --uninstall`.
 
-After a later `npm update -g`, refresh the installed copies with `jhste-skills global` (or `jhste-skills sync --skills-only`).
+After this one-time global setup, later `npm update -g jhste-skills` runs a safe global-only refresh of the managed skill copies and existing managed global bridge blocks. Re-run `jhste-skills global` when you want to change agents or options.
 
 The default (per-repo) install uses Normal mode.
 

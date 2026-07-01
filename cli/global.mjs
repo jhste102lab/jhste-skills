@@ -10,6 +10,7 @@ import { removeManagedGlobalBridge, writeManagedGlobalBridge } from './install-a
 const AGENT_TARGETS = {
   claude: path.join(os.homedir(), '.claude', 'CLAUDE.md'),
   codex: path.join(os.homedir(), '.codex', 'AGENTS.md'),
+  opencode: path.join(os.homedir(), '.config', 'opencode', 'AGENTS.md'),
 };
 
 function usage() {
@@ -17,18 +18,19 @@ function usage() {
 Install jhste skills once at the user level for Codex and Claude Code. Advisory only.
 
 Usage:
-  jhste-skills global [--agents codex,claude] [--skill-set core|all] [--skills-dir <path>] [--force] [--yes]
-  jhste-skills global --uninstall [--agents codex,claude] [--skills-dir <path>] [--keep-skills] [--yes]
+  jhste-skills global [--agents codex,claude,opencode] [--skill-set core|all] [--skills-dir <path>] [--force] [--yes]
+  jhste-skills global --uninstall [--agents codex,claude,opencode] [--skills-dir <path>] [--keep-skills] [--yes]
 
 Notes:
   Skills (and shared companion resources) are copied to --skills-dir (default ~/.jhste/skills).
   A marker-managed bridge block is written to each agent's global instruction file:
     claude -> ~/.claude/CLAUDE.md
     codex  -> ~/.codex/AGENTS.md
+    opencode -> ~/.config/opencode/AGENTS.md
   Manifest-managed skills are refreshed automatically; --force also overwrites
   unmanaged differing directories after review.
   No git hooks and no per-repo files are written; guard stays advisory.
-  Use --claude-file / --codex-file to override a target path.
+  Use --claude-file / --codex-file / --opencode-file to override a target path.
   --yes skips the confirmation prompt.
 `);
 }
@@ -39,19 +41,19 @@ function fail(message) {
 }
 
 function parseAgents(value, errors) {
-  if (value === undefined) return ['codex', 'claude'];
+  if (value === undefined) return ['codex', 'claude', 'opencode'];
   if (typeof value !== 'string') {
     errors.push('--agents requires a comma-separated value.');
-    return ['codex', 'claude'];
+    return ['codex', 'claude', 'opencode'];
   }
   const list = String(value).split(',').map((item) => item.trim().toLowerCase()).filter(Boolean);
   const unknown = list.filter((name) => !Object.prototype.hasOwnProperty.call(AGENT_TARGETS, name));
-  if (unknown.length) errors.push(`--agents supports only codex,claude; unknown: ${unknown.join(', ')}`);
-  return list.length ? [...new Set(list)] : ['codex', 'claude'];
+  if (unknown.length) errors.push(`--agents supports only codex,claude,opencode; unknown: ${unknown.join(', ')}`);
+  return list.length ? [...new Set(list)] : ['codex', 'claude', 'opencode'];
 }
 
 function agentTargets(agents, args) {
-  const overrides = { claude: args['claude-file'], codex: args['codex-file'] };
+  const overrides = { claude: args['claude-file'], codex: args['codex-file'], opencode: args['opencode-file'] };
   return agents.map((agent) => ({
     agent,
     file: typeof overrides[agent] === 'string' ? path.resolve(overrides[agent]) : AGENT_TARGETS[agent],
@@ -92,7 +94,7 @@ async function main(argv) {
   const args = parseArgs(argv);
   if (args.help || args.h) return usage();
   const errors = [];
-  const supported = new Set(['agents', 'skill-set', 'skills-dir', 'claude-file', 'codex-file', 'force', 'yes', 'y', 'uninstall', 'keep-skills', 'help', 'h', '_']);
+  const supported = new Set(['agents', 'skill-set', 'skills-dir', 'claude-file', 'codex-file', 'opencode-file', 'force', 'yes', 'y', 'uninstall', 'keep-skills', 'help', 'h', '_']);
   for (const key of Object.keys(args)) {
     if (!supported.has(key)) errors.push(`unknown option --${key}.`);
   }
@@ -109,6 +111,7 @@ async function main(argv) {
   const skillsDirInput = readString(args, 'skills-dir', errors);
   readString(args, 'claude-file', errors);
   readString(args, 'codex-file', errors);
+  readString(args, 'opencode-file', errors);
   const skillsDir = path.resolve(skillsDirInput || path.join(os.homedir(), '.jhste', 'skills'));
   const agents = parseAgents(args.agents, errors);
   if (errors.length) return fail(errors.join('\n'));

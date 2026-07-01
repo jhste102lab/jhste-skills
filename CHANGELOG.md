@@ -5,8 +5,10 @@
 ### Added
 - Added `skills/_shared/` shared companion resources (`solid-lens`, `evidence-discipline`, `issue-candidate`, `scope-discipline`) as the single source for cross-cutting doctrine, cited by the jhste skills instead of restating it per skill.
 - Added a first-class shared-resource install concept: directories under `skills/` starting with `_` are not skills (excluded from listing, selection, and missing-skill checks) but are copied alongside skills so installed `../_shared/...` references never dangle.
-- Added `jhste-skills global` — advisory-only, user-level setup for Codex and Claude Code that installs skills to `~/.jhste/skills` and writes a marker-managed bridge into `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`, with no git hooks or per-repo files; `--uninstall` reverses it.
+- Added `jhste-skills global` — advisory-only, user-level setup for Codex, Claude Code, and OpenCode that installs skills to `~/.jhste/skills` and writes marker-managed bridges into `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and `~/.config/opencode/AGENTS.md`, with no git hooks or per-repo files; `--uninstall` reverses it.
 - Added `ask-jhste`, a user-invoked router for choosing the right jhste skill/workflow without adding always-on model context.
+- Added OpenCode support to global setup via `~/.config/opencode/AGENTS.md`.
+- Added a safe global-only npm postinstall refresh: after a user has opted into `jhste-skills global`, later `npm update -g jhste-skills` refreshes managed global skill copies and existing managed global bridges without creating a new setup.
 
 ### Changed
 - Trimmed jhste skill descriptions and SKILL bodies for lower operating-context cost while preserving behavior; SKILL files now own the decision procedure and cite `_shared` doctrine, and reference files are examples/lookup only.

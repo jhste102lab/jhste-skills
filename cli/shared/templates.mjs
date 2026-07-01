@@ -27,7 +27,8 @@ Do not enter an unbounded fix/review loop; stop after at most two fix + re-revie
 export const MANAGED_BRIDGE_BLOCK = `${BRIDGE_START}\n${BRIDGE_BLOCK}\n${BRIDGE_END}`;
 
 // Agent-neutral variant written to a global instruction file (e.g. Claude
-// ~/.claude/CLAUDE.md, Codex ~/.codex/AGENTS.md). Shares the same markers so it is
+// ~/.claude/CLAUDE.md, Codex ~/.codex/AGENTS.md, OpenCode
+// ~/.config/opencode/AGENTS.md). Shares the same markers so it is
 // marker-managed (idempotent update/removal), but omits repo-only wording and the
 // repo profile reference, and frames guard as advisory (no per-repo hooks).
 export const GLOBAL_BRIDGE_BLOCK = `## Agent skills (jhste, global)
