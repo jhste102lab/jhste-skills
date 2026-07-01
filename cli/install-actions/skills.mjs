@@ -65,6 +65,16 @@ export function removeManagedSkills(skillsDir) {
   const loaded = loadInstalledManifest(skillsDir);
   if (loaded.invalid) return { status: 'invalid-manifest', path: loaded.path, reason: loaded.reason, skills: [] };
   if (!loaded.manifest) return { status: 'no-manifest', path: loaded.path, skills: [] };
+  for (const name of Object.keys(loaded.manifest.skills || {})) {
+    if (!name || name !== path.basename(name) || name === '.' || name === '..') {
+      return {
+        status: 'invalid-manifest',
+        path: loaded.path,
+        reason: `${SKILLS_MANIFEST_NAME} contains an invalid managed skill name: ${name}`,
+        skills: [],
+      };
+    }
+  }
   const skills = [];
   for (const name of Object.keys(loaded.manifest.skills || {}).sort()) {
     const dir = path.join(skillsDir, name);

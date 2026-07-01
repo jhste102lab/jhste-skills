@@ -39,7 +39,7 @@ export function runGlobalScenarios({ root, tmp }) {
   if (starts !== 1) fail(`global install is not idempotent: ${starts} managed blocks in CLAUDE.md`);
 
   // Uninstall removes managed blocks and skills, preserves personal content.
-  run(process.execPath, [cli, '--uninstall', '--skills-dir', skillsDir, '--claude-file', claudeFile, '--codex-file', codexFile]);
+  run(process.execPath, [cli, '--yes', '--uninstall', '--skills-dir', skillsDir, '--claude-file', claudeFile, '--codex-file', codexFile]);
   if (fs.existsSync(skillsDir)) fail('global uninstall did not remove managed skills dir');
   if (fs.existsSync(codexFile)) fail('global uninstall did not remove bridge-only codex file');
   const claudeAfter = fs.readFileSync(claudeFile, 'utf8');
@@ -70,4 +70,47 @@ export function runGlobalScenarios({ root, tmp }) {
   if (conflictResult.status !== 3) fail(`global install with unmanaged _shared should exit 3, got ${conflictResult.status}`);
   if (fs.existsSync(path.join(conflictSkillsDir, 'jhste-red-team-review'))) fail('global install copied selected skills before detecting _shared conflict');
   if (fs.existsSync(conflictClaudeFile) || fs.existsSync(conflictCodexFile)) fail('global install wrote bridge files after _shared conflict');
+
+  const noYesBase = path.join(tmp, 'global-no-yes');
+  const noYesSkillsDir = path.join(noYesBase, 'skills');
+  const noYesClaudeFile = path.join(noYesBase, 'claude', 'CLAUDE.md');
+  const noYesResult = runAny(process.execPath, [cli, '--skills-dir', noYesSkillsDir, '--claude-file', noYesClaudeFile], { input: '' });
+  if (noYesResult.status !== 3) fail(`non-interactive global install without --yes should exit 3, got ${noYesResult.status}`);
+  if (fs.existsSync(noYesSkillsDir) || fs.existsSync(noYesClaudeFile)) fail('global install without --yes changed files');
+
+  const vendorBase = path.join(tmp, 'global-vendor-refused');
+  const vendorSkillsDir = path.join(vendorBase, 'skills');
+  const vendorClaudeFile = path.join(vendorBase, 'claude', 'CLAUDE.md');
+  const vendorResult = runAny(process.execPath, [cli, '--yes', '--skill-set', 'vendor', '--skills-dir', vendorSkillsDir, '--claude-file', vendorClaudeFile]);
+  if (vendorResult.status === 0) fail('global install should reject --skill-set vendor');
+  if (fs.existsSync(vendorSkillsDir) || fs.existsSync(vendorClaudeFile)) fail('global --skill-set vendor changed files');
+
+  const missingValueBase = path.join(tmp, 'global-missing-value');
+  const missingValueResult = runAny(process.execPath, [cli, '--yes', '--claude-file'], { cwd: missingValueBase });
+  if (missingValueResult.status === 0) fail('global --claude-file without a value should fail');
+
+  const invalidUninstallBase = path.join(tmp, 'global-invalid-uninstall');
+  const invalidUninstallSkills = path.join(invalidUninstallBase, 'skills');
+  const invalidUninstallClaude = path.join(invalidUninstallBase, 'claude', 'CLAUDE.md');
+  fs.mkdirSync(invalidUninstallSkills, { recursive: true });
+  fs.mkdirSync(path.dirname(invalidUninstallClaude), { recursive: true });
+  fs.writeFileSync(path.join(invalidUninstallSkills, '.jhste-skills-manifest.json'), '{not json');
+  fs.writeFileSync(invalidUninstallClaude, '<!-- jhste-skills:start -->\nstale\n<!-- jhste-skills:end -->\n');
+  const invalidUninstallResult = runAny(process.execPath, [cli, '--yes', '--uninstall', '--skills-dir', invalidUninstallSkills, '--claude-file', invalidUninstallClaude]);
+  if (invalidUninstallResult.status !== 3) fail(`global uninstall with invalid manifest should exit 3, got ${invalidUninstallResult.status}`);
+  if (!fs.readFileSync(invalidUninstallClaude, 'utf8').includes('jhste-skills:start')) fail('global uninstall removed bridge after invalid skills manifest');
+
+  const traversalBase = path.join(tmp, 'global-manifest-traversal');
+  const traversalSkills = path.join(traversalBase, 'skills');
+  const outside = path.join(traversalBase, 'outside');
+  fs.mkdirSync(traversalSkills, { recursive: true });
+  fs.mkdirSync(outside, { recursive: true });
+  fs.writeFileSync(path.join(outside, 'keep.txt'), 'keep\n');
+  fs.writeFileSync(path.join(traversalSkills, '.jhste-skills-manifest.json'), JSON.stringify({
+    managed_by: 'jhste-skills',
+    skills: { '../outside': { digest: 'bad' } },
+  }));
+  const traversalResult = runAny(process.execPath, [cli, '--yes', '--uninstall', '--skills-dir', traversalSkills]);
+  if (traversalResult.status !== 3) fail(`global uninstall with traversal manifest should exit 3, got ${traversalResult.status}`);
+  if (!fs.existsSync(path.join(outside, 'keep.txt'))) fail('global uninstall followed a traversal manifest entry outside skills dir');
 }

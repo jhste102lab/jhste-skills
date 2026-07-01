@@ -16,6 +16,7 @@
 - Made `grill-me` a user-invoked alias for `grilling` to reduce duplicate invocation surface while preserving the personal pressure-test entrypoint.
 - Made `global` skip bridge writes when skill installation is blocked, and preflight `_shared` unmanaged conflicts before copying selected skills.
 - Synced README translations (ko/zh/ja) with global setup, `ask-jhste`, and `_shared` companion-resource docs.
+- Hardened `global` option validation, refused vendor-only global installs, reported invalid-manifest uninstall failures, and rejected unsafe manifest entry names before managed skill removal.
 
 ### Validation
 - `npm test` passed (12 stages, including new `_shared` install integrity and `global` command smoke coverage).
