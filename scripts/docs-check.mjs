@@ -4,7 +4,16 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-import { recipeRequirements, required } from './docs-check-data.mjs';
+import {
+  recipeRequirements,
+  required,
+  modelInvokedJhsteSkills,
+  descriptionMaxLength,
+  coreLoopOwner,
+  coreLoopDelegationRef,
+  canonicalGuardCommand,
+  retiredSkillNames,
+} from './docs-check-data.mjs';
 
 
 
@@ -203,19 +212,27 @@ for (const [ruleId, rule] of ruleById.entries()) {
 }
 
 const bridgeText = 'Repo-local instructions in this file remain authoritative.';
+// Bridge/AGENTS carry a compact router pointer and trigger anchor, but must delegate
+// the full loop to skills/_shared/core-loop.md. These exact doctrine sentences signal
+// that the loop was re-inlined into a bridge surface.
+const fullLoopSentinels = ['at most two fix + re-review cycles', 'Treat guard output as review evidence, not proof by itself'];
 for (const rel of ['adapters/codex/README.md', 'docs/CONFLICT_RESOLUTION.md', 'cli/shared/templates.mjs']) {
   const text = read(rel);
-  if (!text.includes(bridgeText)) {
-    fail(`${rel} must include authoritative repo-local bridge wording`);
-  }
-  for (const requiredText of ['jhste-engineering-groundwork', 'jhste-red-team-review']) {
+  if (!text.includes(bridgeText)) fail(`${rel} must include authoritative repo-local bridge wording`);
+  for (const requiredText of ['ask-jhste', 'jhste-preflight', 'jhste-redteam']) {
     if (!text.includes(requiredText)) fail(`${rel} must mention ${requiredText} in shared workflow guidance`);
+  }
+  for (const sentinel of fullLoopSentinels) {
+    if (text.includes(sentinel)) fail(`${rel} bridge must delegate the core loop to skills/_shared/core-loop.md, not restate it ("${sentinel}")`);
   }
 }
 
 const rootAgents = read('AGENTS.md');
-for (const requiredText of ['jhste-engineering-groundwork', 'jhste-red-team-review', 'guard --scope changed --format text --fail-on error', 'at most two fix + re-review cycles']) {
+for (const requiredText of ['ask-jhste', 'jhste-preflight', 'jhste-redteam', 'side-effect-policy.md']) {
   if (!rootAgents.includes(requiredText)) fail(`AGENTS.md must mention ${requiredText}`);
+}
+for (const sentinel of fullLoopSentinels) {
+  if (rootAgents.includes(sentinel)) fail(`AGENTS.md must delegate the core loop to the installed skills, not restate it ("${sentinel}")`);
 }
 
 // The full issue-candidate protocol is pinned once in the shared doctrine; skills
@@ -258,4 +275,58 @@ for (const [rel, snippets] of Object.entries(recipeRequirements)) {
   }
 }
 
-console.log('docs-check passed: structure, profile/rule references, guard metadata links, bridge wording, issue-candidate protocol, and scripts are valid.');
+// Anti-bloat: model-facing descriptions answer only "when to invoke" and stay short.
+for (const rel of modelInvokedJhsteSkills) {
+  const text = read(rel);
+  if (/^disable-model-invocation:\s*true\s*$/m.test(text)) continue;
+  const description = yamlField(text, 'description');
+  if (!description) fail(`${rel} must have a frontmatter description`);
+  if (description.length > descriptionMaxLength) fail(`${rel} description is ${description.length} chars; keep model-invoked jhste descriptions <= ${descriptionMaxLength}`);
+}
+
+// Shared doctrine ownership: the pre-edit and post-edit skills must cite the shared docs
+// they rely on, so the doctrine stays single-sourced instead of restated per skill.
+const requiredSharedRefs = {
+  'skills/jhste-preflight/SKILL.md': ['../_shared/core-loop.md', '../_shared/solid-lens.md', '../_shared/evidence-discipline.md', '../_shared/scope-discipline.md'],
+  'skills/jhste-redteam/SKILL.md': ['../_shared/core-loop.md', '../_shared/solid-lens.md', '../_shared/evidence-discipline.md', '../_shared/scope-discipline.md', '../_shared/issue-candidate.md'],
+};
+for (const [rel, refs] of Object.entries(requiredSharedRefs)) {
+  const text = read(rel);
+  for (const refPath of refs) {
+    if (!text.includes(refPath)) fail(`${rel} must reference shared doctrine ${refPath}`);
+  }
+}
+
+// Every jhste skill delegates the common loop to core-loop.md and must not re-inline the
+// canonical guard command; that command lives once in the loop owner.
+for (const skillPath of walk(path.join(root, 'skills'), (file) => path.basename(file) === 'SKILL.md')) {
+  const rel = relPath(skillPath);
+  if (!rel.startsWith('skills/jhste-')) continue;
+  const text = read(rel);
+  if (!text.includes(coreLoopDelegationRef)) fail(`${rel} must delegate the workflow to ${coreLoopDelegationRef}`);
+  if (text.includes(canonicalGuardCommand)) fail(`${rel} must not inline the canonical guard command; it belongs in ${coreLoopOwner}`);
+}
+
+// Review cards own domain deltas only; the loop stays in core-loop.md.
+for (const card of ['code-quality', 'architecture', 'api-db', 'automation']) {
+  const rel = `skills/_shared/review-cards/${card}.md`;
+  const text = read(rel);
+  if (text.includes(canonicalGuardCommand)) fail(`${rel} must not restate the core loop; it lives in ${coreLoopOwner}`);
+  for (const sentinel of fullLoopSentinels) {
+    if (text.includes(sentinel)) fail(`${rel} must not restate the core loop ("${sentinel}")`);
+  }
+}
+
+// Retired skill names must not linger as live references in skills, shared docs, AGENTS,
+// or bridge templates (broken routing). Install pruning and CHANGELOG history keep them
+// on purpose and are out of scope here.
+const retiredNameSurfaces = walk(path.join(root, 'skills'), (file) => file.endsWith('.md')).map(relPath);
+retiredNameSurfaces.push('AGENTS.md', 'cli/shared/templates.mjs');
+for (const rel of retiredNameSurfaces) {
+  const text = read(rel);
+  for (const oldName of retiredSkillNames) {
+    if (text.includes(oldName)) fail(`${rel} references retired skill name ${oldName}; update it to the current topology`);
+  }
+}
+
+console.log('docs-check passed: structure, profile/rule references, guard metadata links, bridge wording, description length, shared-doctrine ownership, and scripts are valid.');

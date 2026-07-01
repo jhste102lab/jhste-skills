@@ -54,7 +54,7 @@ function runBridgeAndDeepScanContracts(ctx) {
   const bridgeCount = (agentsAfterFirst.match(/Repo-local instructions in this file remain authoritative\./g) || []).length;
   if (bridgeCount !== 1) fail('bridge block was not inserted exactly once');
   if ((agentsAfterFirst.match(/jhste-skills:start/g) || []).length !== 1 || (agentsAfterFirst.match(/jhste-skills:end/g) || []).length !== 1) fail('bridge block missing managed markers');
-  if (!agentsAfterFirst.includes('jhste-red-team-review')) fail('bridge block missing red-team review guidance');
+  if (!agentsAfterFirst.includes('jhste-redteam')) fail('bridge block missing red-team review guidance');
 
   fs.appendFileSync(profilePath, '# keep-existing-profile-marker\n');
   run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', repo, '--skills-dir', ctx.skillsDir, '--skip-deep-scan'], { cwd: repo });

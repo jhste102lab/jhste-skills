@@ -5,12 +5,21 @@ import { readJsonFile, validateJsonObject, validateStringArray } from '../json-f
 
 export const SKILLS_MANIFEST_NAME = '.jhste-skills-manifest.json';
 export const MANIFEST_MANAGED_BY = 'jhste-skills';
-export const LEGACY_SKILL_RENAMES = Object.freeze({
-  diagnose: 'diagnosing-bugs',
-  'jhste-engineering-judgment': 'jhste-engineering-groundwork',
-});
+// Personal-use topology reform keeps no back-compat aliases: renamed or merged
+// skills are pruned from an existing managed install on the next sync/update/global,
+// then the current skills install fresh. Prefer a clean reinstall over alias upkeep.
+export const LEGACY_SKILL_RENAMES = Object.freeze({});
 
-export const DELETED_MANAGED_SKILLS = Object.freeze(['write-a-skill']);
+export const DELETED_MANAGED_SKILLS = Object.freeze([
+  'write-a-skill',
+  'diagnose',
+  'jhste-engineering-judgment',
+  'jhste-engineering-groundwork',
+  'jhste-code-quality',
+  'jhste-architecture-review',
+  'jhste-red-team-review',
+  'jhste-long-running-work-loop',
+]);
 
 export function canonicalSkillName(name) {
   return LEGACY_SKILL_RENAMES[name] || name;

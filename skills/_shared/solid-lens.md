@@ -1,6 +1,6 @@
 # SOLID-informed lens (shared doctrine)
 
-Single source of truth for SOLID discipline across the jhste skills. Cited by `jhste-engineering-groundwork`, `jhste-code-quality`, `jhste-architecture-review`, and `jhste-red-team-review`. Use SOLID as a review lens for concrete maintenance and failure risks, **not** as a compliance checklist and never as a reason to add abstraction that only renames a call. Guard findings for these families are review candidates, not proof.
+Single source of truth for SOLID discipline across the jhste skills. Cited by `jhste-preflight`, `jhste-change-review`, and `jhste-redteam`. Use SOLID as a review lens for concrete maintenance and failure risks, **not** as a compliance checklist and never as a reason to add abstraction that only renames a call. Guard findings for these families are review candidates, not proof.
 
 Each changed function, module, or class should have one main responsibility and one main reason to change.
 

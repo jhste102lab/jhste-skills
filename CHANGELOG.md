@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Changed (breaking: personal-use topology reform)
+- Reformed the jhste skill topology so most workflow policy lives in installed skills and `_shared` docs, while `AGENTS.md` and the bridge templates stay minimal and route through `ask-jhste`.
+- Renamed skills: `jhste-engineering-groundwork` → `jhste-preflight`, `jhste-red-team-review` → `jhste-redteam`, `jhste-long-running-work-loop` → `jhste-workstate`.
+- Merged `jhste-code-quality` and `jhste-architecture-review` into `jhste-change-review`, which selects domain review cards; kept `jhste-db-api-boundary` and `jhste-crawler-automation` as thin trigger skills so their safety checks keep firing reliably.
+- Dropped back-compat skill aliases: retired or renamed managed skills are pruned on the next `sync`/`update`/`global`, and the current skills install fresh (existing installs reinstall cleanly).
+- Minimized `AGENTS.md` and both bridge templates to a router pointer, a one-line trigger anchor, and an approval headline; moved the full loop, approval boundaries, and cross-cutting doctrine into `skills/_shared/`.
+
+### Added
+- Added `skills/_shared/core-loop.md` (single source for the common coding loop) and `skills/_shared/side-effect-policy.md` (approval boundaries), plus `skills/_shared/review-cards/` (`code-quality`, `architecture`, `api-db`, `automation`).
+- Added `docs-check` anti-bloat protections: a model-facing description length cap, required shared-doctrine references, a core-loop delegation/no-restate guard, a review-card restate guard, and a retired-skill-name check across skills, `AGENTS.md`, and bridge templates.
+
+### Validation
+- `npm test` passed (12 stages). `guard --scope changed --fail-on error` reported 0 errors (2 advisory file-size warnings on `cli/install-actions/skills.mjs` and `scripts/docs-check.mjs`).
+
 ## 0.4.0 - 2026-07-01
 
 ### Added
