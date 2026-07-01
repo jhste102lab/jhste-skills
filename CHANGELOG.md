@@ -15,6 +15,7 @@
 - Extracted shared `removeManagedSkills`/manifest loading into `install-actions/skills.mjs` for reuse by `uninstall` and `global`.
 - Made `grill-me` a user-invoked alias for `grilling` to reduce duplicate invocation surface while preserving the personal pressure-test entrypoint.
 - Made `global` skip bridge writes when skill installation is blocked, and preflight `_shared` unmanaged conflicts before copying selected skills.
+- Synced README translations (ko/zh/ja) with global setup, `ask-jhste`, and `_shared` companion-resource docs.
 
 ### Validation
 - `npm test` passed (12 stages, including new `_shared` install integrity and `global` command smoke coverage).

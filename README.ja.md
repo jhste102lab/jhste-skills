@@ -81,6 +81,19 @@ jhste-skills install
 
 一度だけ試すなら `npx`、普段使う CLI として置いておきたいなら `npm install -g` を使ってください。
 
+### Global setup（Codex + Claude Code、advisory-only）
+
+リポジトリごとのファイルや git hooks を作らず、すべてのリポジトリで skills を使いたい場合は、ユーザーレベルで一度だけ設定します。
+
+```bash
+npm install -g jhste-skills
+jhste-skills global
+```
+
+このコマンドは skills と shared companion resources を `~/.jhste/skills` にコピーし、各 agent の global instruction file（`~/.claude/CLAUDE.md`、`~/.codex/AGENTS.md`）に marker-managed bridge block を書き込みます。ファイルがなければ作成します。git hooks やリポジトリごとのファイルは書き込まず、guard は advisory のままです（`jhste-skills guard --scope changed`）。対象 agent は `--agents codex,claude` で選択でき、`jhste-skills global --uninstall` で削除できます。
+
+後で `npm update -g` を実行したら、`jhste-skills global`（または `jhste-skills sync --skills-only`）でインストール済みコピーを更新してください。
+
 デフォルトインストールは Normal mode を使います。
 
 - bundled skills 全体をインストールします: jhste core skills + vendored workflow skills。
@@ -162,6 +175,7 @@ Custom   - 効果ベースの質問でセットアップ範囲を選択
 | Skill | いつ使うか | 何を減らすか |
 |---|---|---|
 | [`setup`](skills/setup/SKILL.md)<br>install/connect/update が既存プロジェクト指示を上書きしないようにする安全セットアップ skill | kit をインストール、またはリポジトリに接続するとき | Unsafe overwrite, unmanaged hook conflict, repo instruction replacement |
+| [`ask-jhste`](skills/ask-jhste/SKILL.md)<br>適切な jhste skill や workflow を選ぶ user-invoked router | 次にどの jhste skill/workflow を使うべきか迷うとき | Wrong workflow selection, unnecessary always-on context, accidental side effects from routing |
 | [`jhste-engineering-groundwork`](skills/jhste-engineering-groundwork/SKILL.md)<br>コード変更前に goal、premise、scope、boundary、failure path を検証する pre-change groundwork skill | non-trivial code change の前 | Blind agreement, scope creep, unverified assumption, unclear boundary |
 | [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>input validation、observable failure handling、secret-safe logging、oversized-file review の skill | external input、failure handling、logging、env/config、code-quality review path を触るとき | Unvalidated input, silent failure, secret logging, oversized file |
 | [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>module boundary、side-effect placement、SOLID-informed design risk を確認する architecture review skill | module boundary、app structure、side-effect placement、responsibility split を変更するとき | Pass-through abstraction, mixed responsibility, side-effect leakage |
@@ -270,3 +284,5 @@ Release acceptance notes は [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.
 - non-trivial work を完了と呼ぶ前に red-team code review を行う。
 
 高速な agent には guardrail が必要です。`jhste-skills` は agent に repo-respecting engineering workflow を提供します。
+
+Skills は `skills/_shared/` の cross-cutting doctrine（SOLID lens、evidence discipline、issue-candidate protocol、scope discipline）を共有します。`skills/` 配下で名前が `_` から始まるディレクトリは skill ではなく shared companion resource です。skill listing、selection、missing-skill checks からは除外されますが、どの skill をインストールしても一緒にコピーされるため、インストール済み artifact 内の cross-skill `../_shared/...` references が dangling になりません。
