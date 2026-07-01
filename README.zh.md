@@ -81,6 +81,19 @@ jhste-skills install
 
 如果只想临时运行一次，请使用 `npx`。如果希望把 `jhste-skills` 作为常用 shell 命令，请使用 `npm install -g`。
 
+### Global setup（Codex + Claude Code + OpenCode，advisory-only）
+
+如果你希望在所有仓库中使用 skills，但不写入每个仓库的文件或 git hooks，可以在用户级别设置一次：
+
+```bash
+npm install -g jhste-skills
+jhste-skills global
+```
+
+该命令会把 skills 和 shared companion resources 复制到 `~/.jhste/skills`，并在每个 agent 的 global instruction file（`~/.claude/CLAUDE.md`、`~/.codex/AGENTS.md`、`~/.config/opencode/AGENTS.md`）中写入 marker-managed bridge block；文件不存在时会创建。它不会写入 git hooks 或每仓库文件；guard 保持 advisory（`jhste-skills guard --scope changed`）。可用 `--agents codex,claude,opencode` 选择 agent，用 `jhste-skills global --uninstall` 移除。
+
+完成这一次 global setup 后，之后运行 `npm update -g jhste-skills` 会安全刷新 managed skill copies 和已有 managed global bridge blocks。只有在需要更改 agent 或选项时才重新运行 `jhste-skills global`。
+
 默认安装使用 Normal mode。
 
 - 安装全部 bundled skills：jhste core skills + vendored workflow skills。
@@ -162,6 +175,7 @@ Custom   - 通过面向效果的问题自定义安装范围
 | Skill | 何时使用 | 帮助减少什么 |
 |---|---|---|
 | [`setup`](skills/setup/SKILL.md)<br>安全安装 skill，避免 install/connect/update 覆盖现有项目说明 | 安装 kit 或连接仓库时 | Unsafe overwrite, unmanaged hook conflict, repo instruction replacement |
+| [`ask-jhste`](skills/ask-jhste/SKILL.md)<br>用于选择正确 jhste skill 或 workflow 的 user-invoked router | 不确定下一步该用哪个 jhste skill/workflow 时 | Wrong workflow selection, unnecessary always-on context, accidental side effects from routing |
 | [`jhste-engineering-groundwork`](skills/jhste-engineering-groundwork/SKILL.md)<br>pre-change groundwork skill，在改代码前验证目标、前提、scope、boundary 和 failure path | non-trivial code change 前 | Blind agreement, scope creep, unverified assumption, unclear boundary |
 | [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>检查 input validation、observable failure handling、secret-safe logging 和 oversized-file review 的 skill | 触及 external input、failure handling、logging、env/config 或 code-quality review path 时 | Unvalidated input, silent failure, secret logging, oversized file |
 | [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>检查 module boundary、side-effect placement 和 SOLID-informed design risk 的架构 review skill | 修改 module boundary、app structure、side-effect placement 或 responsibility split 时 | Pass-through abstraction, mixed responsibility, side-effect leakage |
@@ -270,3 +284,5 @@ Release acceptance notes 请参考 [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_
 - 在称 non-trivial work 完成前执行 red-team code review。
 
 快速的 agent 需要 guardrail。`jhste-skills` 为它们提供 repo-respecting engineering workflow。
+
+Skills 共享来自 `skills/_shared/` 的 cross-cutting doctrine（SOLID lens、evidence discipline、issue-candidate protocol、scope discipline）。`skills/` 下名称以 `_` 开头的目录是 shared companion resources，不是 skills：它们会从 skill listing、selection 和 missing-skill checks 中排除，但安装任何 skill 时都会一起复制，确保已安装 artifact 中的 cross-skill `../_shared/...` references 不会悬空。

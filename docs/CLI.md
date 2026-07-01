@@ -53,6 +53,26 @@ Repo detection:
 - outside a git repo without `--repo`, install falls back to skills-only and reports that no current project was detected;
 - `--repo <path>` must point inside a git repo for modes that connect a project.
 
+## `global`
+
+`global` installs user-level advisory guidance for coding agents without touching per-repo files or git hooks.
+
+```bash
+jhste-skills global --yes
+jhste-skills global --yes --agents codex,claude,opencode
+jhste-skills global --yes --skill-set core|all
+jhste-skills global --uninstall --yes
+```
+
+Stable contract:
+
+- copies managed skills and shared companion resources to `~/.jhste/skills`;
+- writes marker-managed bridge blocks to selected global instruction files: Codex `~/.codex/AGENTS.md`, Claude Code `~/.claude/CLAUDE.md`, and OpenCode `~/.config/opencode/AGENTS.md`;
+- refuses `--skill-set vendor` because the global bridge points agents at core workflow skills;
+- non-interactive writes require `--yes`;
+- value-taking options such as `--skills-dir`, `--claude-file`, `--codex-file`, and `--opencode-file` fail closed when a value is missing;
+- after the user has opted into global setup, later `npm update -g jhste-skills` refreshes managed global skill copies and existing managed global bridge blocks from the new package version without creating a new setup.
+
 Non-interactive rules:
 
 - no TTY and no `--yes`: exit `3` before changes;

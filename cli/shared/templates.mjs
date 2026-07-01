@@ -26,6 +26,27 @@ Do not enter an unbounded fix/review loop; stop after at most two fix + re-revie
 
 export const MANAGED_BRIDGE_BLOCK = `${BRIDGE_START}\n${BRIDGE_BLOCK}\n${BRIDGE_END}`;
 
+// Agent-neutral variant written to a global instruction file (e.g. Claude
+// ~/.claude/CLAUDE.md, Codex ~/.codex/AGENTS.md, OpenCode
+// ~/.config/opencode/AGENTS.md). Shares the same markers so it is
+// marker-managed (idempotent update/removal), but omits repo-only wording and the
+// repo profile reference, and frames guard as advisory (no per-repo hooks).
+export const GLOBAL_BRIDGE_BLOCK = `## Agent skills (jhste, global)
+jhste skills are installed globally as shared engineering guidance for this agent.
+Repo-local AGENTS.md, CLAUDE.md, and docs remain authoritative when present.
+File, repo, command, issue, PR, or other external side effects are allowed when the user directly requested that workflow or repo-local standing approval covers it.
+Ask for destructive, irreversible, ambiguous, production, secret, cost-bearing, broad existing-item, or out-of-scope changes.
+For reversible in-scope choices, make a reasonable assumption, proceed, and report it in the final summary.
+Before non-trivial code changes, use the \`jhste-engineering-groundwork\` skill to check scope, boundaries, failure paths, final behavior predicates, and assumptions.
+For changed code, name the one main responsibility of each changed class, module, and function, and reject adjacent responsibilities unless they are on the changed execution path and prevent a concrete failure.
+Use SOLID-informed coding discipline as a clean-code review lens for concrete failure modes, not a compliance claim or automatic abstraction trigger; guard findings are review candidates, not proof.
+After code changes, run \`jhste-skills guard --scope changed --format text --fail-on warning\` when available; treat guard output as advisory review evidence, not proof.
+Before declaring non-trivial code work complete, use the \`jhste-red-team-review\` skill.
+Skip red-team review for docs-only, comment-only, formatting-only, or trivial rename-only changes.
+Do not enter an unbounded fix/review loop; stop after at most two fix + re-review cycles and report remaining risks.`;
+
+export const MANAGED_GLOBAL_BRIDGE_BLOCK = `${BRIDGE_START}\n${GLOBAL_BRIDGE_BLOCK}\n${BRIDGE_END}`;
+
 export const DEFAULT_PROFILE = `version: 1
 mode: advisory
 installed_at: "<installed_at>"

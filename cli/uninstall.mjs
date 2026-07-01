@@ -13,7 +13,7 @@ import {
   relativeDisplay,
 } from './shared.mjs';
 import { gitHooksDir, HOOKS, isManagedHook } from './hook-utils.mjs';
-import { MANIFEST_MANAGED_BY, SKILLS_MANIFEST_NAME } from './install-actions/skills.mjs';
+import { removeManagedSkills } from './install-actions/skills.mjs';
 
 const EXIT_CONFIG_FAILURE = 3;
 
@@ -183,45 +183,6 @@ function removeRepoOutputs(repoInfo, options) {
     bridges: ['AGENTS.md', 'CLAUDE.md'].map((fileName) => removeManagedBridge(repoRoot, fileName)),
     profile: removeGeneratedProfile(repoRoot, options),
   };
-}
-
-function loadManifest(skillsDir) {
-  const file = path.join(skillsDir, SKILLS_MANIFEST_NAME);
-  if (!fs.existsSync(file)) return { manifest: null, path: file };
-  try {
-    const manifest = JSON.parse(fs.readFileSync(file, 'utf8'));
-    if (!manifest || typeof manifest !== 'object' || manifest.managed_by !== MANIFEST_MANAGED_BY || typeof manifest.skills !== 'object' || Array.isArray(manifest.skills)) {
-      return { invalid: true, path: file, reason: `${SKILLS_MANIFEST_NAME} is not a valid ${MANIFEST_MANAGED_BY} manifest.` };
-    }
-    return { manifest, path: file };
-  } catch (error) {
-    return { invalid: true, path: file, reason: error instanceof Error ? error.message : String(error) };
-  }
-}
-
-function removeManagedSkills(skillsDir) {
-  const loaded = loadManifest(skillsDir);
-  if (loaded.invalid) return { status: 'invalid-manifest', path: loaded.path, reason: loaded.reason, skills: [] };
-  if (!loaded.manifest) return { status: 'no-manifest', path: loaded.path, skills: [] };
-  const skills = [];
-  for (const name of Object.keys(loaded.manifest.skills || {}).sort()) {
-    const dir = path.join(skillsDir, name);
-    if (!fs.existsSync(dir)) {
-      skills.push({ name, status: 'absent' });
-      continue;
-    }
-    fs.rmSync(dir, { recursive: true, force: true });
-    skills.push({ name, status: 'removed' });
-  }
-  fs.rmSync(loaded.path, { force: true });
-  try {
-    if (fs.existsSync(skillsDir) && fs.readdirSync(skillsDir).length === 0) fs.rmdirSync(skillsDir);
-    const parent = path.dirname(skillsDir);
-    if (fs.existsSync(parent) && fs.readdirSync(parent).length === 0) fs.rmdirSync(parent);
-  } catch {
-    // Empty-dir cleanup is best-effort only.
-  }
-  return { status: 'removed-managed', path: loaded.path, skills };
 }
 
 function printSummary(options, repoResult, skillsResult) {

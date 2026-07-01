@@ -1,6 +1,7 @@
 ---
 name: grill-me
-description: Direct red-team interrogation of the user's own plan or reasoning. Use when the user asks to be grilled, challenged, pressure-tested, red-teamed, or questioned aggressively about their plan. Not for reviewing an already-changed code diff; use jhste-red-team-review for that.
+description: Direct read-only pressure test of the user's own plan or reasoning.
+disable-model-invocation: true
 ---
 
 ## jhste compatibility
@@ -13,4 +14,4 @@ description: Direct red-team interrogation of the user's own plan or reasoning. 
 
 # Grill Me
 
-Run the `grilling` workflow for a personal, read-only pressure test. Keep the interaction one question at a time, include your recommended answer with each question, and explore the codebase instead of asking when the answer is discoverable locally.
+Run the `grilling` workflow for a personal, read-only pressure test.

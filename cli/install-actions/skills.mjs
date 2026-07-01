@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { directoryDigest, ensureDir, KIT_ROOT, listDirectories, nowIso } from '../shared.mjs';
+import { directoryDigest, ensureDir, KIT_ROOT, listSharedResourceNames, listSkillDirectories, nowIso } from '../shared.mjs';
 import { readJsonFile, validateJsonObject, validateStringArray } from '../json-file.mjs';
 
 export const SKILLS_MANIFEST_NAME = '.jhste-skills-manifest.json';
@@ -26,7 +26,7 @@ function vendoredSkillNames() {
 
 export function skillNamesForSet(skillSet) {
   const sourceRoot = path.join(KIT_ROOT, 'skills');
-  const all = listDirectories(sourceRoot).filter((name) => !Object.prototype.hasOwnProperty.call(LEGACY_SKILL_RENAMES, name));
+  const all = listSkillDirectories(sourceRoot).filter((name) => !Object.prototype.hasOwnProperty.call(LEGACY_SKILL_RENAMES, name));
   const vendored = vendoredSkillNames();
   if (skillSet === 'all') return all;
   if (skillSet === 'vendor') return all.filter((name) => vendored.has(name));
@@ -42,6 +42,58 @@ export function installedSkillStatus(skillsDir, skillSet) {
   const expected = Array.isArray(skillSet) ? skillSet : skillNamesForSet(skillSet);
   const missing = expected.filter((name) => !fs.existsSync(path.join(skillsDir, name, 'SKILL.md')));
   return { expected, missing };
+}
+
+// Single source for manifest-based removal, shared by `uninstall` and `global`.
+// Removes every manifest-managed directory (skills and shared companion resources
+// such as `_shared`), then the manifest, then best-effort empty-dir cleanup.
+export function loadInstalledManifest(skillsDir) {
+  const file = manifestPath(skillsDir);
+  if (!fs.existsSync(file)) return { manifest: null, path: file };
+  try {
+    const manifest = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!manifest || typeof manifest !== 'object' || manifest.managed_by !== MANIFEST_MANAGED_BY || typeof manifest.skills !== 'object' || Array.isArray(manifest.skills)) {
+      return { invalid: true, path: file, reason: `${SKILLS_MANIFEST_NAME} is not a valid ${MANIFEST_MANAGED_BY} manifest.` };
+    }
+    return { manifest, path: file };
+  } catch (error) {
+    return { invalid: true, path: file, reason: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+export function removeManagedSkills(skillsDir) {
+  const loaded = loadInstalledManifest(skillsDir);
+  if (loaded.invalid) return { status: 'invalid-manifest', path: loaded.path, reason: loaded.reason, skills: [] };
+  if (!loaded.manifest) return { status: 'no-manifest', path: loaded.path, skills: [] };
+  for (const name of Object.keys(loaded.manifest.skills || {})) {
+    if (!name || name !== path.basename(name) || name === '.' || name === '..') {
+      return {
+        status: 'invalid-manifest',
+        path: loaded.path,
+        reason: `${SKILLS_MANIFEST_NAME} contains an invalid managed skill name: ${name}`,
+        skills: [],
+      };
+    }
+  }
+  const skills = [];
+  for (const name of Object.keys(loaded.manifest.skills || {}).sort()) {
+    const dir = path.join(skillsDir, name);
+    if (!fs.existsSync(dir)) {
+      skills.push({ name, status: 'absent' });
+      continue;
+    }
+    fs.rmSync(dir, { recursive: true, force: true });
+    skills.push({ name, status: 'removed' });
+  }
+  fs.rmSync(loaded.path, { force: true });
+  try {
+    if (fs.existsSync(skillsDir) && fs.readdirSync(skillsDir).length === 0) fs.rmdirSync(skillsDir);
+    const parent = path.dirname(skillsDir);
+    if (fs.existsSync(parent) && fs.readdirSync(parent).length === 0) fs.rmdirSync(parent);
+  } catch {
+    // Empty-dir cleanup is best-effort only.
+  }
+  return { status: 'removed-managed', path: loaded.path, skills };
 }
 
 function manifestPath(skillsDir) {
@@ -201,6 +253,7 @@ export function installSkills(skillsDir, {
   const sourceRoot = path.join(KIT_ROOT, 'skills');
   ensureDir(skillsDir);
   const selected = (Array.isArray(skillSet) ? skillSet : skillNamesForSet(skillSet)).map((name) => canonicalSkillName(name));
+  const shared = selected.length ? listSharedResourceNames(sourceRoot) : [];
   const currentManifest = loadSkillsManifest(skillsDir);
   if (currentManifest?.invalid) return [{ status: 'invalid-manifest', source: '', destination: manifestPath(skillsDir), reason: currentManifest.reason }];
   const nextManifest = currentManifest || { managed_by: MANIFEST_MANAGED_BY, version: packageVersion(), installed_at: nowIso(), skills: {} };
@@ -209,7 +262,7 @@ export function installSkills(skillsDir, {
   nextManifest.updated_at = nowIso();
   nextManifest.skills ||= {};
   const conflicts = force && !allowUnmanagedOverwrite
-    ? unmanagedSkillConflicts(selected, sourceRoot, skillsDir, currentManifest, { adoptKnownSkills })
+    ? unmanagedSkillConflicts([...selected, ...shared], sourceRoot, skillsDir, currentManifest, { adoptKnownSkills })
     : [];
   if (conflicts.length) return conflicts;
   const legacyResults = removeLegacySkillDirectories(skillsDir, selected, currentManifest, nextManifest, {
@@ -224,6 +277,18 @@ export function installSkills(skillsDir, {
     manifest: currentManifest,
     nextManifest,
   }));
+  // Copy shared companion resources (e.g. `_shared/` doctrine) alongside skills so
+  // installed `../_shared/...` references never dangle. These are not skills and are
+  // excluded from skill enumeration/status, but reuse managed-copy semantics.
+  const sharedResults = shared.length
+    ? shared.map((name) => copyManagedSkill(path.join(sourceRoot, name), path.join(skillsDir, name), name, {
+        force,
+        allowUnmanagedOverwrite,
+        adoptKnownSkills,
+        manifest: currentManifest,
+        nextManifest,
+      }))
+    : [];
   writeSkillsManifest(skillsDir, nextManifest);
-  return [...legacyResults, ...deletedResults, ...results];
+  return [...legacyResults, ...deletedResults, ...results, ...sharedResults];
 }

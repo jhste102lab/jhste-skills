@@ -35,6 +35,7 @@
   ],
   "scripts": {
     "test": "npm run syntax:check && npm run docs:check && npm run vendor:check && npm run public-safety:check && npm run public-safety-fixtures:test && npm run profile-fixtures:test && npm run guard-fixtures:test && npm run responsibility-budget-fixtures:test && npm run single-responsibility-fixtures:test && npm run solid-design-fixtures:test && npm run smoke:test && npm run release:gates",
+    "postinstall": "node cli/postinstall-global-refresh.mjs",
     "syntax:check": "node scripts/syntax-check.mjs",
     "docs:check": "node scripts/docs-check.mjs",
     "vendor:check": "node scripts/vendor-check.mjs",

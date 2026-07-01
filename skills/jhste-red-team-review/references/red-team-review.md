@@ -44,23 +44,7 @@ Trace at least one changed execution path from entrypoint to side effect/result 
 
 ## Issue candidate shape
 
-Use an `Issue candidate` only for actionable, non-trivial follow-up work outside the current fix. Prefer no candidate over low-value issue spam.
-
-Include:
-
-- **Title** — concise tracker-ready title.
-- **Existing issue search** — search terms used, or likely matching issue and why it matches.
-- **Affected paths** — files, commands, or docs involved.
-- **Evidence** — what was inspected; state **not checked** for missing coverage.
-- **Failure mode** — concrete behavior that can mislead, fail, or create risk.
-- **Impact** — user, maintainer, safety, or release consequence.
-- **Confidence** — high/medium/low and whether the finding is heuristic.
-- **Smallest safe fix** — minimal likely remediation.
-- **Acceptance criteria** — observable done conditions.
-- **Redaction note** — confirm secrets/private data are omitted.
-- **Suggested action** — `new issue`, `update existing issue`, or `no issue`.
-
-Ask for explicit approval before creating or updating an issue unless the user directly requested that tracker workflow or repo-local standing approval covers it.
+See `../../_shared/issue-candidate.md` for the full shape and approval protocol. Do not restate it here.
 
 ## Review shape
 
@@ -88,7 +72,4 @@ When shared tooling reports rule families, interpret them as prompts rather than
 - `write_safety_idempotency` → inspect duplicate execution, batching, and partial-write risks
 - `api_contract_compatibility` → inspect schema, parsing, DTO mapping, and caller drift
 - `performance_duplicate_fetch` → inspect duplicate requests and hot-path work
-- `extension_seam_advisory` → inspect repeated variant/provider/policy branching as an OCP-informed candidate, not a demand for abstraction
-- `dependency_boundary_advisory` → inspect concrete side-effect dependencies in high-level policy/service paths as a DIP-informed candidate
-- `substitutability_advisory` → human-review caller-visible return shape, nullability, error behavior, side effects, and invariants; there is no default guard proof
-- `interface_segregation_advisory` → human-review broad config/interface/props bags against cohesive-contract locality; there is no default guard proof
+- `extension_seam_advisory`, `dependency_boundary_advisory`, `substitutability_advisory`, `interface_segregation_advisory` → apply the shared SOLID lens in `../../_shared/solid-lens.md` as review prompts (OCP/DIP candidates; LSP/ISP are human-review, no default guard proof), not demands for abstraction

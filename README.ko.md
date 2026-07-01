@@ -82,6 +82,19 @@ jhste-skills install
 
 한 번만 실행해보고 싶다면 `npx`를 쓰면 되고, 평소에 계속 사용할 CLI로 두고 싶다면 `npm install -g`를 쓰면 됩니다.
 
+### Global setup (Codex + Claude Code + OpenCode, advisory-only)
+
+레포별 파일이나 git hook 없이 모든 레포에서 skills를 쓰고 싶다면, 사용자 수준에서 한 번 설정하세요.
+
+```bash
+npm install -g jhste-skills
+jhste-skills global
+```
+
+이 명령은 skills와 shared companion resources를 `~/.jhste/skills`에 복사하고, 각 agent의 global instruction file(`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`)에 marker-managed bridge block을 씁니다. 파일이 없으면 생성합니다. Git hook이나 레포별 파일은 쓰지 않으며, guard는 advisory 상태로 남습니다(`jhste-skills guard --scope changed`). Agent는 `--agents codex,claude,opencode`로 선택하고, `jhste-skills global --uninstall`로 제거할 수 있습니다.
+
+이 최초 global setup 이후에는 `npm update -g jhste-skills`만으로 managed skill copy와 기존 managed global bridge block이 안전하게 새로고침됩니다. Agent나 옵션을 바꾸고 싶을 때만 `jhste-skills global`을 다시 실행하세요.
+
 기본 설치는 Normal mode를 사용합니다.
 
 - bundled skills 전체를 설치합니다: jhste core skills + vendored workflow skills.
@@ -165,6 +178,7 @@ Custom   - 효과 중심 질문을 통해 설치 범위를 직접 선택
 | Skill | 언제 쓰나 | 무엇을 줄여주나 |
 |---|---|---|
 | [`setup`](skills/setup/SKILL.md)<br>설치, 연결, 업데이트가 기존 프로젝트 지침을 덮어쓰지 않도록 하는 안전 설치 스킬 | kit를 설치하거나 레포에 연결할 때 | unsafe overwrite, unmanaged hook conflict, repo instruction replacement |
+| [`ask-jhste`](skills/ask-jhste/SKILL.md)<br>적절한 jhste skill이나 workflow를 고르는 user-invoked router | 다음에 어떤 jhste skill/workflow를 써야 할지 확실하지 않을 때 | wrong workflow selection, unnecessary always-on context, accidental side effects from routing |
 | [`jhste-engineering-groundwork`](skills/jhste-engineering-groundwork/SKILL.md)<br>코드 변경 전 목표, 전제, scope, boundary, failure path, final behavior predicate를 검증하는 pre-change groundwork 스킬 | non-trivial code change 전 | blind agreement, scope creep, unverified assumption, unclear boundary |
 | [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>입력 검증, 관측 가능한 실패 처리, secret-safe logging, oversized-file review 스킬 | external input, failure handling, logging, env/config, cleanup/search-replace, code-quality review path를 만질 때 | unvalidated input, silent failure, secret logging, unsafe broad cleanup, oversized file |
 | [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>모듈 경계, side effect 위치, SOLID-informed design risk를 검토하는 아키텍처 리뷰 스킬 | module boundary, app structure, side-effect placement, responsibility split 변경 시 | pass-through abstraction, mixed responsibility, side-effect leakage |
@@ -273,3 +287,5 @@ Release acceptance notes는 [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.m
 - non-trivial work를 완료라고 말하기 전에 red-team code review를 수행합니다.
 
 빠른 agent에는 guardrail이 필요합니다. `jhste-skills`는 agent에게 repo-respecting engineering workflow를 제공합니다.
+
+Skills는 `skills/_shared/`의 cross-cutting doctrine(SOLID lens, evidence discipline, issue-candidate protocol, scope discipline)을 공유합니다. `skills/` 아래에서 이름이 `_`로 시작하는 디렉터리는 skill이 아니라 shared companion resource입니다. skill listing, selection, missing-skill check에서는 제외되지만, 어떤 skill을 설치하든 함께 복사되어 설치된 artifact 안에서 cross-skill `../_shared/...` reference가 끊어지지 않습니다.

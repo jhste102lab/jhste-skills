@@ -1,5 +1,28 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Added `skills/_shared/` shared companion resources (`solid-lens`, `evidence-discipline`, `issue-candidate`, `scope-discipline`) as the single source for cross-cutting doctrine, cited by the jhste skills instead of restating it per skill.
+- Added a first-class shared-resource install concept: directories under `skills/` starting with `_` are not skills (excluded from listing, selection, and missing-skill checks) but are copied alongside skills so installed `../_shared/...` references never dangle.
+- Added `jhste-skills global` — advisory-only, user-level setup for Codex, Claude Code, and OpenCode that installs skills to `~/.jhste/skills` and writes marker-managed bridges into `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, and `~/.config/opencode/AGENTS.md`, with no git hooks or per-repo files; `--uninstall` reverses it.
+- Added `ask-jhste`, a user-invoked router for choosing the right jhste skill/workflow without adding always-on model context.
+- Added OpenCode support to global setup via `~/.config/opencode/AGENTS.md`.
+- Added a safe global-only npm postinstall refresh: after a user has opted into `jhste-skills global`, later `npm update -g jhste-skills` refreshes managed global skill copies and existing managed global bridges without creating a new setup.
+
+### Changed
+- Trimmed jhste skill descriptions and SKILL bodies for lower operating-context cost while preserving behavior; SKILL files now own the decision procedure and cite `_shared` doctrine, and reference files are examples/lookup only.
+- Reduced `docs-check` to load-bearing behavior anchors (pinned once at their source) instead of exact prose/section titles; de-duplicated the triplicated issue-candidate pin to the shared doctrine.
+- Deduplicated the `## Workflow` section in `AGENTS.md` against the managed bridge block.
+- Extracted shared `removeManagedSkills`/manifest loading into `install-actions/skills.mjs` for reuse by `uninstall` and `global`.
+- Made `grill-me` a user-invoked alias for `grilling` to reduce duplicate invocation surface while preserving the personal pressure-test entrypoint.
+- Made `global` skip bridge writes when skill installation is blocked, and preflight `_shared` unmanaged conflicts before copying selected skills.
+- Synced README translations (ko/zh/ja) with global setup, `ask-jhste`, and `_shared` companion-resource docs.
+- Hardened `global` option validation, refused vendor-only global installs, reported invalid-manifest uninstall failures, and rejected unsafe manifest entry names before managed skill removal.
+
+### Validation
+- `npm test` passed (12 stages, including new `_shared` install integrity and `global` command smoke coverage).
+
 ## 0.3.7 - 2026-06-30
 
 ### Added

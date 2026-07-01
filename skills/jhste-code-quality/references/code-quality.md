@@ -15,7 +15,7 @@ Risky fallback patterns include `catch` blocks that return `[]`, `null`, `undefi
 
 ## SOLID-informed coding discipline
 
-Use SOLID as a design review lens for concrete maintenance and failure risks, not as automatic compliance. Keep each changed function, module, or class focused on one responsibility and one reason to change. Review extension boundaries when new variants repeatedly edit core branching, but avoid premature strategies or registries. Preserve caller-visible return shapes, nullability, error behavior, and side-effect expectations. Prefer right-sized contracts over broad config/interface/props bags, while keeping cohesive public contracts together. Keep concrete DB, API, browser, filesystem, email, payment, and queue effects visible through adapters, repositories, injected dependencies, or intentionally local boundaries. Do not introduce abstraction only to satisfy a SOLID label.
+Use SOLID as a design review lens for concrete maintenance and failure risks, not as automatic compliance or a reason to add abstraction only to satisfy a label. The shared lens (SRP/OCP/LSP/ISP/DIP) lives in `../../_shared/solid-lens.md`.
 
 ## Cleanup and secret-removal safety
 

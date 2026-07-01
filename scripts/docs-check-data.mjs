@@ -12,6 +12,10 @@ export const required = [
   'skills/jhste-crawler-automation/SKILL.md',
   'skills/jhste-red-team-review/SKILL.md',
   'skills/jhste-red-team-review/references/red-team-review.md',
+  'skills/_shared/solid-lens.md',
+  'skills/_shared/evidence-discipline.md',
+  'skills/_shared/issue-candidate.md',
+  'skills/_shared/scope-discipline.md',
   'rules/core/no_silent_failure.yaml',
   'rules/core/no_secret_logging.yaml',
   'rules/core/workflow_security.yaml',
@@ -66,15 +70,17 @@ export const required = [
   'docs/PUBLIC_SAFETY.md',
 ];
 
+// Load-bearing behavior anchors only. Behaviors are pinned once at their single
+// source (shared doctrine or the owning skill); reference files are examples/lookup
+// and are kept alive by each SKILL's `## References` link resolution, so they do not
+// need prose-title pins here. Existence of required files is enforced in `required`.
 export const recipeRequirements = {
-  'skills/jhste-code-quality/references/code-quality.md': ['React client loader/hook/adapter/view', 'Mutation write safety', 'Import/ops script', 'EDIT_PATHS', 'PROTECTED_PATHS'],
-  'skills/jhste-architecture-review/references/architecture-review.md': ['Next.js or API route split', 'React client path split', 'Generic module or function split', 'Function responsibility split', 'Adjacent-code scope limit'],
-  'skills/jhste-db-api-boundary/references/db-api-boundary.md': ['DB row to domain/public DTO', 'Scoped mutation'],
-  'skills/jhste-crawler-automation/references/crawler-automation.md': ['Producer / consumer recipe'],
+  'skills/_shared/scope-discipline.md': ['Adjacent-code scope', 'bounded fix', 'two fix + re-review'],
+  'skills/_shared/evidence-discipline.md': ['not found', 'not checked', 'actual consumer'],
+  'skills/jhste-code-quality/SKILL.md': ['EDIT_PATHS', 'PROTECTED_PATHS'],
   'skills/grilling/SKILL.md': ['read-only by default'],
   'skills/grill-me/SKILL.md': ['read-only by default'],
   'skills/improve-codebase-architecture/SKILL.md': ['Default to a concise Markdown architecture review', 'HTML/Tailwind/Mermaid report only when requested'],
-  'skills/jhste-engineering-groundwork/SKILL.md': ['Senior-quality pre-edit gate', 'recovery or rollback expectation', 'Adjacent-code scope creep', 'Changed responsibility', 'bounded fix', 'Final behavior predicates'],
-  'skills/jhste-red-team-review/SKILL.md': ['Severity rubric and path tracing', 'changed execution path', 'changes required', 'actual consumer', 'residual risk'],
-  'skills/jhste-red-team-review/references/red-team-review.md': ['Severity rubric', 'Trace at least one changed execution path', 'one main reason to change', 'Current proof'],
+  'skills/jhste-engineering-groundwork/SKILL.md': ['Changed responsibility', 'Final behavior predicates'],
+  'skills/jhste-red-team-review/SKILL.md': ['changes required', 'residual risk', 'changed execution path'],
 };

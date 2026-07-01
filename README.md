@@ -82,7 +82,20 @@ jhste-skills install
 
 Use `npx` when you want a one-off run without a global install. Use `npm install -g` when you want `jhste-skills` available as a normal shell command.
 
-The default install uses Normal mode.
+### Global setup (Codex + Claude Code + OpenCode, advisory-only)
+
+If you want the skills available in every repository without per-repo files or git hooks, set up once at the user level:
+
+```bash
+npm install -g jhste-skills
+jhste-skills global
+```
+
+This copies the skills (and shared companion resources) to `~/.jhste/skills` and writes a marker-managed bridge block into each agent's global instruction file (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.config/opencode/AGENTS.md`), creating them if needed. No git hooks and no per-repo files are written; guard stays advisory (`jhste-skills guard --scope changed`). Choose agents with `--agents codex,claude,opencode`, and remove everything with `jhste-skills global --uninstall`.
+
+After this one-time global setup, later `npm update -g jhste-skills` runs a safe global-only refresh of the managed skill copies and existing managed global bridge blocks. Re-run `jhste-skills global` when you want to change agents or options.
+
+The default (per-repo) install uses Normal mode.
 
 - Installs all bundled skills: jhste core skills + vendored workflow skills.
 - Creates `.jhste/profile.yaml` when missing; `--force` refreshes generated/managed profiles, while modified profiles require `--force --allow-profile-overwrite`.
@@ -165,6 +178,7 @@ These are the jhste-authored guardrail skills. They are installed by default as 
 | Skill | Use it when | What it helps reduce |
 |---|---|---|
 | [`setup`](skills/setup/SKILL.md)<br>A safe setup skill that prevents install/connect/update flows from overwriting existing project instructions | Installing or connecting the kit to a repository | Unsafe overwrite, unmanaged hook conflict, repo instruction replacement |
+| [`ask-jhste`](skills/ask-jhste/SKILL.md)<br>A user-invoked router for choosing the right jhste skill or workflow | You are not sure which jhste skill or workflow to use next | Wrong workflow selection, unnecessary always-on context, accidental side effects from routing |
 | [`jhste-engineering-groundwork`](skills/jhste-engineering-groundwork/SKILL.md)<br>A pre-change groundwork skill that verifies goal, premise, scope, boundary, failure path, and final behavior predicates before code edits | Before non-trivial code changes | Blind agreement, scope creep, unverified assumptions, unclear boundaries |
 | [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>A code-quality skill for input validation, observable failure handling, secret-safe logging, and oversized-file review | Touching external input, failure handling, logging, env/config, cleanup/search-replace, or code-quality review paths | Unvalidated input, silent failure, secret logging, unsafe broad cleanup, oversized files |
 | [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>An architecture review skill for module boundaries, side-effect placement, and SOLID-informed design risks | Changing module boundaries, app structure, side-effect placement, or responsibility splits | Pass-through abstraction, mixed responsibility, side-effect leakage |
@@ -273,5 +287,7 @@ See [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.md) for release acceptanc
 - Run a red-team code review before calling non-trivial work complete.
 
 Fast agents need guardrails. `jhste-skills` gives them a repo-respecting engineering workflow.
+
+Skills share cross-cutting doctrine (SOLID lens, evidence discipline, issue-candidate protocol, scope discipline) from `skills/_shared/`. Directories under `skills/` whose name starts with `_` are shared companion resources, not skills: they are excluded from skill listing, selection, and missing-skill checks, but are copied alongside the skills whenever any skill is installed so cross-skill `../_shared/...` references never dangle in the installed artifact.
 
 Installed skill directories are tracked with `.jhste-skills-manifest.json`. `--force` refreshes manifest-managed skill copies and generated/managed profiles; modified profiles need `--force --allow-profile-overwrite`; overwriting unmanaged differing skill directories still requires the separate `--allow-unmanaged-skill-overwrite` flag after review. `sync` and `update` can also adopt additional known jhste skills into an already managed skills directory so older mixed installs can be reconciled without a manual overwrite flag. Legacy managed renames are also reconciled during `sync` and `update`, so older managed installs that still have `diagnose` or `jhste-engineering-judgment` are migrated to `diagnosing-bugs` or `jhste-engineering-groundwork`. Managed copies of retired `write-a-skill` are removed rather than kept as a compatibility fallback.

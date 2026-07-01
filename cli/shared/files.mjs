@@ -25,6 +25,22 @@ export function listDirectories(dir) {
     .sort();
 }
 
+// Directories under skills/ whose name starts with `_` are shared companion
+// resources (doctrine/templates), not skills. They ship in the package and are
+// copied alongside skills so cross-skill `../_shared/...` references resolve,
+// but are excluded from skill enumeration, selection, and missing-skill checks.
+export function isSharedResourceName(name) {
+  return name.startsWith('_');
+}
+
+export function listSkillDirectories(dir) {
+  return listDirectories(dir).filter((name) => !isSharedResourceName(name));
+}
+
+export function listSharedResourceNames(dir) {
+  return listDirectories(dir).filter((name) => isSharedResourceName(name));
+}
+
 export function directoryDigest(dir) {
   const hash = crypto.createHash('sha256');
   if (!fs.existsSync(dir)) return null;
