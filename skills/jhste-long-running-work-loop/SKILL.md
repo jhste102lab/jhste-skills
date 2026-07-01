@@ -5,139 +5,57 @@ description: "Coordinate durable work loops when losing state would make work un
 
 # jhste-long-running-work-loop
 
-Use this skill when the main risk is losing important work state, not merely because the task may take a long time. Decide whether a task needs a durable work loop, then keep the loop small, reviewable, and safe. Repo-local instructions remain authoritative.
+Use when the main risk is losing important work state, not merely because the task may take time. Keep the loop small, reviewable, and safe. Repo-local instructions remain authoritative.
 
-This is an orchestration skill. Do not reimplement code quality review, PRD writing, issue breakdown, triage, or handoff workflows. Route to the narrower skill when that is the actual task.
+This is orchestration only. Do not reimplement code-quality review, PRD writing, issue breakdown, triage, or handoff workflows; route to the narrower skill when that is the actual task.
 
-## Scope
+## Decide
 
-Use for work where losing state would likely cause wrong, unsafe, duplicated, or hard-to-resume work across time, tools, repositories, or sessions:
+Use when state loss could make work wrong, duplicated, unsafe, or hard to resume across time, tools, repos, or sessions:
 
-- multi-session implementation or review work;
-- recurring review/check-in loops;
-- same-day or multi-day external waiting states such as CI, preview deploys, reviewer replies, approvals, vendor/API responses, or customer input;
-- workflows spanning PRD, issues, implementation, review, and release notes;
-- work that touches multiple repositories or external systems;
-- hard-to-reverse design decisions that need a durable decision record;
-- tasks where the next session or next agent must resume safely.
+- multi-session implementation or review;
+- recurring check-ins or thread automations;
+- same-day or multi-day wait states such as CI, preview deploys, reviewer replies, approvals, vendor/API responses, or customer input;
+- flows spanning PRD, issues, implementation, review, and release notes;
+- multi-repo or external-system work;
+- hard-to-reverse decisions needing a durable record;
+- next-session or next-agent resume.
 
-Skip for:
+Skip for simple Q&A, typo/formatting/small README edits, small single-session fixes, direct PRD/issue/triage/handoff requests, or code paths handled by `jhste-engineering-groundwork`, guard, and `jhste-red-team-review` alone. When skipping, use the narrower workflow and briefly note that a durable loop is unnecessary when useful.
 
-- simple Q&A;
-- typo fixes;
-- formatting-only work;
-- small README edits;
-- small single-file fixes that can finish in one session;
-- direct requests that are only PRD drafting, issue breakdown, triage, or handoff;
-- work where the changed code path can be handled by `jhste-engineering-groundwork`, guard, and `jhste-red-team-review` alone.
+## Loop contract
 
-When skipping, use the narrower workflow. If useful, briefly note that a durable loop is unnecessary.
-
-## Contract
-
-1. **Decide if a durable loop is actually warranted.**
-   If not, route to the smallest applicable skill or workflow.
-
-2. **Define the work loop before expanding scope.**  
-   Capture only:
-   - current goal;
-   - current phase;
-   - definition of done;
-   - explicit out-of-scope items;
-   - open decisions;
-   - external blockers or wait states;
-   - approval boundaries;
-   - next checkpoint;
-   - required review gates.
-
-3. **Preserve context only when it will reduce future failure.**  
-   Do not turn project docs into scratchpads. Do not persist raw thought, private reasoning, secrets, or noisy progress logs.
-
-4. **Choose the right durable surface.**
-   - Domain vocabulary or stable domain context -> `CONTEXT.md`.
-   - Hard-to-reverse design decision with real trade-offs -> ADR.
-   - Active work state, blockers, acceptance, and next action -> issue or PR notes.
-   - Next-session or next-agent continuation only -> `handoff`.
-   - Ephemeral, obvious, or soon-stale state -> do not persist.
-
-5. **Resume by verifying, not trusting.**  
-   On resume, re-check the current repo, branch, issue/PR, CI, deployment, or external state before relying on old notes. Mark stale assumptions as not checked.
-
-6. **Respect approval boundaries.**  
-   Proceed without asking for reading, searching, summarizing, planning, drafting, review notes, and issue candidates when repo-local instructions allow it.  
-   Ask before send, push, merge, deploy, delete, publish, production data changes, secret exposure, cost-bearing actions, broad tracker edits, or destructive/irreversible changes.
-
-7. **Delegate to existing skills.**
-   - Before non-trivial code changes, use `jhste-engineering-groundwork`.
-   - After non-trivial code changes, run the configured guard when available and use `jhste-red-team-review`.
-   - For PRDs, use `to-prd`.
-   - For issue breakdown, use `to-issues`.
-   - For tracker triage, use `triage`.
-   - For next-agent/session summaries, use `handoff`.
-   - For domain glossary or ADR work, use `grill-with-docs` or the repo's domain-documentation workflow.
+- Set a verifiable goal, current phase, definition of done, explicit out-of-scope items, blockers/wait states, approval boundaries, next checkpoint, and review gates before expanding scope.
+- Preserve context only when it reduces future failure. Do not turn project docs into scratchpads or persist raw thought, private reasoning, secrets, or noisy progress logs.
+- Choose the smallest durable surface: `CONTEXT.md` for stable domain vocabulary/context, ADR for hard-to-reverse decisions with real trade-offs, issue/PR notes for active work state, `handoff` for next-session context, or no record for ephemeral/obvious/soon-stale state.
+- Make memory reviewable: prefer paths, URLs, diffs, decisions, blockers, and next actions over duplicated artifact contents.
+- Resume by verifying, not trusting: re-check repo, branch, issue/PR, CI, deployment, or external state before relying on old notes; mark stale assumptions as **not checked**.
+- Use remote control or recurring automation as a heartbeat to unblock the next move, not as permission to skip review, approval, or verification.
+- Proceed without asking for reading, searching, summarizing, planning, drafting, review notes, and issue candidates when repo-local instructions allow it; ask before send, push, merge, deploy, delete, publish, production data changes, secret exposure, cost-bearing actions, broad tracker edits, or destructive/irreversible changes.
+- Delegate concrete work: groundwork before non-trivial code changes; guard and red-team after; `to-prd`, `to-issues`, `triage`, `handoff`, or `grill-with-docs` when those are the actual workflow.
 
 ## Minimal loop note
 
-When a durable loop is warranted, keep the note compact:
+When a durable loop is warranted, keep only the fields that matter:
 
 ```md
 ## Durable work loop
-
-Goal:
-- ...
-
-Current phase:
-- ...
-
-Definition of done:
-- ...
-
+Goal / phase / definition of done:
 Out of scope:
-- ...
-
 Open decisions:
-- ...
-
-External blockers / wait states:
-- ...
-
+External blockers or wait states:
 Approval required before:
-- ...
-
 Durable state location:
-- ...
-
 Next checkpoint:
-- ...
-
 Review gates:
-- ...
 ```
 
-Prefer referencing existing artifacts by path or URL over duplicating their contents.
+Prefer referencing existing artifacts by path or URL over copying their contents.
 
 ## Context storage rules
 
-Unless repo-local docs define another role, treat `CONTEXT.md` as stable domain context, not a work log. Use it only for glossary or domain context that future agents need to understand the project correctly.
-
-Create or update an ADR only when all are true:
-
-1. the decision is hard to reverse;
-2. future readers would wonder why it was chosen;
-3. there were real alternatives and trade-offs.
-
-Use issue or PR notes for active work state because that state naturally expires when the work closes.
-
-Use handoff for continuation context that helps the next session but does not deserve permanent repo documentation.
-
-Record nothing when the information is trivial, already obvious from code/tests/diff, likely to go stale quickly, or not useful to future work.
+Treat `CONTEXT.md` as stable domain context, not a work log, unless repo-local docs define another role. Create or update an ADR only when the decision is hard to reverse, future readers would wonder why it was chosen, and there were real alternatives and trade-offs. Use issue/PR notes for active state that expires with the work, `handoff` for continuation context, and no durable record for trivial or likely-stale information.
 
 ## Output style
 
-Be brief. Report:
-
-- whether the durable loop is warranted;
-- the chosen durable surface, if any;
-- the next checkpoint;
-- any action that requires approval;
-- which narrower skill should handle the next concrete step.
+Be brief: state whether a durable loop is warranted, chosen surface, next checkpoint, approval needs, and the narrower skill for the next concrete step.
