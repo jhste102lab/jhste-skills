@@ -1,6 +1,6 @@
 ---
 name: jhste-db-api-boundary
-description: Advisory guidance for thin API routes, SQL parameter binding, database row validation, public-safe errors, and DTO mapping. Use when touching API, controller, service, repository, or query code.
+description: Advisory guidance for API/persistence boundaries: thin routes, SQL parameter binding, row validation, public-safe errors, DTO mapping. Use when touching API, controller, service, repository, or query code.
 ---
 
 # jhste-db-api-boundary

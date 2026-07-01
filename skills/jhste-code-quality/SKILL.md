@@ -1,6 +1,6 @@
 ---
 name: jhste-code-quality
-description: Public-safe code-quality guidance for input validation, observable failures, secret-safe logging, cleanup/search-replace safety, and oversized-file review. Use when touching external input, failure handling, logging, env/config, cleanup or secret-removal work, broad search/replace, or code-quality review paths.
+description: Public-safe code-quality guidance: input validation, observable failures, secret-safe logging, cleanup/search-replace safety, oversized-file review. Use when touching external input, failure handling, logging, env/config, cleanup or secret-removal, broad search/replace, or code-quality review.
 ---
 
 # jhste-code-quality
@@ -19,7 +19,7 @@ Use repo-local instructions first. Treat this skill as shared advisory guidance 
 - For code with side effects or multi-step work, make the failure behavior understandable to callers and users; do not let the code silently imply success when the changed path did not complete safely.
 - Mock external boundaries, not internal collaborators you control.
 - Before adding a new helper, type, or shape, check for the existing source of truth.
-- Use SOLID-informed coding discipline as advisory guidance for concrete maintenance and failure risks: one responsibility, extension boundaries only when variants force repeated edits, stable caller contracts, right-sized interfaces, and visible side-effect dependencies. Do not add abstraction only to satisfy a SOLID label.
+- Apply the SOLID-informed lens as advisory guidance for concrete maintenance and failure risks, not as a compliance label or automatic abstraction; see `../_shared/solid-lens.md`.
 - If a hand-written source file grows beyond the profile threshold, consider splitting responsibilities before adding more code.
 - If a page, client module, route/controller, import script, or Python orchestrator crosses a responsibility budget, treat it as a review signal to find the next clean boundary.
 - After code changes, prefer `jhste-skills guard --scope changed --format text --fail-on error` when the CLI is available; report warnings and guard runtime/config failures separately.
@@ -40,6 +40,7 @@ For secret cleanup, value removal, broad repository cleanup, or search/replace w
 
 - `references/code-quality.md`
 - `../jhste-engineering-groundwork/SKILL.md`
+- `../_shared/solid-lens.md`
 - `../../rules/core/no_silent_failure.yaml`
 - `../../rules/core/no_secret_logging.yaml`
 - `../../rules/core/external_input_validation.yaml`

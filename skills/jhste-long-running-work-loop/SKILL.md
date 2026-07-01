@@ -5,9 +5,7 @@ description: "Coordinate durable work loops when losing state would make work un
 
 # jhste-long-running-work-loop
 
-Use when the main risk is losing important work state, not merely because the task may take time. Keep the loop small, reviewable, and safe. Repo-local instructions remain authoritative.
-
-This is orchestration only. Do not reimplement code-quality review, PRD writing, issue breakdown, triage, or handoff workflows; route to the narrower skill when that is the actual task.
+Use when the main risk is losing important work state, not merely because the task may take time. Keep the loop small, reviewable, and safe; repo-local instructions remain authoritative. This is orchestration only — do not reimplement code-quality review, PRD writing, issue breakdown, triage, or handoff; route to the narrower skill when that is the actual task.
 
 ## Decide
 
@@ -51,10 +49,6 @@ Review gates:
 ```
 
 Prefer referencing existing artifacts by path or URL over copying their contents.
-
-## Context storage rules
-
-Treat `CONTEXT.md` as stable domain context, not a work log, unless repo-local docs define another role. Create or update an ADR only when the decision is hard to reverse, future readers would wonder why it was chosen, and there were real alternatives and trade-offs. Use issue/PR notes for active state that expires with the work, `handoff` for continuation context, and no durable record for trivial or likely-stale information.
 
 ## Output style
 

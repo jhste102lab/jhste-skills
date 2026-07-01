@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
+  assertInstalledReferenceIntegrity,
   assertLegacySkillRenameMigration, assertManagedDeletedSkillRemoval,
   assertNoInstallSideEffects,
   fail,
@@ -114,6 +115,10 @@ function runDefaultInstall(ctx) {
   const defaultSkillDirs = skillDirs(skillsDir);
   if (defaultSkillDirs.length !== 22) fail(`default install should copy 22 bundled skills, got ${defaultSkillDirs.length}`);
   if (!defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should copy vendored workflow skills');
+  // Shared companion resources ship alongside skills but are not skills themselves.
+  if (!fs.existsSync(path.join(skillsDir, '_shared', 'solid-lens.md'))) fail('install did not copy _shared companion resource');
+  if (manifest.skills?.['_shared'] && defaultSkillDirs.includes('_shared')) fail('_shared must not be counted as a skill');
+  assertInstalledReferenceIntegrity(skillsDir);
 }
 
 

@@ -1,6 +1,6 @@
 ---
 name: jhste-crawler-automation
-description: Advisory guidance for crawler and automation code, including producer/consumer boundaries, artifact handoff, routine validation, and side-effect boundaries. Use when touching crawlers, scrapers, browser automation, workers, or schedulers.
+description: Advisory guidance for crawler/automation code: producer/consumer boundaries, artifact handoff, routine validation, side-effect boundaries. Use when touching crawlers, scrapers, browser automation, workers, or schedulers.
 ---
 
 # jhste-crawler-automation

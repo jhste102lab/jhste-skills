@@ -44,7 +44,32 @@ export function skillDirs(dir) {
   return fs.readdirSync(dir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
+    .filter((name) => !name.startsWith('_'))
     .sort();
+}
+
+// Verify installed skills never carry dangling `../..`-style markdown/backtick
+// references (e.g. to `_shared/` companion resources) in the installed artifact.
+export function assertInstalledReferenceIntegrity(skillsDir) {
+  for (const skill of skillDirs(skillsDir)) {
+    const skillFile = path.join(skillsDir, skill, 'SKILL.md');
+    if (!fs.existsSync(skillFile)) continue;
+    const text = fs.readFileSync(skillFile, 'utf8');
+    const searchable = text.replace(/```[\s\S]*?```/g, '');
+    const refs = new Set();
+    const section = /^## References\s*\n([\s\S]*?)(?=^##\s|$)/m.exec(searchable)?.[1] || '';
+    for (const match of section.matchAll(/^\s*-\s*`([^`]+)`/gm)) refs.add(match[1]);
+    for (const match of searchable.matchAll(/\[[^\]]+\]\(([^)]+\.md)\)/g)) {
+      if (!/^https?:/.test(match[1])) refs.add(match[1]);
+    }
+    for (const ref of refs) {
+      const cleanRef = ref.split('#')[0];
+      if (!cleanRef || /^https?:/.test(cleanRef)) continue;
+      if (cleanRef.endsWith('.yaml')) continue; // rules ship separately from skills
+      const resolved = path.resolve(path.join(skillsDir, skill), cleanRef);
+      if (!fs.existsSync(resolved)) fail(`installed skill ${skill} has dangling reference ${ref}`);
+    }
+  }
 }
 
 export function readManagedSkillsManifest(skillsDir) {

@@ -1,6 +1,6 @@
 ---
 name: jhste-architecture-review
-description: Advisory architecture review for current code changes touching module boundaries, app structure, side-effect placement, responsibility splits, or pass-through abstraction. Use during or after local code changes; for repo-wide architecture improvement use improve-codebase-architecture, and for module interface vocabulary use codebase-design.
+description: Advisory architecture review for current code changes: module boundaries, app structure, side-effect placement, responsibility splits, pass-through abstraction. Use during or after local changes; for repo-wide work use improve-codebase-architecture, for interface vocabulary use codebase-design.
 ---
 
 # jhste-architecture-review
@@ -17,15 +17,13 @@ Repo-local architecture docs remain authoritative. Use this skill to keep common
 - For changed classes, modules, and functions, name one main responsibility and one main reason to change before adding behavior.
 - For large or mixed modules, identify the responsibility that can move behind a tested boundary without creating shallow pass-through wrappers.
 - Treat responsibility budget findings as review prompts, not proof of a bug: look for mixed loading, UI, persistence, orchestration, reporting, and side effects.
-- Apply SOLID-informed design review as a lens, not a compliance checklist: SRP responsibility, OCP extension boundaries, LSP caller-contract stability, ISP right-sized contracts, and DIP dependency direction.
-- For OCP, review repeated variant/provider/policy branching only when it creates repeated core edits; avoid premature strategy or registry abstractions.
-- For LSP and ISP, rely on contract review and tests rather than automatic violation claims.
-- For DIP, keep high-level policy from directly owning concrete side effects unless the dependency is intentionally local, visible, and testable.
+- Apply the SOLID-informed lens (SRP/OCP/LSP/ISP/DIP) as review prompts, not compliance or automatic abstraction; see `../_shared/solid-lens.md`.
 
 ## References
 
 - `references/architecture-review.md`
 - `../jhste-engineering-groundwork/SKILL.md`
+- `../_shared/solid-lens.md`
 - `../../rules/core/side_effect_boundary.yaml`
 - `../../rules/core/responsibility_budget.yaml`
 - `../../rules/core/single_responsibility_advisory.yaml`

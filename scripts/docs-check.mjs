@@ -218,10 +218,10 @@ for (const requiredText of ['jhste-engineering-groundwork', 'jhste-red-team-revi
   if (!rootAgents.includes(requiredText)) fail(`AGENTS.md must mention ${requiredText}`);
 }
 
+// The full issue-candidate protocol is pinned once in the shared doctrine; skills
+// cite it rather than restating the handling in triplicate.
 const issueCandidateDocs = {
-  'skills/jhste-engineering-groundwork/SKILL.md': read('skills/jhste-engineering-groundwork/SKILL.md'),
-  'skills/jhste-red-team-review/SKILL.md': read('skills/jhste-red-team-review/SKILL.md'),
-  'skills/jhste-red-team-review/references/red-team-review.md': read('skills/jhste-red-team-review/references/red-team-review.md'),
+  'skills/_shared/issue-candidate.md': read('skills/_shared/issue-candidate.md'),
 };
 for (const [rel, text] of Object.entries(issueCandidateDocs)) {
   for (const requiredText of ['Issue candidate', 'explicit approval', 'heuristic', 'secret']) {

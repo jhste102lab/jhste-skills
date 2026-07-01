@@ -82,7 +82,20 @@ jhste-skills install
 
 Use `npx` when you want a one-off run without a global install. Use `npm install -g` when you want `jhste-skills` available as a normal shell command.
 
-The default install uses Normal mode.
+### Global setup (Codex + Claude Code, advisory-only)
+
+If you want the skills available in every repository without per-repo files or git hooks, set up once at the user level:
+
+```bash
+npm install -g jhste-skills
+jhste-skills global
+```
+
+This copies the skills (and shared companion resources) to `~/.jhste/skills` and writes a marker-managed bridge block into each agent's global instruction file (`~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`), creating them if needed. No git hooks and no per-repo files are written; guard stays advisory (`jhste-skills guard --scope changed`). Choose agents with `--agents codex,claude`, and remove everything with `jhste-skills global --uninstall`.
+
+After a later `npm update -g`, refresh the installed copies with `jhste-skills global` (or `jhste-skills sync --skills-only`).
+
+The default (per-repo) install uses Normal mode.
 
 - Installs all bundled skills: jhste core skills + vendored workflow skills.
 - Creates `.jhste/profile.yaml` when missing; `--force` refreshes generated/managed profiles, while modified profiles require `--force --allow-profile-overwrite`.
@@ -273,5 +286,7 @@ See [`docs/ACCEPTANCE_CHECK.md`](docs/ACCEPTANCE_CHECK.md) for release acceptanc
 - Run a red-team code review before calling non-trivial work complete.
 
 Fast agents need guardrails. `jhste-skills` gives them a repo-respecting engineering workflow.
+
+Skills share cross-cutting doctrine (SOLID lens, evidence discipline, issue-candidate protocol, scope discipline) from `skills/_shared/`. Directories under `skills/` whose name starts with `_` are shared companion resources, not skills: they are excluded from skill listing, selection, and missing-skill checks, but are copied alongside the skills whenever any skill is installed so cross-skill `../_shared/...` references never dangle in the installed artifact.
 
 Installed skill directories are tracked with `.jhste-skills-manifest.json`. `--force` refreshes manifest-managed skill copies and generated/managed profiles; modified profiles need `--force --allow-profile-overwrite`; overwriting unmanaged differing skill directories still requires the separate `--allow-unmanaged-skill-overwrite` flag after review. `sync` and `update` can also adopt additional known jhste skills into an already managed skills directory so older mixed installs can be reconciled without a manual overwrite flag. Legacy managed renames are also reconciled during `sync` and `update`, so older managed installs that still have `diagnose` or `jhste-engineering-judgment` are migrated to `diagnosing-bugs` or `jhste-engineering-groundwork`. Managed copies of retired `write-a-skill` are removed rather than kept as a compatibility fallback.

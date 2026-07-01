@@ -8,6 +8,7 @@ import {
   ask,
   findGitRootInfo,
   listDirectories,
+  listSkillDirectories,
   parseArgs,
   generatedProfileShape,
   readIfExists,
@@ -106,7 +107,7 @@ function normalizeSyncOptions(argv, cwd) {
 }
 
 function sourceSkillNames() {
-  return listDirectories(path.join(KIT_ROOT, 'skills'));
+  return listSkillDirectories(path.join(KIT_ROOT, 'skills'));
 }
 
 function detectInstalledSkillNames(skillsDir) {
