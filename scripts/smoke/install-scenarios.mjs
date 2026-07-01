@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { assertInstalledReferenceIntegrity, assertLegacySkillRenameMigration, assertManagedDeletedSkillRemoval, assertNoInstallSideEffects, fail, hashFile, packageVersion, readManagedSkillsManifest, run, runAny, skillDirs } from './helpers.mjs';
+import { assertInstalledReferenceIntegrity, assertManagedDeletedSkillRemoval, assertNoInstallSideEffects, fail, hashFile, packageVersion, readManagedSkillsManifest, run, runAny, skillDirs } from './helpers.mjs';
 import { runConnectScenarios } from './connect-scenarios.mjs';
 import { runModeScenarios } from './mode-scenarios.mjs';
+import { runPreReformUpdateMigrationScenario } from './pre-reform-migration-scenario.mjs';
 import { runProfileOverwriteScenarios } from './profile-overwrite-scenarios.mjs';
 
 export function runInstallScenarios(ctx) {
@@ -10,6 +11,7 @@ export function runInstallScenarios(ctx) {
   runDefaultInstall(ctx);
   runProfileOverwriteScenarios(ctx);
   runUpdateScenarios(ctx);
+  runPreReformUpdateMigrationScenario(ctx);
   runLineLimitScenarios(ctx);
   runSkillSetScenarios(ctx);
   runUninstallScenarios(ctx);
@@ -96,13 +98,13 @@ function runDefaultInstall(ctx) {
   if (!fs.existsSync(defaultPreCommit)) fail('install did not create default advisory pre-commit hook');
   if (!fs.readFileSync(defaultPreCommit, 'utf8').includes('mode=advisory')) fail('default pre-commit hook is not advisory');
   if (!fs.readFileSync(defaultPreCommit, 'utf8').includes(`# jhste-skills version=${version}`)) fail('default pre-commit hook missing version comment');
-  if (!fs.existsSync(path.join(skillsDir, 'jhste-engineering-groundwork', 'SKILL.md'))) fail('install did not copy jhste-engineering-groundwork skill');
-  if (!fs.existsSync(path.join(skillsDir, 'jhste-red-team-review', 'SKILL.md'))) fail('install did not copy jhste-red-team-review skill');
+  if (!fs.existsSync(path.join(skillsDir, 'jhste-preflight', 'SKILL.md'))) fail('install did not copy jhste-preflight skill');
+  if (!fs.existsSync(path.join(skillsDir, 'jhste-redteam', 'SKILL.md'))) fail('install did not copy jhste-redteam skill');
   if (!fs.existsSync(path.join(skillsDir, '.jhste-skills-manifest.json'))) fail('install did not write skills manifest');
   const manifest = readManagedSkillsManifest(skillsDir);
-  if (manifest.managed_by !== 'jhste-skills' || !manifest.skills?.['jhste-red-team-review']?.digest) fail('skills manifest missing managed skill digest');
+  if (manifest.managed_by !== 'jhste-skills' || !manifest.skills?.['jhste-redteam']?.digest) fail('skills manifest missing managed skill digest');
   const defaultSkillDirs = skillDirs(skillsDir);
-  if (defaultSkillDirs.length !== 23) fail(`default install should copy 23 bundled skills, got ${defaultSkillDirs.length}`);
+  if (defaultSkillDirs.length !== 22) fail(`default install should copy 22 bundled skills, got ${defaultSkillDirs.length}`);
   if (!defaultSkillDirs.includes('improve-codebase-architecture')) fail('default install should copy vendored workflow skills');
   if (!fs.existsSync(path.join(skillsDir, '_shared', 'solid-lens.md'))) fail('install did not copy _shared companion resource');
   if (manifest.skills?.['_shared'] && defaultSkillDirs.includes('_shared')) fail('_shared must not be counted as a skill');
@@ -110,8 +112,8 @@ function runDefaultInstall(ctx) {
 }
 function runUpdateScenarios({ root, repo, skillsDir }) {
   const version = packageVersion(root);
-  const skillPath = path.join(skillsDir, 'jhste-code-quality', 'SKILL.md');
-  const sourceSkillPath = path.join(root, 'skills', 'jhste-code-quality', 'SKILL.md');
+  const skillPath = path.join(skillsDir, 'jhste-change-review', 'SKILL.md');
+  const sourceSkillPath = path.join(root, 'skills', 'jhste-change-review', 'SKILL.md');
   const adoptedSkillName = 'triage';
   const adoptedSkillPath = path.join(skillsDir, adoptedSkillName, 'SKILL.md');
   const adoptedSourceSkillPath = path.join(root, 'skills', adoptedSkillName, 'SKILL.md');
@@ -153,6 +155,12 @@ run_jhste_skills guard --scope staged --format text --fail-on warning
   if (!updatedAgents.includes('Repo-local instructions in this file remain authoritative.')) {
     fail('update removed the managed bridge guidance');
   }
+  if (updatedAgents.includes('approval boundary in `_shared/side-effect-policy.md`')) {
+    fail('update left a non-resolvable bare _shared policy path in the managed bridge');
+  }
+  if (!updatedAgents.includes("installed skills directory's `_shared/side-effect-policy.md`")) {
+    fail('update did not write installed skills directory side-effect policy guidance');
+  }
 
   const updatedPreCommit = fs.readFileSync(preCommitPath, 'utf8');
   if (!updatedPreCommit.includes('mode=blocking')) fail('update did not preserve managed hook mode');
@@ -189,21 +197,22 @@ run_jhste_skills guard --scope staged --format text --fail-on warning
   if (fs.readFileSync(profilePath, 'utf8') !== profileBeforeSkillsOnly) {
     fail('update --skills-only rewrote a managed profile');
   }
-  let migratedManifest = assertLegacySkillRenameMigration({
-    root, repo, skillsDir, manifest: managedManifest, legacyName: 'diagnose', canonicalName: 'diagnosing-bugs', digest: 'legacy-digest',
+  // Retired and renamed skills are pruned from managed installs (no rename aliases).
+  let migratedManifest = assertManagedDeletedSkillRemoval({
+    root, repo, skillsDir, manifest: managedManifest, deletedName: 'jhste-engineering-groundwork', digest: 'legacy-groundwork-digest',
   });
-  migratedManifest = assertLegacySkillRenameMigration({
-    root, repo, skillsDir, manifest: migratedManifest, legacyName: 'jhste-engineering-judgment', canonicalName: 'jhste-engineering-groundwork', digest: 'legacy-groundwork-digest',
+  migratedManifest = assertManagedDeletedSkillRemoval({
+    root, repo, skillsDir, manifest: migratedManifest, deletedName: 'jhste-red-team-review', digest: 'legacy-redteam-digest',
   });
   migratedManifest = assertManagedDeletedSkillRemoval({ root, repo, skillsDir, manifest: migratedManifest, deletedName: 'write-a-skill', digest: 'legacy-write-skill-digest' });
   const unmanagedSkills = path.join(path.dirname(skillsDir), 'unmanaged-skills');
-  fs.mkdirSync(path.join(unmanagedSkills, 'jhste-code-quality'), { recursive: true });
-  fs.writeFileSync(path.join(unmanagedSkills, 'jhste-code-quality', 'SKILL.md'), '# unmanaged local copy\n');
+  fs.mkdirSync(path.join(unmanagedSkills, 'jhste-change-review'), { recursive: true });
+  fs.writeFileSync(path.join(unmanagedSkills, 'jhste-change-review', 'SKILL.md'), '# unmanaged local copy\n');
   const refused = runAny(process.execPath, [path.join(root, 'cli/update.mjs'), '--yes', '--repo', repo, '--skills-dir', unmanagedSkills, '--skill-set', 'core', '--force'], { cwd: repo });
   if (refused.status !== 3) fail(`update should refuse unmanaged skill overwrite with --force, got ${refused.status}`);
-  if (fs.readFileSync(path.join(unmanagedSkills, 'jhste-code-quality', 'SKILL.md'), 'utf8') !== '# unmanaged local copy\n') fail('refused unmanaged update changed local skill');
+  if (fs.readFileSync(path.join(unmanagedSkills, 'jhste-change-review', 'SKILL.md'), 'utf8') !== '# unmanaged local copy\n') fail('refused unmanaged update changed local skill');
   run(process.execPath, [path.join(root, 'cli/update.mjs'), '--yes', '--repo', repo, '--skills-dir', unmanagedSkills, '--skill-set', 'core', '--force', '--allow-unmanaged-skill-overwrite'], { cwd: repo });
-  if (fs.readFileSync(path.join(unmanagedSkills, 'jhste-code-quality', 'SKILL.md'), 'utf8') !== fs.readFileSync(sourceSkillPath, 'utf8')) {
+  if (fs.readFileSync(path.join(unmanagedSkills, 'jhste-change-review', 'SKILL.md'), 'utf8') !== fs.readFileSync(sourceSkillPath, 'utf8')) {
     fail('explicit unmanaged overwrite did not refresh local skill');
   }
 }
@@ -251,7 +260,7 @@ function runSkillSetScenarios({ root, tmp }) {
   const vendorSkillDirs = skillDirs(vendorSkillsDir);
   if (vendorSkillDirs.length !== 14) fail(`--skill-set vendor should copy 14 skills, got ${vendorSkillDirs.length}`);
   if (!vendorSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set vendor did not copy expected vendored skill');
-  if (vendorSkillDirs.includes('jhste-red-team-review')) fail('--skill-set vendor copied core skill');
+  if (vendorSkillDirs.includes('jhste-redteam')) fail('--skill-set vendor copied core skill');
 
   const allRepo = path.join(tmp, 'all-skill-repo');
   const allSkillsDir = path.join(tmp, 'all-skills');
@@ -259,10 +268,9 @@ function runSkillSetScenarios({ root, tmp }) {
   fs.writeFileSync(path.join(allRepo, 'AGENTS.md'), '# All skill repo\n');
   run(process.execPath, [path.join(root, 'cli/install.mjs'), '--yes', '--repo', allRepo, '--skills-dir', allSkillsDir, '--skip-deep-scan', '--skip-hooks', '--skill-set', 'all'], { cwd: allRepo });
   const allSkillDirs = skillDirs(allSkillsDir);
-  if (allSkillDirs.length !== 23) fail(`--skill-set all should copy 23 skills, got ${allSkillDirs.length}`);
-  if (!allSkillDirs.includes('jhste-red-team-review') || !allSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set all missing core or vendored skill');
+  if (allSkillDirs.length !== 22) fail(`--skill-set all should copy 22 skills, got ${allSkillDirs.length}`);
+  if (!allSkillDirs.includes('jhste-redteam') || !allSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set all missing core or vendored skill');
 }
-
 function runUninstallScenarios({ root, tmp }) {
   const uninstallRepo = path.join(tmp, 'uninstall-repo');
   const uninstallSkills = path.join(tmp, 'uninstall-skills');
@@ -278,7 +286,6 @@ function runUninstallScenarios({ root, tmp }) {
   if (fs.existsSync(path.join(uninstallRepo, '.jhste', 'profile.yaml'))) fail('uninstall did not remove generated profile');
   if (fs.existsSync(path.join(uninstallSkills, '.jhste-skills-manifest.json'))) fail('uninstall did not remove skills manifest');
   if (fs.existsSync(uninstallSkills) && skillDirs(uninstallSkills).length !== 0) fail('uninstall did not remove manifest-managed skills');
-
   const modifiedProfileRepo = path.join(tmp, 'uninstall-modified-profile-repo');
   const modifiedProfileSkills = path.join(tmp, 'uninstall-modified-profile-skills');
   initRepo(modifiedProfileRepo);

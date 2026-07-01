@@ -9,16 +9,17 @@ Implemented directories: `skills/`, `rules/`, `packs/`, `adapters/`, `cli/`, `ve
 Core skills implemented:
 
 - `skills/setup/SKILL.md`
-- `skills/jhste-engineering-groundwork/SKILL.md`
-- `skills/jhste-code-quality/SKILL.md`
-- `skills/jhste-architecture-review/SKILL.md`
+- `skills/ask-jhste/SKILL.md`
+- `skills/jhste-preflight/SKILL.md`
+- `skills/jhste-change-review/SKILL.md`
 - `skills/jhste-db-api-boundary/SKILL.md`
 - `skills/jhste-crawler-automation/SKILL.md`
-- `skills/jhste-red-team-review/SKILL.md`
+- `skills/jhste-redteam/SKILL.md`
+- `skills/jhste-workstate/SKILL.md`
 
 ## Fast setup
 
-`cli/install.mjs` implements mode-based setup (`Minimal`, `Normal`, `Full`, `Custom`), creates `.jhste/profile.yaml` when project connection is enabled, keeps mode advisory by default, asks for a source-file line limit in interactive repo setup, defaults non-interactive setup to a 300-line advisory policy, uses marker-managed bridge blocks idempotently, and does not touch target CI, `package.json`, lockfiles, or source code. Skill installs write a managed manifest with digests and refuse unmanaged differing overwrites unless a separate explicit override is supplied. Hook automation installs a managed advisory pre-commit hook in Normal and advisory pre-commit/pre-push hooks in Full, with `--skip-hooks` as opt-out and blocking mode as explicit opt-in. `cli/connect.mjs` connects additional git repositories to an existing install without silently mutating global skills unless `--install-missing` is explicit. Installed bridge/profile guidance points agents at `jhste-engineering-groundwork` before non-trivial code changes and `jhste-red-team-review` before non-trivial code work is declared complete.
+`cli/install.mjs` implements mode-based setup (`Minimal`, `Normal`, `Full`, `Custom`), creates `.jhste/profile.yaml` when project connection is enabled, keeps mode advisory by default, asks for a source-file line limit in interactive repo setup, defaults non-interactive setup to a 300-line advisory policy, uses marker-managed bridge blocks idempotently, and does not touch target CI, `package.json`, lockfiles, or source code. Skill installs write a managed manifest with digests and refuse unmanaged differing overwrites unless a separate explicit override is supplied. Hook automation installs a managed advisory pre-commit hook in Normal and advisory pre-commit/pre-push hooks in Full, with `--skip-hooks` as opt-out and blocking mode as explicit opt-in. `cli/connect.mjs` connects additional git repositories to an existing install without silently mutating global skills unless `--install-missing` is explicit. Installed bridge/profile guidance routes agents through `ask-jhste` and points at `jhste-preflight` before non-trivial code changes and `jhste-redteam` before non-trivial code work is declared complete.
 
 ## Deep scan
 
@@ -41,7 +42,7 @@ Rule modes are documented in `docs/RULES.md`, example profile defaults to adviso
 Skill guidance now requires these completion and safety properties:
 
 - Red-team review requires current proof and separates checks run, consumer-path proof when feasible, checks not run, checks intentionally skipped, and residual risk.
-- Engineering groundwork records final behavior predicates for non-trivial code changes.
+- Preflight (`jhste-preflight`) records final behavior predicates for non-trivial code changes.
 - Cleanup/search-replace guidance requires editable `EDIT_PATHS` vs protected `PROTECTED_PATHS` classification before writes.
 - Grilling remains read-only by default; docs or tracker writes route to explicit writing workflows such as `grill-with-docs`, `domain-modeling`, `to-issues`, or `triage`.
 - Architecture improvement defaults to Markdown reporting, with HTML visual reports only when requested or materially useful.
@@ -64,7 +65,7 @@ Record actual command output in release notes before publishing a release.
 
 Release gates include dependency-free syntax checking, a first-run `install -> deep-scan -> tune --yes -> guard` smoke flow, `npm pack --dry-run` contents checks, and packed-tarball bin execution in a fresh temp consumer. These gates are not part of commit-time hooks.
 
-- Verify `sync`/`update` migrates older managed renames without leaving duplicate directories, including `diagnose` → `diagnosing-bugs`, `jhste-engineering-judgment` → `jhste-engineering-groundwork`, and managed removal of retired `write-a-skill`.
+- Verify `sync`/`update` prunes managed copies of retired or renamed skills without leaving duplicate directories, including the pre-reform jhste skills and the older `diagnose`, `jhste-engineering-judgment`, and `write-a-skill` names.
 
 ## npm trusted publishing
 

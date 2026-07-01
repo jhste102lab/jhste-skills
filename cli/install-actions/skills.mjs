@@ -2,19 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { directoryDigest, ensureDir, KIT_ROOT, listSharedResourceNames, listSkillDirectories, nowIso } from '../shared.mjs';
 import { readJsonFile, validateJsonObject, validateStringArray } from '../json-file.mjs';
+import { DELETED_MANAGED_SKILLS, LEGACY_SKILL_RENAMES, canonicalSkillName } from './skill-migrations.mjs';
 
 export const SKILLS_MANIFEST_NAME = '.jhste-skills-manifest.json';
 export const MANIFEST_MANAGED_BY = 'jhste-skills';
-export const LEGACY_SKILL_RENAMES = Object.freeze({
-  diagnose: 'diagnosing-bugs',
-  'jhste-engineering-judgment': 'jhste-engineering-groundwork',
-});
-
-export const DELETED_MANAGED_SKILLS = Object.freeze(['write-a-skill']);
-
-export function canonicalSkillName(name) {
-  return LEGACY_SKILL_RENAMES[name] || name;
-}
 
 function vendoredSkillNames() {
   const allowlistPath = path.join(KIT_ROOT, 'vendor', 'matt-pocock', 'allowlist.json');

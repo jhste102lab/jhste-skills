@@ -21,15 +21,17 @@ export function runGlobalScenarios({ root, tmp }) {
   run(process.execPath, [cli, '--yes', '--skill-set', 'all', '--skills-dir', skillsDir, '--claude-file', claudeFile, '--codex-file', codexFile, '--opencode-file', opencodeFile]);
 
   const dirs = skillDirs(skillsDir);
-  if (dirs.length !== 23) fail(`global install should copy 23 skills, got ${dirs.length}`);
+  if (dirs.length !== 22) fail(`global install should copy 22 skills, got ${dirs.length}`);
   if (!fs.existsSync(path.join(skillsDir, '_shared', 'solid-lens.md'))) fail('global install did not copy _shared companion');
   assertInstalledReferenceIntegrity(skillsDir);
 
   for (const file of [claudeFile, codexFile, opencodeFile]) {
     const text = fs.readFileSync(file, 'utf8');
     if (!text.includes('<!-- jhste-skills:start -->') || !text.includes('<!-- jhste-skills:end -->')) fail(`global bridge missing markers in ${file}`);
-    if (!text.includes('jhste-engineering-groundwork') || !text.includes('jhste-red-team-review')) fail(`global bridge missing workflow skills in ${file}`);
+    if (!text.includes('jhste-preflight') || !text.includes('jhste-redteam')) fail(`global bridge missing workflow skills in ${file}`);
     if (text.includes('.jhste/profile.yaml')) fail(`global bridge should not reference a repo profile in ${file}`);
+    if (text.includes('approval boundary in `_shared/side-effect-policy.md`')) fail(`global bridge uses a non-resolvable bare _shared policy path in ${file}`);
+    if (!text.includes("installed skills directory's `_shared/side-effect-policy.md`")) fail(`global bridge missing installed skills directory side-effect policy guidance in ${file}`);
   }
   if (!fs.readFileSync(claudeFile, 'utf8').includes('Keep my style.')) fail('global install clobbered existing personal instructions');
   // Advisory only: no git hooks anywhere under the global base.
@@ -40,9 +42,9 @@ export function runGlobalScenarios({ root, tmp }) {
   const starts = (fs.readFileSync(claudeFile, 'utf8').match(/jhste-skills:start/g) || []).length;
   if (starts !== 1) fail(`global install is not idempotent: ${starts} managed blocks in CLAUDE.md`);
 
-  fs.writeFileSync(path.join(skillsDir, 'jhste-code-quality', 'SKILL.md'), '# stale global skill copy\n');
+  fs.writeFileSync(path.join(skillsDir, 'jhste-change-review', 'SKILL.md'), '# stale global skill copy\n');
   run(process.execPath, [postinstall], { env: { ...process.env, HOME: base, npm_config_global: 'true' } });
-  if (fs.readFileSync(path.join(skillsDir, 'jhste-code-quality', 'SKILL.md'), 'utf8').includes('stale global skill copy')) {
+  if (fs.readFileSync(path.join(skillsDir, 'jhste-change-review', 'SKILL.md'), 'utf8').includes('stale global skill copy')) {
     fail('global npm postinstall did not refresh existing managed global skills');
   }
 
@@ -79,7 +81,7 @@ export function runGlobalScenarios({ root, tmp }) {
   fs.writeFileSync(path.join(conflictSkillsDir, '_shared', 'solid-lens.md'), '# unmanaged local doctrine\n');
   const conflictResult = runAny(process.execPath, [cli, '--yes', '--skills-dir', conflictSkillsDir, '--claude-file', conflictClaudeFile, '--codex-file', conflictCodexFile, '--opencode-file', conflictOpencodeFile]);
   if (conflictResult.status !== 3) fail(`global install with unmanaged _shared should exit 3, got ${conflictResult.status}`);
-  if (fs.existsSync(path.join(conflictSkillsDir, 'jhste-red-team-review'))) fail('global install copied selected skills before detecting _shared conflict');
+  if (fs.existsSync(path.join(conflictSkillsDir, 'jhste-redteam'))) fail('global install copied selected skills before detecting _shared conflict');
   if (fs.existsSync(conflictClaudeFile) || fs.existsSync(conflictCodexFile) || fs.existsSync(conflictOpencodeFile)) fail('global install wrote bridge files after _shared conflict');
 
   const noYesBase = path.join(tmp, 'global-no-yes');

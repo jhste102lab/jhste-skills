@@ -2,6 +2,8 @@
 
 Languages: [English](README.md) · [한국어](README.ko.md) · [中文](README.zh.md) · [日本語](README.ja.md)
 
+> 本文档为翻译版本。权威来源以 [README.md](README.md) 为准；个人化拓扑改版后，翻译可能滞后。
+
 一套可安装的工作规则工具包，帮助 AI 编程代理稳定遵循你设定的工程标准。
 
 `jhste-skills` 为 Codex、Claude Code 等 AI 编程代理提供一套共享的工程工作流。它帮助代理在修改代码前验证前提，优先遵循仓库本地说明，保持 API/database/automation 边界清晰，应用 SOLID-informed coding discipline 和 design review lens，运行 changed-file guard，并在声明完成前执行 red-team code review。guard finding 是 review candidate，不是自动 SOLID 证明。
@@ -18,7 +20,7 @@ Languages: [English](README.md) · [한국어](README.ko.md) · [中文](README.
 
 这个工具不会接管你的项目。仓库内的 `AGENTS.md`、`CLAUDE.md` 和 docs 始终是权威来源。默认设置是 advisory 模式，使用 marker-managed 方式管理变更，设计目标是低风险、容易试用。
 
-Skills 设计为在需要时由代理自动使用。例如，代理修改 API 代码时会被引导使用 API/database boundary skill；在完成前会被引导使用 red-team review skill。你也可以直接调用某个 skill，例如：`use jhste-engineering-groundwork to review this change premise`，或 `run jhste-red-team-review on this diff`。
+Skills 设计为在需要时由代理自动使用。例如，代理修改 API 代码时会被引导使用 API/database boundary skill；在完成前会被引导使用 red-team review skill。你也可以直接调用某个 skill，例如：`use jhste-preflight to review this change premise`，或 `run jhste-redteam on this diff`。
 
 ## 为什么要安装？
 
@@ -176,13 +178,13 @@ Custom   - 通过面向效果的问题自定义安装范围
 |---|---|---|
 | [`setup`](skills/setup/SKILL.md)<br>安全安装 skill，避免 install/connect/update 覆盖现有项目说明 | 安装 kit 或连接仓库时 | Unsafe overwrite, unmanaged hook conflict, repo instruction replacement |
 | [`ask-jhste`](skills/ask-jhste/SKILL.md)<br>用于选择正确 jhste skill 或 workflow 的 user-invoked router | 不确定下一步该用哪个 jhste skill/workflow 时 | Wrong workflow selection, unnecessary always-on context, accidental side effects from routing |
-| [`jhste-engineering-groundwork`](skills/jhste-engineering-groundwork/SKILL.md)<br>pre-change groundwork skill，在改代码前验证目标、前提、scope、boundary 和 failure path | non-trivial code change 前 | Blind agreement, scope creep, unverified assumption, unclear boundary |
-| [`jhste-code-quality`](skills/jhste-code-quality/SKILL.md)<br>检查 input validation、observable failure handling、secret-safe logging 和 oversized-file review 的 skill | 触及 external input、failure handling、logging、env/config 或 code-quality review path 时 | Unvalidated input, silent failure, secret logging, oversized file |
-| [`jhste-architecture-review`](skills/jhste-architecture-review/SKILL.md)<br>检查 module boundary、side-effect placement 和 SOLID-informed design risk 的架构 review skill | 修改 module boundary、app structure、side-effect placement 或 responsibility split 时 | Pass-through abstraction, mixed responsibility, side-effect leakage |
+| [`jhste-preflight`](skills/jhste-preflight/SKILL.md)<br>pre-change groundwork skill，在改代码前验证目标、前提、scope、boundary 和 failure path | non-trivial code change 前 | Blind agreement, scope creep, unverified assumption, unclear boundary |
+| [`jhste-change-review`](skills/jhste-change-review/SKILL.md)<br>检查 input validation、observable failure handling、secret-safe logging 和 oversized-file review 的 skill | 触及 external input、failure handling、logging、env/config 或 code-quality review path 时 | Unvalidated input, silent failure, secret logging, oversized file |
+| [`jhste-change-review`](skills/jhste-change-review/SKILL.md)<br>检查 module boundary、side-effect placement 和 SOLID-informed design risk 的架构 review skill | 修改 module boundary、app structure、side-effect placement 或 responsibility split 时 | Pass-through abstraction, mixed responsibility, side-effect leakage |
 | [`jhste-db-api-boundary`](skills/jhste-db-api-boundary/SKILL.md)<br>检查 API route、service、repository、SQL 之间职责和 data contract 的 boundary skill | 修改 API、controller、service、repository、SQL、persistence code 时 | Fat route, unsafe SQL, missing auth/data scoping, leaky DTO |
 | [`jhste-crawler-automation`](skills/jhste-crawler-automation/SKILL.md)<br>检查 crawler/scraper/worker/scheduler 的 producer-consumer boundary 和 side effect 的 automation skill | 修改 crawler、scraper、worker、scheduler、browser automation 时 | Fragile automation, unclear producer/consumer boundary, hidden side effect |
-| [`jhste-red-team-review`](skills/jhste-red-team-review/SKILL.md)<br>read-only red-team code review skill，在完成前主动攻击性复查变更代码 | non-trivial code work 完成声明前 | Premature “done”, missed null/auth/env/write/API/performance risk |
-| [`jhste-long-running-work-loop`](skills/jhste-long-running-work-loop/SKILL.md)<br>用于在 session、等待状态和 durable decision 间保留工作状态的窄 orchestration skill | 状态丢失可能导致错误、重复、不安全或难以恢复的工作时：多会话工作、重复 review、当天或多天外部等待状态、多 repo 影响、PRD→issue→implementation→review 流程或 durable decision | Lost context, stale scratchpad, unclear approval boundary, unsafe resume point |
+| [`jhste-redteam`](skills/jhste-redteam/SKILL.md)<br>read-only red-team code review skill，在完成前主动攻击性复查变更代码 | non-trivial code work 完成声明前 | Premature “done”, missed null/auth/env/write/API/performance risk |
+| [`jhste-workstate`](skills/jhste-workstate/SKILL.md)<br>用于在 session、等待状态和 durable decision 间保留工作状态的窄 orchestration skill | 状态丢失可能导致错误、重复、不安全或难以恢复的工作时：多会话工作、重复 review、当天或多天外部等待状态、多 repo 影响、PRD→issue→implementation→review 流程或 durable decision | Lost context, stale scratchpad, unclear approval boundary, unsafe resume point |
 
 ## Bundled workflow skills
 
@@ -243,8 +245,8 @@ jhste-skills uninstall
 2. 一开始保留 advisory hook。如果不想要 commit-time check，使用 `--skip-hooks`；只有在充分检查 noise 和 false positive 后才启用 blocking mode。
 3. 先使用默认 300-line advisory limit。只有团队准备接受 warning-level hook enforcement 时，才使用 `--line-limit-mode blocking`。
 4. 修改代码时，手动运行 `guard --scope changed --format text --fail-on error`。
-5. non-trivial code change 前，用 `jhste-engineering-groundwork` 检查 scope、boundary、failure path、data contract、assumption，以及 changed class/module/function 的 SOLID-informed review lens。
-6. non-trivial code work 完成声明前，使用 `jhste-red-team-review`。跳过 docs-only、comment-only、formatting-only、trivial rename-only 变更。
+5. non-trivial code change 前，用 `jhste-preflight` 检查 scope、boundary、failure path、data contract、assumption，以及 changed class/module/function 的 SOLID-informed review lens。
+6. non-trivial code work 完成声明前，使用 `jhste-redteam`。跳过 docs-only、comment-only、formatting-only、trivial rename-only 变更。
 7. fix + re-review 最多重复两轮，然后报告剩余 risk，避免无限循环。
 8. 只有在审查 existing debt 后才创建 baseline。将 baseline 视为 known-issues ledger，用 ratchet 阻止 new debt，而不是隐藏 scanner failure。
 

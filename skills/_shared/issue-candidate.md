@@ -1,6 +1,6 @@
 # Issue candidate protocol (shared doctrine)
 
-Single source of truth for the `Issue candidate` handoff across the jhste skills. Cited by `jhste-engineering-groundwork` and `jhste-red-team-review`.
+Single source of truth for the `Issue candidate` handoff across the jhste skills. Cited by `jhste-preflight` and `jhste-redteam`.
 
 Emit an `Issue candidate` only for actionable, material follow-up that warrants separate tracking — work that is likely to be forgotten, or introduced by the change. Prefer no candidate over low-value issue spam. Default to report-only for pre-existing, low-impact, heuristic-only, or unlikely-to-be-lost findings.
 

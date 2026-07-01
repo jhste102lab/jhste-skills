@@ -36,7 +36,7 @@ try {
   fail(`npm pack --dry-run did not return parseable JSON: ${error.message}`);
 }
 const files = new Set((packed.files || []).map((file) => file.path));
-for (const expected of ['cli/index.mjs', 'package.json', 'README.md', 'skills/jhste-red-team-review/SKILL.md', 'docs/ACCEPTANCE_CHECK.md']) {
+for (const expected of ['cli/index.mjs', 'package.json', 'README.md', 'skills/jhste-redteam/SKILL.md', 'docs/ACCEPTANCE_CHECK.md']) {
   if (!files.has(expected)) fail(`npm pack --dry-run missing expected package file ${expected}`);
 }
 for (const forbidden of ['docs/worker-goals/2026-06-19-red-team-issues-implementation.md', '.jhste/private-safety-patterns.txt']) {

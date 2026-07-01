@@ -1,6 +1,6 @@
 # Scope and bounded-fix discipline (shared doctrine)
 
-Single source of truth for change-scope and fix-loop discipline across the jhste skills. Cited by `jhste-engineering-groundwork` (pre-change) and `jhste-red-team-review` (post-change).
+Single source of truth for change-scope and fix-loop discipline across the jhste skills. Cited by `jhste-preflight` (pre-change) and `jhste-redteam` (post-change).
 
 ## Adjacent-code scope
 
