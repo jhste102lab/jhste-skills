@@ -3,6 +3,7 @@ import path from 'node:path';
 import { assertInstalledReferenceIntegrity, assertManagedDeletedSkillRemoval, assertNoInstallSideEffects, fail, hashFile, packageVersion, readManagedSkillsManifest, run, runAny, skillDirs } from './helpers.mjs';
 import { runConnectScenarios } from './connect-scenarios.mjs';
 import { runModeScenarios } from './mode-scenarios.mjs';
+import { runPreReformUpdateMigrationScenario } from './pre-reform-migration-scenario.mjs';
 import { runProfileOverwriteScenarios } from './profile-overwrite-scenarios.mjs';
 
 export function runInstallScenarios(ctx) {
@@ -10,6 +11,7 @@ export function runInstallScenarios(ctx) {
   runDefaultInstall(ctx);
   runProfileOverwriteScenarios(ctx);
   runUpdateScenarios(ctx);
+  runPreReformUpdateMigrationScenario(ctx);
   runLineLimitScenarios(ctx);
   runSkillSetScenarios(ctx);
   runUninstallScenarios(ctx);
@@ -153,6 +155,12 @@ run_jhste_skills guard --scope staged --format text --fail-on warning
   if (!updatedAgents.includes('Repo-local instructions in this file remain authoritative.')) {
     fail('update removed the managed bridge guidance');
   }
+  if (updatedAgents.includes('approval boundary in `_shared/side-effect-policy.md`')) {
+    fail('update left a non-resolvable bare _shared policy path in the managed bridge');
+  }
+  if (!updatedAgents.includes("installed skills directory's `_shared/side-effect-policy.md`")) {
+    fail('update did not write installed skills directory side-effect policy guidance');
+  }
 
   const updatedPreCommit = fs.readFileSync(preCommitPath, 'utf8');
   if (!updatedPreCommit.includes('mode=blocking')) fail('update did not preserve managed hook mode');
@@ -263,7 +271,6 @@ function runSkillSetScenarios({ root, tmp }) {
   if (allSkillDirs.length !== 22) fail(`--skill-set all should copy 22 skills, got ${allSkillDirs.length}`);
   if (!allSkillDirs.includes('jhste-redteam') || !allSkillDirs.includes('improve-codebase-architecture')) fail('--skill-set all missing core or vendored skill');
 }
-
 function runUninstallScenarios({ root, tmp }) {
   const uninstallRepo = path.join(tmp, 'uninstall-repo');
   const uninstallSkills = path.join(tmp, 'uninstall-skills');
@@ -279,7 +286,6 @@ function runUninstallScenarios({ root, tmp }) {
   if (fs.existsSync(path.join(uninstallRepo, '.jhste', 'profile.yaml'))) fail('uninstall did not remove generated profile');
   if (fs.existsSync(path.join(uninstallSkills, '.jhste-skills-manifest.json'))) fail('uninstall did not remove skills manifest');
   if (fs.existsSync(uninstallSkills) && skillDirs(uninstallSkills).length !== 0) fail('uninstall did not remove manifest-managed skills');
-
   const modifiedProfileRepo = path.join(tmp, 'uninstall-modified-profile-repo');
   const modifiedProfileSkills = path.join(tmp, 'uninstall-modified-profile-skills');
   initRepo(modifiedProfileRepo);

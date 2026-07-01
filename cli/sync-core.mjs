@@ -14,7 +14,7 @@ import {
   readIfExists,
 } from './shared.mjs';
 import { applyPlan, preflightPlan, printApplyResult } from './install-actions.mjs';
-import { LEGACY_SKILL_RENAMES, canonicalSkillName } from './install-actions/skills.mjs';
+import { LEGACY_SKILL_RENAMES, RETIRED_SKILL_REPLACEMENTS, canonicalSkillName } from './install-actions/skill-migrations.mjs';
 import { gitHooksDir, HOOKS, isManagedHook } from './hook-utils.mjs';
 import { printConfigErrors, printPlanSummary } from './install-flow/output.mjs';
 import { readJsonFile, validateStringArray } from './json-file.mjs';
@@ -113,11 +113,14 @@ function sourceSkillNames() {
 function detectInstalledSkillNames(skillsDir) {
   const known = new Set(sourceSkillNames());
   const detected = new Set();
+  function addKnown(name) {
+    if (known.has(name)) detected.add(name);
+  }
   for (const name of listDirectories(skillsDir)) {
     const canonicalName = canonicalSkillName(name);
-    if (known.has(canonicalName) || Object.prototype.hasOwnProperty.call(LEGACY_SKILL_RENAMES, name)) {
-      detected.add(canonicalName);
-    }
+    addKnown(canonicalName);
+    if (Object.prototype.hasOwnProperty.call(LEGACY_SKILL_RENAMES, name)) addKnown(canonicalName);
+    for (const replacementName of RETIRED_SKILL_REPLACEMENTS[name] || []) addKnown(replacementName);
   }
   return [...detected];
 }

@@ -2,28 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { directoryDigest, ensureDir, KIT_ROOT, listSharedResourceNames, listSkillDirectories, nowIso } from '../shared.mjs';
 import { readJsonFile, validateJsonObject, validateStringArray } from '../json-file.mjs';
+import { DELETED_MANAGED_SKILLS, LEGACY_SKILL_RENAMES, canonicalSkillName } from './skill-migrations.mjs';
 
 export const SKILLS_MANIFEST_NAME = '.jhste-skills-manifest.json';
 export const MANIFEST_MANAGED_BY = 'jhste-skills';
-// Personal-use topology reform keeps no back-compat aliases: renamed or merged
-// skills are pruned from an existing managed install on the next sync/update/global,
-// then the current skills install fresh. Prefer a clean reinstall over alias upkeep.
-export const LEGACY_SKILL_RENAMES = Object.freeze({});
-
-export const DELETED_MANAGED_SKILLS = Object.freeze([
-  'write-a-skill',
-  'diagnose',
-  'jhste-engineering-judgment',
-  'jhste-engineering-groundwork',
-  'jhste-code-quality',
-  'jhste-architecture-review',
-  'jhste-red-team-review',
-  'jhste-long-running-work-loop',
-]);
-
-export function canonicalSkillName(name) {
-  return LEGACY_SKILL_RENAMES[name] || name;
-}
 
 function vendoredSkillNames() {
   const allowlistPath = path.join(KIT_ROOT, 'vendor', 'matt-pocock', 'allowlist.json');

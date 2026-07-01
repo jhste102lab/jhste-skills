@@ -14,8 +14,7 @@ import {
   canonicalGuardCommand,
   retiredSkillNames,
 } from './docs-check-data.mjs';
-
-
+import { assertBridgeAndRetiredNames } from './docs-check/bridge-and-retired.mjs';
 
 function fail(message) {
   console.error(`docs-check failed: ${message}`);
@@ -211,29 +210,8 @@ for (const [ruleId, rule] of ruleById.entries()) {
   }
 }
 
-const bridgeText = 'Repo-local instructions in this file remain authoritative.';
-// Bridge/AGENTS carry a compact router pointer and trigger anchor, but must delegate
-// the full loop to skills/_shared/core-loop.md. These exact doctrine sentences signal
-// that the loop was re-inlined into a bridge surface.
 const fullLoopSentinels = ['at most two fix + re-review cycles', 'Treat guard output as review evidence, not proof by itself'];
-for (const rel of ['adapters/codex/README.md', 'docs/CONFLICT_RESOLUTION.md', 'cli/shared/templates.mjs']) {
-  const text = read(rel);
-  if (!text.includes(bridgeText)) fail(`${rel} must include authoritative repo-local bridge wording`);
-  for (const requiredText of ['ask-jhste', 'jhste-preflight', 'jhste-redteam']) {
-    if (!text.includes(requiredText)) fail(`${rel} must mention ${requiredText} in shared workflow guidance`);
-  }
-  for (const sentinel of fullLoopSentinels) {
-    if (text.includes(sentinel)) fail(`${rel} bridge must delegate the core loop to skills/_shared/core-loop.md, not restate it ("${sentinel}")`);
-  }
-}
-
-const rootAgents = read('AGENTS.md');
-for (const requiredText of ['ask-jhste', 'jhste-preflight', 'jhste-redteam', 'side-effect-policy.md']) {
-  if (!rootAgents.includes(requiredText)) fail(`AGENTS.md must mention ${requiredText}`);
-}
-for (const sentinel of fullLoopSentinels) {
-  if (rootAgents.includes(sentinel)) fail(`AGENTS.md must delegate the core loop to the installed skills, not restate it ("${sentinel}")`);
-}
+assertBridgeAndRetiredNames({ root, read, walk, relPath, fail, retiredSkillNames, fullLoopSentinels });
 
 // The full issue-candidate protocol is pinned once in the shared doctrine; skills
 // cite it rather than restating the handling in triplicate.
@@ -314,18 +292,6 @@ for (const card of ['code-quality', 'architecture', 'api-db', 'automation']) {
   if (text.includes(canonicalGuardCommand)) fail(`${rel} must not restate the core loop; it lives in ${coreLoopOwner}`);
   for (const sentinel of fullLoopSentinels) {
     if (text.includes(sentinel)) fail(`${rel} must not restate the core loop ("${sentinel}")`);
-  }
-}
-
-// Retired skill names must not linger as live references in skills, shared docs, AGENTS,
-// or bridge templates (broken routing). Install pruning and CHANGELOG history keep them
-// on purpose and are out of scope here.
-const retiredNameSurfaces = walk(path.join(root, 'skills'), (file) => file.endsWith('.md')).map(relPath);
-retiredNameSurfaces.push('AGENTS.md', 'cli/shared/templates.mjs');
-for (const rel of retiredNameSurfaces) {
-  const text = read(rel);
-  for (const oldName of retiredSkillNames) {
-    if (text.includes(oldName)) fail(`${rel} references retired skill name ${oldName}; update it to the current topology`);
   }
 }
 

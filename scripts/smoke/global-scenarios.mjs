@@ -30,6 +30,8 @@ export function runGlobalScenarios({ root, tmp }) {
     if (!text.includes('<!-- jhste-skills:start -->') || !text.includes('<!-- jhste-skills:end -->')) fail(`global bridge missing markers in ${file}`);
     if (!text.includes('jhste-preflight') || !text.includes('jhste-redteam')) fail(`global bridge missing workflow skills in ${file}`);
     if (text.includes('.jhste/profile.yaml')) fail(`global bridge should not reference a repo profile in ${file}`);
+    if (text.includes('approval boundary in `_shared/side-effect-policy.md`')) fail(`global bridge uses a non-resolvable bare _shared policy path in ${file}`);
+    if (!text.includes("installed skills directory's `_shared/side-effect-policy.md`")) fail(`global bridge missing installed skills directory side-effect policy guidance in ${file}`);
   }
   if (!fs.readFileSync(claudeFile, 'utf8').includes('Keep my style.')) fail('global install clobbered existing personal instructions');
   // Advisory only: no git hooks anywhere under the global base.

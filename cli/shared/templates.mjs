@@ -11,7 +11,7 @@ This repo uses jhste skills as installed workflow guidance.
 Repo-local instructions in this file remain authoritative.
 Use \`ask-jhste\` as the router for jhste coding, review, setup, and workstate workflows; detailed policy lives in the installed skills and their \`_shared\` docs, not this block.
 For non-trivial code changes: run \`jhste-preflight\` before editing, \`jhste-skills guard --scope changed\` and \`jhste-change-review\` on the changed path, then \`jhste-redteam\` before completion.
-Before destructive, irreversible, production, secret-bearing, cost-bearing, commit, push, release, publish, or broad out-of-scope actions, follow repo-local instructions and the jhste approval boundary in \`_shared/side-effect-policy.md\`.
+Before destructive, irreversible, production, secret-bearing, cost-bearing, commit, push, release, publish, or broad out-of-scope actions, follow repo-local instructions and the side-effect policy in the installed skills directory's \`_shared/side-effect-policy.md\`.
 See \`.jhste/profile.yaml\` for local skill preferences.`;
 
 export const MANAGED_BRIDGE_BLOCK = `${BRIDGE_START}\n${BRIDGE_BLOCK}\n${BRIDGE_END}`;
@@ -26,7 +26,7 @@ jhste skills are installed globally as shared engineering guidance for this agen
 Repo-local AGENTS.md, CLAUDE.md, and docs remain authoritative when present.
 Use \`ask-jhste\` as the router for jhste coding, review, setup, and workstate workflows; detailed policy lives in the installed skills and their \`_shared\` docs.
 For non-trivial code changes: run \`jhste-preflight\` before editing, \`jhste-skills guard --scope changed\` (advisory) and \`jhste-change-review\` on the changed path, then \`jhste-redteam\` before completion.
-Before destructive, irreversible, production, secret-bearing, cost-bearing, commit, push, release, publish, or broad out-of-scope actions, follow repo-local instructions and the jhste approval boundary in \`_shared/side-effect-policy.md\`.`;
+Before destructive, irreversible, production, secret-bearing, cost-bearing, commit, push, release, publish, or broad out-of-scope actions, follow repo-local instructions and the side-effect policy in the installed skills directory's \`_shared/side-effect-policy.md\`.`;
 
 export const MANAGED_GLOBAL_BRIDGE_BLOCK = `${BRIDGE_START}\n${GLOBAL_BRIDGE_BLOCK}\n${BRIDGE_END}`;
 
