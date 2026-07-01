@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 - 2026-07-01
 
 ### Added
 - Added `skills/_shared/` shared companion resources (`solid-lens`, `evidence-discipline`, `issue-candidate`, `scope-discipline`) as the single source for cross-cutting doctrine, cited by the jhste skills instead of restating it per skill.
