@@ -1,53 +1,22 @@
 {
   "name": "jhste-skills",
-  "version": "0.4.1",
-  "description": "Installable engineering guardrails and workflow skills for AI coding agents.",
+  "version": "0.5.0",
+  "description": "A single lightweight SOLID-first coding discipline skill.",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jhste102lab/jhste-skills.git"
   },
-  "bin": {
-    "jhste-skills": "cli/index.mjs"
-  },
   "files": [
-    "adapters/",
-    "cli/",
-    "docs/ACCEPTANCE_CHECK.md",
-    "docs/CLI.md",
-    "docs/CONFLICT_RESOLUTION.md",
-    "docs/PUBLIC_SAFETY.md",
-    "docs/RULES.md",
-    "docs/VENDORING.md",
-    "examples/",
-    "packs/",
-    "rules/",
-    "scripts/",
-    "skills/",
-    "vendor/",
+    "skills/jhste-coding/SKILL.md",
     "README.md",
     "README.ko.md",
-    "README.zh.md",
-    "README.ja.md",
     "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
-    "test": "npm run syntax:check && npm run docs:check && npm run vendor:check && npm run public-safety:check && npm run public-safety-fixtures:test && npm run profile-fixtures:test && npm run guard-fixtures:test && npm run responsibility-budget-fixtures:test && npm run single-responsibility-fixtures:test && npm run solid-design-fixtures:test && npm run smoke:test && npm run release:gates",
-    "postinstall": "node cli/postinstall-global-refresh.mjs",
-    "syntax:check": "node scripts/syntax-check.mjs",
-    "docs:check": "node scripts/docs-check.mjs",
-    "vendor:check": "node scripts/vendor-check.mjs",
-    "public-safety:check": "node scripts/public-safety-check.mjs",
-    "public-safety-fixtures:test": "node scripts/public-safety-fixtures-test.mjs",
-    "profile-fixtures:test": "node scripts/profile-fixtures-test.mjs",
-    "guard-fixtures:test": "node scripts/guard-fixtures-test.mjs",
-    "responsibility-budget-fixtures:test": "node scripts/responsibility-budget-fixtures-test.mjs",
-    "single-responsibility-fixtures:test": "node scripts/single-responsibility-fixtures-test.mjs",
-    "smoke:test": "node scripts/smoke-test.mjs",
-    "release:gates": "node scripts/release-gates-test.mjs",
-    "solid-design-fixtures:test": "node scripts/solid-design-fixtures-test.mjs"
+    "test": "node --input-type=module -e \"import fs from 'node:fs'; const exists = (p) => fs.existsSync(p); const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); const skill = 'skills/jhste-coding/SKILL.md'; if (!exists(skill)) throw new Error('missing skill'); const text = fs.readFileSync(skill, 'utf8'); if (!/^---\\nname: jhste-coding\\ndescription: .+\\n---/m.test(text)) throw new Error('invalid skill frontmatter'); const dirs = fs.readdirSync('skills', { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name); if (dirs.length !== 1 || dirs[0] !== 'jhste-coding') throw new Error('expected only jhste-coding skill'); for (const file of pkg.files) if (!exists(file)) throw new Error('package file does not exist: ' + file); for (const file of ['README.md', 'README.ko.md']) { const body = fs.readFileSync(file, 'utf8'); if (!body.includes('jhste-coding')) throw new Error(file + ' does not describe jhste-coding'); for (const match of body.matchAll(/\\[[^\\]]+\\]\\(([^)]+)\\)/g)) { const href = match[1]; if (!/^(https?:|mailto:|#)/.test(href) && !exists(href.split('#')[0])) throw new Error(file + ' has broken link: ' + href); } }\""
   },
   "engines": {
     "node": ">=18"

@@ -1,8 +1,0 @@
-id: crawler
-title: Crawler and automation pack
-default_mode: advisory
-rules:
-  - rules/crawler/crawler_producer_boundary.yaml
-  - rules/core/side_effect_boundary.yaml
-  - rules/core/no_silent_failure.yaml
-  - rules/core/responsibility_budget.yaml
