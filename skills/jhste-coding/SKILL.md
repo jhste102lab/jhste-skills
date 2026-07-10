@@ -33,4 +33,4 @@ Use SOLID for the current change; speculative architecture, broad refactors, and
 
 ## Final response
 
-Briefly say what changed.
+Report what changed, what validation ran, and any material caveat; omit unchanged details and generic background.

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.5.1 - 2026-07-10
+
+### Changed
+- Refined final-response guidance to report validation and material caveats without generic brevity instructions.
+
 ## 0.5.0 - 2026-07-02
 
 ### Changed
