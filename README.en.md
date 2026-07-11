@@ -10,24 +10,33 @@ This repository provides one skill:
 
 It does not vendor workflow skills. Use `mattpocock/skills` separately for broader planning, issue, PRD, debugging, architecture, or review workflows.
 
-## Install from npm
+## Install user-wide from npm
 
 This package does not provide a CLI. The npm package is a small distribution bundle for the skill file.
 
 ```sh
 npm install -g jhste-skills
-mkdir -p ~/.codex/skills
-cp -R "$(npm root -g)/jhste-skills/skills/jhste-coding" ~/.codex/skills/
+mkdir -p "$HOME/.agents/skills"
+cp -R "$(npm root -g)/jhste-skills/skills/jhste-coding" "$HOME/.agents/skills/"
 ```
 
-If your agent uses a different skills directory, copy `skills/jhste-coding/` there instead.
+After updating the npm package, run the copy command again to refresh the installed skill.
 
-## Install from the repository
+## Install user-wide from the repository
 
 ```sh
-mkdir -p ~/.codex/skills
-cp -R skills/jhste-coding ~/.codex/skills/
+mkdir -p "$HOME/.agents/skills"
+cp -R skills/jhste-coding "$HOME/.agents/skills/"
 ```
+
+For repository-scoped use, copy the skill from this checkout into the target repository's `.agents/skills` directory.
+
+```sh
+mkdir -p /path/to/target-repo/.agents/skills
+cp -R skills/jhste-coding /path/to/target-repo/.agents/skills/
+```
+
+If another agent expects a different skills directory, copy `skills/jhste-coding/` there instead. Restart Codex if the updated skill does not appear.
 
 ## SOLID-first discipline
 
