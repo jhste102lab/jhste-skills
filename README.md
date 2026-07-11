@@ -10,24 +10,33 @@
 
 이 저장소는 workflow 스킬을 vendoring하지 않습니다. 더 넓은 계획, 이슈, PRD, 디버깅, 아키텍처, 리뷰 workflow에는 `mattpocock/skills`를 별도로 사용하세요.
 
-## npm으로 설치
+## npm으로 사용자 전역 설치
 
 이 패키지는 CLI를 제공하지 않습니다. npm 패키지는 스킬 파일을 배포하기 위한 작은 번들입니다.
 
 ```sh
 npm install -g jhste-skills
-mkdir -p ~/.codex/skills
-cp -R "$(npm root -g)/jhste-skills/skills/jhste-coding" ~/.codex/skills/
+mkdir -p "$HOME/.agents/skills"
+cp -R "$(npm root -g)/jhste-skills/skills/jhste-coding" "$HOME/.agents/skills/"
 ```
 
-사용하는 에이전트의 skills 디렉터리가 다르다면 `skills/jhste-coding/`을 그 위치로 복사하세요.
+npm 패키지를 업데이트한 뒤에는 복사 명령을 다시 실행해야 설치된 스킬도 갱신됩니다.
 
-## 저장소에서 설치
+## 저장소에서 사용자 전역 설치
 
 ```sh
-mkdir -p ~/.codex/skills
-cp -R skills/jhste-coding ~/.codex/skills/
+mkdir -p "$HOME/.agents/skills"
+cp -R skills/jhste-coding "$HOME/.agents/skills/"
 ```
+
+특정 저장소에서만 사용하려면 이 저장소를 내려받은 위치에서 대상 저장소의 `.agents/skills`로 복사하세요.
+
+```sh
+mkdir -p /path/to/target-repo/.agents/skills
+cp -R skills/jhste-coding /path/to/target-repo/.agents/skills/
+```
+
+다른 에이전트가 별도 skills 디렉터리를 요구하면 `skills/jhste-coding/`을 그 위치로 복사하세요. Codex가 변경된 스킬을 표시하지 않으면 다시 시작하세요.
 
 ## SOLID-first 규율
 
