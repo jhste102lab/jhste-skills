@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+- Updated installation examples to use the current `.agents/skills` locations for user-wide and repository-scoped skills.
+- Clarified when `jhste-coding` should not trigger and required relevant non-destructive validation after code changes.
+
 ## 0.5.1 - 2026-07-10
 
 ### Changed
