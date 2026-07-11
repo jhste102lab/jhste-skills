@@ -1,6 +1,6 @@
 ---
 name: jhste-coding
-description: Apply lightweight SOLID-first coding discipline while actively writing or editing repository code.
+description: Use for implementation, bug fixes, and refactors that modify repository code with lightweight SOLID-first discipline. Do not use for read-only review, planning, architecture discussion, or documentation-only work.
 ---
 
 # jhste-coding
@@ -29,6 +29,7 @@ Use SOLID for the current change; speculative architecture, broad refactors, and
 - Validate external input where it enters the code path.
 - Make uncertain, partial, and failed states visible rather than silently treating them as success.
 - Keep secrets, tokens, credentials, cookies, authorization headers, sessions, and raw sensitive payloads out of logs and responses.
+- After changing code, run the narrowest relevant non-destructive validation. If it cannot run, state why; do not imply the change is verified.
 - When adding or changing tests, focus on observable behavior related to the change.
 
 ## Final response
