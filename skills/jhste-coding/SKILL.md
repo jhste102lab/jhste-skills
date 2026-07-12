@@ -1,37 +1,33 @@
 ---
 name: jhste-coding
-description: Use for implementation, bug fixes, and refactors that modify repository code with lightweight SOLID-first discipline. Do not use for read-only review, planning, architecture discussion, or documentation-only work.
+description: Implement features, fix bugs, and refactor repository code with a small, contract-preserving change and relevant validation. Use when the requested outcome requires modifying code. Do not use for read-only analysis, planning, interviewing, issue creation, or domain documentation.
 ---
 
-# jhste-coding
+# JHSTE Coding
 
-Use this skill to write small, direct, readable code guided primarily by SOLID.
+## Goal
 
-SOLID is the main discipline. The guardrails below keep the code practical.
+Deliver the requested behavior with the smallest clear change that fits the repository.
 
-## Core rule
+## Success criteria
 
-Prefer the smallest clear change that fits the requested problem and keeps the code SOLID-aligned.
+- The requested behavior is implemented without unrelated scope.
+- Existing caller-visible contracts remain intact unless the request changes them.
+- Relevant non-destructive validation passes, or the unverified surface and reason are reported.
+- Uncertain, partial, and failed states are not silently treated as success.
 
-Use SOLID for the current change; speculative architecture, broad refactors, and abstraction layers are outside this skill's purpose.
+## Working contract
 
-## SOLID discipline
+Inspect the affected code, repository guidance, and nearby patterns before editing. Reuse established boundaries and abstractions when they fit. Introduce a new abstraction only when the current change has real variation, repeated logic, or a concrete side-effect boundary that becomes clearer by doing so.
 
-- **S — Single Responsibility:** keep each changed function, module, or class centered on one clear job. Choose names that make the job easy to see.
-- **O — Open/Closed:** add an extension seam when real variation or repeated branching would otherwise keep changing the same core logic. Keep simple branches when they read better.
-- **L — Liskov Substitution:** preserve caller-facing expectations: return shape, nullability, errors, side effects, timing assumptions, and documented behavior.
-- **I — Interface Segregation:** depend on the smallest useful contract. Prefer narrow parameters over broad objects, global context, or large config bags when only a small slice is needed.
-- **D — Dependency Inversion:** keep business rules separate from concrete side effects when that separation makes the code clearer. Make database, network, filesystem, browser, queue, email, payment, clock, environment, and secret boundaries easy to see.
+Treat public return shapes, nullability, errors, side effects, ordering, and documented behavior as contracts. Validate external input at its entry boundary. Keep credentials, sessions, authorization data, and sensitive payloads out of logs and responses.
 
-## Practical guardrails
+For implementation requests, make in-scope local edits and run the narrowest useful validation without pausing for routine confirmation. Stop before an external write, destructive action, or material expansion of scope unless the user authorized it.
 
-- Interfaces, factories, base classes, dependency containers, and strategy layers fit best when they clarify a real boundary, remove real repeated change, or protect a caller contract.
-- Validate external input where it enters the code path.
-- Make uncertain, partial, and failed states visible rather than silently treating them as success.
-- Keep secrets, tokens, credentials, cookies, authorization headers, sessions, and raw sensitive payloads out of logs and responses.
-- After changing code, run the narrowest relevant non-destructive validation. If it cannot run, state why; do not imply the change is verified.
-- When adding or changing tests, focus on observable behavior related to the change.
+## Validation
+
+Choose checks that exercise the changed behavior: targeted tests first, then applicable type, lint, build, or smoke checks. Do not add a test at an artificial seam merely to claim coverage. Never imply that a check ran when it did not.
 
 ## Final response
 
-Report what changed, what validation ran, and any material caveat; omit unchanged details and generic background.
+Report the outcome, validation performed, and any material caveat or remaining blocker. Omit generic background and unchanged details.

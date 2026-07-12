@@ -2,50 +2,52 @@
 
 [한국어](README.md) | ENG
 
-A tiny personal coding-discipline skill.
+A personal engineering skill set maintained around GPT-5.6's outcome-first, lean-prompt guidance. Each skill works independently and may be selected implicitly when the user's intent matches its narrow trigger.
 
-This repository provides one skill:
+## Skills
 
-- `jhste-coding`: a lightweight SOLID-first coding discipline for repository code edits.
+- **`jhste-coding`** — implements features, fixes bugs, and refactors code with a small change and relevant validation.
+- **`jhste-grill`** — sharpens a plan or design through one consequential decision question at a time.
+- **`jhste-to-tickets`** — splits defined work into GitHub parent/sub-issues with native dependencies.
+- **`jhste-domain-modeling`** — clarifies domain terms, boundaries, and relationships, and records them in a glossary or ADR when requested.
 
-It does not vendor workflow skills. Use `mattpocock/skills` separately for broader planning, issue, PRD, debugging, architecture, or review workflows.
+The skills do not require or automatically call one another. A request may use more than one when it contains multiple intents. For example, invoke `jhste-grill` with `jhste-domain-modeling` to interview through a design and record the domain terms that become settled.
+
+## Behavioral boundaries
+
+- `jhste-coding` applies only when repository code must change.
+- `jhste-grill` applies when the user wants an interview or decision stress test; ordinary ambiguity alone must not start a long interview.
+- `jhste-to-tickets` drafts by default. It writes to GitHub only when the user explicitly asks to create, post, or publish the issues.
+- `jhste-domain-modeling` analyzes and proposes by default. It edits repository documentation only when the user asks to record or apply the decisions.
+
+This package intentionally omits TDD, code-review, debugging-process, Wayfinder, and architecture-audit workflows. It favors the model's baseline capabilities and repository CI or guidance, adding another skill only after a repeated real failure justifies it.
 
 ## Install user-wide from npm
 
-This package does not provide a CLI. The npm package is a small distribution bundle for the skill file.
+This package has no CLI. It distributes the four skills and their Codex metadata.
 
 ```sh
 npm install -g jhste-skills
 mkdir -p "$HOME/.agents/skills"
-cp -R "$(npm root -g)/jhste-skills/skills/jhste-coding" "$HOME/.agents/skills/"
+cp -R "$(npm root -g)/jhste-skills/skills/." "$HOME/.agents/skills/"
 ```
 
-After updating the npm package, run the copy command again to refresh the installed skill.
+Run the copy command again after updating the npm package. Restart Codex if the updated skills do not appear.
 
 ## Install user-wide from the repository
 
 ```sh
 mkdir -p "$HOME/.agents/skills"
-cp -R skills/jhste-coding "$HOME/.agents/skills/"
+cp -R skills/. "$HOME/.agents/skills/"
 ```
 
-For repository-scoped use, copy the skill from this checkout into the target repository's `.agents/skills` directory.
+If another agent expects a different global skills directory, copy the four directories under `skills/` there. This package does not require project-local skill copies.
+
+## Development and validation
 
 ```sh
-mkdir -p /path/to/target-repo/.agents/skills
-cp -R skills/jhste-coding /path/to/target-repo/.agents/skills/
+npm test
+npm pack --dry-run
 ```
 
-If another agent expects a different skills directory, copy `skills/jhste-coding/` there instead. Restart Codex if the updated skill does not appear.
-
-## SOLID-first discipline
-
-`jhste-coding` keeps code changes small and practical, with SOLID as the main lens:
-
-- **Single Responsibility:** keep each changed unit centered on one clear job.
-- **Open/Closed:** add extension seams only when real variation would otherwise keep changing the same core logic.
-- **Liskov Substitution:** preserve caller-facing expectations such as return shape, nullability, errors, and side effects.
-- **Interface Segregation:** depend on the smallest useful contract.
-- **Dependency Inversion:** keep business rules separate from concrete side effects when it improves clarity.
-
-The skill is for active coding discipline, not broader process automation or review pipelines.
+Pushing a `v*.*.*` release tag runs GitHub Actions checks and publishes the package through npm trusted publishing.

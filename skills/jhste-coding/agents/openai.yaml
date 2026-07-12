@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE Coding"
+  short_description: "Make scoped code changes with relevant validation"
+  default_prompt: "Use $jhste-coding to implement this change with the smallest clear patch and relevant validation."
+
+policy:
+  allow_implicit_invocation: true

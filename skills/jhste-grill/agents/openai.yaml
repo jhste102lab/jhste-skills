@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE Grill"
+  short_description: "Sharpen plans through focused decision interviews"
+  default_prompt: "Use $jhste-grill to interview me one decision at a time and summarize what we decide."
+
+policy:
+  allow_implicit_invocation: true

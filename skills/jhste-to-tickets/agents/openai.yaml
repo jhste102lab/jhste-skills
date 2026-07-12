@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE To Tickets"
+  short_description: "Turn defined work into GitHub issue slices"
+  default_prompt: "Use $jhste-to-tickets to draft GitHub issues for this defined body of work."
+
+policy:
+  allow_implicit_invocation: true
