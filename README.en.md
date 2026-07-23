@@ -10,6 +10,7 @@ A personal engineering skill set maintained around GPT-5.6's outcome-first, lean
 - **`jhste-grill`** — sharpens a plan or design through one consequential decision question at a time.
 - **`jhste-to-tickets`** — splits defined work into GitHub parent/sub-issues with native dependencies.
 - **`jhste-domain-modeling`** — clarifies domain terms, boundaries, and relationships, and records them in a glossary or ADR when requested.
+- **`jhste-review-followup`** — validates existing PR feedback and pushes only justified fixes to the PR branch.
 
 The skills do not require or automatically call one another. A request may use more than one when it contains multiple intents. For example, invoke `jhste-grill` with `jhste-domain-modeling` to interview through a design and record the domain terms that become settled.
 
@@ -19,12 +20,13 @@ The skills do not require or automatically call one another. A request may use m
 - `jhste-grill` applies when the user wants an interview or decision stress test; ordinary ambiguity alone must not start a long interview.
 - `jhste-to-tickets` drafts by default. It writes to GitHub only when the user explicitly asks to create, post, or publish the issues.
 - `jhste-domain-modeling` analyzes and proposes by default. It edits repository documentation only when the user asks to record or apply the decisions.
+- `jhste-review-followup` applies only when the user explicitly asks to inspect or handle existing PR review feedback. It does not perform the initial PR review, merge, resolve threads, close issues, or clean up work artifacts.
 
-This package intentionally omits TDD, code-review, debugging-process, Wayfinder, and architecture-audit workflows. It favors the model's baseline capabilities and repository CI or guidance, adding another skill only after a repeated real failure justifies it.
+This package intentionally omits TDD, initial PR review, debugging-process, Wayfinder, and architecture-audit workflows. It favors the model's baseline capabilities and repository CI or guidance, adding another skill only after a repeated real failure justifies it.
 
 ## Install user-wide from npm
 
-This package has no CLI. It distributes the four skills and their Codex metadata.
+This package has no CLI. It distributes the five skills and their Codex metadata.
 
 ```sh
 npm install -g jhste-skills
@@ -41,7 +43,7 @@ mkdir -p "$HOME/.agents/skills"
 cp -R skills/. "$HOME/.agents/skills/"
 ```
 
-If another agent expects a different global skills directory, copy the four directories under `skills/` there. This package does not require project-local skill copies.
+If another agent expects a different global skills directory, copy the five directories under `skills/` there. This package does not require project-local skill copies.
 
 ## Development and validation
 
