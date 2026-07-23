@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `jhste-pr-review` for explicitly requested pull request reviews based on the actual diff, high-confidence GitHub comments, and concise user-facing finding summaries.
+
 ## 0.6.0 - 2026-07-13
 
 ### Added
