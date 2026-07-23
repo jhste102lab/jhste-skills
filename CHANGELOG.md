@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added `jhste-pr-review` for explicitly requested pull request reviews based on the actual diff, high-confidence GitHub comments, and concise user-facing finding summaries.
+- Added `jhste-pr-review` for explicit, evidence-based pull request reviews that remain read-only unless GitHub comments are separately requested.
 
 ## 0.6.0 - 2026-07-13
 
