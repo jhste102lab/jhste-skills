@@ -8,7 +8,7 @@ GPT-5.6의 outcome-first, lean-prompt 지침에 맞춰 관리하는 개인용 �
 
 - **`jhste-coding`** — 기능 구현, 버그 수정, 리팩터링을 작은 변경과 관련 검증으로 완료합니다.
 - **`jhste-grill`** — 계획이나 설계를 한 번에 하나의 중요한 결정 질문으로 구체화합니다.
-- **`jhste-pr-review`** — 사용자가 명시적으로 요청한 PR을 실제 diff 기준으로 리뷰하며, 별도 요청이 있을 때만 코멘트를 게시합니다.
+- **`jhste-pr-review`** — 사용자가 명시적으로 요청한 PR을 실제 diff 기준으로 리뷰하고 확신도 높은 actionable finding만 코멘트합니다.
 - **`jhste-to-tickets`** — 명확해진 작업을 GitHub 부모/sub-issues와 native dependency로 분할합니다.
 - **`jhste-domain-modeling`** — 도메인 용어, 개념 경계, 관계를 명확히 하고 요청 시 glossary나 ADR에 반영합니다.
 
@@ -18,7 +18,7 @@ GPT-5.6의 outcome-first, lean-prompt 지침에 맞춰 관리하는 개인용 �
 
 - `jhste-coding`은 실제 코드 변경 요청에만 사용합니다.
 - `jhste-grill`은 사용자가 인터뷰나 결정 검증을 원할 때 사용하며, 단순한 모호성만으로 긴 인터뷰를 시작하지 않습니다.
-- `jhste-pr-review`는 사용자가 PR 코드 리뷰를 명시적으로 요청한 경우에만 사용합니다. 기본은 읽기 전용이며 GitHub 코멘트 게시에는 별도 명시 요청이 필요합니다.
+- `jhste-pr-review`는 사용자가 PR 코드 리뷰를 명시적으로 요청한 경우에만 사용합니다. 해당 요청은 확신도 높은 인라인 코멘트를 `COMMENT` event로 게시하는 것까지 승인하며, approve나 request changes는 해당 동작을 정확히 명시해야 합니다.
 - `jhste-to-tickets`는 기본적으로 초안을 만듭니다. 사용자가 GitHub에 생성·게시하라고 명시한 경우에만 외부 쓰기를 수행합니다.
 - `jhste-domain-modeling`은 기본적으로 분석하고 제안합니다. 사용자가 기록·반영을 요청한 경우에만 저장소 문서를 수정합니다.
 

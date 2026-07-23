@@ -8,7 +8,7 @@ A personal engineering skill set maintained around GPT-5.6's outcome-first, lean
 
 - **`jhste-coding`** — implements features, fixes bugs, and refactors code with a small change and relevant validation.
 - **`jhste-grill`** — sharpens a plan or design through one consequential decision question at a time.
-- **`jhste-pr-review`** — reviews explicitly requested PRs against the actual diff and posts comments only when separately requested.
+- **`jhste-pr-review`** — reviews explicitly requested PRs against the actual diff and posts only high-confidence actionable findings.
 - **`jhste-to-tickets`** — splits defined work into GitHub parent/sub-issues with native dependencies.
 - **`jhste-domain-modeling`** — clarifies domain terms, boundaries, and relationships, and records them in a glossary or ADR when requested.
 
@@ -18,7 +18,7 @@ The skills do not require or automatically call one another. A request may use m
 
 - `jhste-coding` applies only when repository code must change.
 - `jhste-grill` applies when the user wants an interview or decision stress test; ordinary ambiguity alone must not start a long interview.
-- `jhste-pr-review` applies only to an explicit PR code-review request. Review is read-only by default; posting GitHub comments requires a separate explicit request.
+- `jhste-pr-review` applies only to an explicit PR code-review request. That request authorizes high-confidence inline review comments with the `COMMENT` event; approval or change-request decisions still require the exact explicit action.
 - `jhste-to-tickets` drafts by default. It writes to GitHub only when the user explicitly asks to create, post, or publish the issues.
 - `jhste-domain-modeling` analyzes and proposes by default. It edits repository documentation only when the user asks to record or apply the decisions.
 
