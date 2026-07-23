@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `jhste-review-followup` to validate existing pull request review feedback and push only justified fixes without merging or cleanup.
+
 ## 0.6.0 - 2026-07-13
 
 ### Added
