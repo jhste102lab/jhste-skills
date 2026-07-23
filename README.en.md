@@ -9,7 +9,7 @@ A personal engineering skill set maintained around GPT-5.6's outcome-first, lean
 - **`jhste-coding`** — implements features, fixes bugs, and refactors code with a small change and relevant validation.
 - **`jhste-grill`** — sharpens a plan or design through one consequential decision question at a time.
 - **`jhste-pr-review`** — reviews explicitly requested PRs against the actual diff and posts comments only when separately requested.
-- **`jhste-review-followup`** — assesses existing PR feedback and applies only justified fixes when branch updates are explicitly requested.
+- **`jhste-review-followup`** — assesses existing PR feedback, applies justified fixes when requested, and updates the branch only under separate authorization.
 - **`jhste-to-tickets`** — splits defined work into GitHub parent/sub-issues with native dependencies.
 - **`jhste-domain-modeling`** — clarifies domain terms, boundaries, and relationships, and records them in a glossary or ADR when requested.
 
@@ -20,7 +20,7 @@ The skills do not require or automatically call one another. A request may use m
 - `jhste-coding` applies only when repository code must change.
 - `jhste-grill` applies when the user wants an interview or decision stress test; ordinary ambiguity alone must not start a long interview.
 - `jhste-pr-review` applies only to an explicit PR code-review request. Review is read-only by default; posting GitHub comments requires a separate explicit request.
-- `jhste-review-followup` keeps inspection requests read-only and commits or pushes only when the user explicitly asks to apply fixes and update the PR branch. It does not rerun the initial review, merge, reply, resolve threads, change issues, or clean up work artifacts.
+- `jhste-review-followup` keeps inspection requests read-only, changes code only for an explicit fix request, and commits or pushes only for an explicit update or push request. It does not rerun the initial review, merge, reply, resolve threads, change issues, or clean up work artifacts.
 - `jhste-to-tickets` drafts by default. It writes to GitHub only when the user explicitly asks to create, post, or publish the issues.
 - `jhste-domain-modeling` analyzes and proposes by default. It edits repository documentation only when the user asks to record or apply the decisions.
 

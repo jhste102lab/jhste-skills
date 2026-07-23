@@ -4,7 +4,7 @@
 
 ### Added
 - Added `jhste-pr-review` for explicit, evidence-based pull request reviews that remain read-only unless GitHub comments are separately requested.
-- Added `jhste-review-followup` to assess existing PR feedback and update the PR branch only when applying and pushing justified fixes is explicitly requested.
+- Added `jhste-review-followup` to assess existing PR feedback, apply justified fixes only when requested, and update the PR branch under separate explicit authorization.
 
 ## 0.6.0 - 2026-07-13
 

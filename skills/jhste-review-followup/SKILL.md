@@ -1,6 +1,6 @@
 ---
 name: jhste-review-followup
-description: Assess review feedback already posted on an existing GitHub pull request and implement only justified fixes. Use when the user explicitly asks to inspect, verify, address, or follow up on existing PR review comments. Keep inspect or verify requests read-only. Modify, commit, and push the existing PR head branch only when the user explicitly asks to apply fixes and update or push the PR. Do not use for an initial review, PR summary, CI debugging, unrelated implementation, merging, review-thread resolution, cleanup, or issue closure.
+description: Assess review feedback already posted on an existing GitHub pull request and implement only justified fixes. Use when the user explicitly asks to inspect, verify, address, fix, or follow up on existing PR review comments. Keep inspect, verify, summarize, or judge requests read-only. Modify code only when the user explicitly asks to address, apply, or fix feedback. Commit and push the existing PR head branch only when the user explicitly asks to update or push the PR. Do not use for an initial review, PR summary, CI debugging, unrelated implementation, merging, review-thread resolution, cleanup, or issue closure.
 ---
 
 # JHSTE Review Follow-up
@@ -15,7 +15,11 @@ Existing review feedback defines the scope. Do not perform an initial review or 
 
 Use assessment mode when the user asks to inspect, verify, summarize, or judge existing feedback. Report the assessment without editing, committing, or pushing.
 
-Use update mode only when the user explicitly asks to apply or address fixes and update or push the pull request branch. Respect any selected threads. An unqualified request to address all review feedback means all unresolved, clearly actionable items; leave ambiguous or informational items unchanged and report them.
+Use fix mode when the user explicitly asks to address, apply, or fix feedback. Implement and validate the selected justified fixes, but do not commit or push unless update mode is also authorized.
+
+Use update mode when the user explicitly asks to update or push the existing pull request branch. Commit and push only the authorized, validated fixes to that branch.
+
+Treat an otherwise ambiguous request to handle or follow up on feedback as assessment mode rather than guessing. In fix or update mode, an unqualified request to address all feedback means all unresolved, clearly actionable items; leave ambiguous or informational items unchanged and report them.
 
 A request to update the branch does not authorize merging, auto-merge, review replies, thread resolution, issue changes, branch deletion, or cleanup.
 
@@ -44,7 +48,7 @@ Do not implement a reviewer-proposed solution mechanically. Verify the underlyin
 
 ### 3. Apply authorized fixes
 
-In update mode, implement the smallest change that fixes each selected, verified root cause. Check directly equivalent branches only when they share that cause. Preserve established contracts, errors, ordering, nullability, and side-effect boundaries unless the verified issue requires changing them.
+In fix or update mode, implement the smallest change that fixes each selected, verified root cause. Check directly equivalent branches only when they share that cause. Preserve established contracts, errors, ordering, nullability, and side-effect boundaries unless the verified issue requires changing them.
 
 Avoid unrelated refactoring, style cleanup, speculative hardening, generated-file churn, or repository-wide changes. Do not modify or include changes owned by another worker or session. Stage by file or hunk rather than with broad add, reset, clean, or formatting commands.
 
@@ -54,7 +58,7 @@ Run the narrowest checks that exercise the changed behavior, then relevant modul
 
 ### 5. Commit and push
 
-Inspect changed, staged, unstaged, and untracked files plus the final diff. Commit only task-owned changes traceable to validated feedback and push to the existing pull request head branch. Do not create an empty commit when no change is justified.
+Only in update mode, inspect changed, staged, unstaged, and untracked files plus the final diff. Commit only task-owned changes traceable to validated feedback and push to the existing pull request head branch. Do not create an empty commit when no change is justified.
 
 Do not push to the base branch, create a replacement pull request, rewrite unrelated commits, or force-push without explicit authorization. If task-owned changes cannot be separated safely, do not commit or push.
 
@@ -64,6 +68,6 @@ Attempt safe, scoped recovery such as retrieving missing thread context, running
 
 ## Completion
 
-Report the feedback inspected, classifications, fixes applied, items not changed and why, directly related scope checked, files changed, validation results and omissions, and commit and push status. State any material blocker or inspection limit.
+Report the mode used, feedback inspected, classifications, fixes applied, items not changed and why, directly related scope checked, files changed, validation results and omissions, and commit and push status. State any material blocker or inspection limit.
 
 State explicitly that the pull request was not merged and that review replies, thread resolution, issue changes, branch deletion, worktree cleanup, and temporary-artifact cleanup were not performed unless separately authorized.

@@ -1,7 +1,7 @@
 interface:
   display_name: "JHSTE Review Follow-up"
   short_description: "Assess PR feedback and apply justified fixes"
-  default_prompt: "Use $jhste-review-followup to assess the existing PR review feedback. Keep the work read-only unless I explicitly ask to apply fixes and update the PR branch."
+  default_prompt: "Use $jhste-review-followup to assess existing PR feedback. Edit only when I explicitly ask to fix it, and commit or push only when I explicitly ask to update the PR branch."
 
 policy:
   allow_implicit_invocation: true
