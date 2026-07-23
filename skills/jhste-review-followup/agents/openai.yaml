@@ -1,7 +1,7 @@
 interface:
   display_name: "JHSTE Review Follow-up"
-  short_description: "Assess PR feedback and apply justified fixes"
-  default_prompt: "Use $jhste-review-followup to assess existing PR feedback. Edit only when I explicitly ask to fix it, and commit or push only when I explicitly ask to update the PR branch."
+  short_description: "Validate PR feedback and push justified fixes"
+  default_prompt: "Use $jhste-review-followup to verify the existing PR review feedback, implement only justified fixes, validate them, and update the existing PR head branch without merging or cleanup."
 
 policy:
   allow_implicit_invocation: true

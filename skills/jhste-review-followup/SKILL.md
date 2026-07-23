@@ -1,27 +1,15 @@
 ---
 name: jhste-review-followup
-description: Assess review feedback already posted on an existing GitHub pull request and implement only justified fixes. Use when the user explicitly asks to inspect, verify, address, fix, or follow up on existing PR review comments. Keep inspect, verify, summarize, or judge requests read-only. Modify code only when the user explicitly asks to address, apply, or fix feedback. Commit and push the existing PR head branch only when the user explicitly asks to update or push the PR. Do not use for an initial review, PR summary, CI debugging, unrelated implementation, merging, review-thread resolution, cleanup, or issue closure.
+description: Validate review feedback already posted on an existing GitHub pull request, implement only justified fixes, validate the result, and update the existing PR head branch. Use when the user explicitly asks to inspect, verify, address, fix, or follow up on existing PR review comments. Do not use for an initial review, PR summary, CI debugging, unrelated implementation, merging, review-thread resolution, cleanup, or issue closure.
 ---
 
 # JHSTE Review Follow-up
 
 ## Outcome
 
-Evaluate existing pull request feedback against the code and actual execution context. Distinguish valid issues from incorrect, outdated, duplicate, informational, or already-satisfied comments. Apply only justified fixes at their root cause.
+Evaluate existing pull request feedback against the code and actual execution context. Distinguish valid issues from incorrect, outdated, duplicate, informational, or already-satisfied comments. Fix only valid issues at their root cause, validate the result, and update the existing pull request branch.
 
 Existing review feedback defines the scope. Do not perform an initial review or manufacture additional findings as a substitute. The feedback may come from `jhste-pr-review` or any other reviewer; this skill does not depend on another skill.
-
-## Modes and authorization
-
-Use assessment mode when the user asks to inspect, verify, summarize, or judge existing feedback. Report the assessment without editing, committing, or pushing.
-
-Use fix mode when the user explicitly asks to address, apply, or fix feedback. Implement and validate the selected justified fixes, but do not commit or push unless update mode is also authorized.
-
-Use update mode when the user explicitly asks to update or push the existing pull request branch. Commit and push only the authorized, validated fixes to that branch.
-
-Treat an otherwise ambiguous request to handle or follow up on feedback as assessment mode rather than guessing. In fix or update mode, an unqualified request to address all feedback means all unresolved, clearly actionable items; leave ambiguous or informational items unchanged and report them.
-
-A request to update the branch does not authorize merging, auto-merge, review replies, thread resolution, issue changes, branch deletion, or cleanup.
 
 ## Workflow
 
@@ -44,13 +32,15 @@ Classify each relevant item as:
 - informational or better answered with explanation;
 - blocked by missing context.
 
-Do not implement a reviewer-proposed solution mechanically. Verify the underlying problem and the directly related scope. In assessment mode, report the classifications and stop.
+Do not implement a reviewer-proposed solution mechanically. Verify the underlying problem and the directly related scope.
 
-### 3. Apply authorized fixes
+### 3. Apply justified fixes
 
-In fix or update mode, implement the smallest change that fixes each selected, verified root cause. Check directly equivalent branches only when they share that cause. Preserve established contracts, errors, ordering, nullability, and side-effect boundaries unless the verified issue requires changing them.
+Implement the smallest change that fixes each verified root cause. Check directly equivalent branches only when they share that cause. Preserve established contracts, errors, ordering, nullability, and side-effect boundaries unless the verified issue requires changing them.
 
 Avoid unrelated refactoring, style cleanup, speculative hardening, generated-file churn, or repository-wide changes. Do not modify or include changes owned by another worker or session. Stage by file or hunk rather than with broad add, reset, clean, or formatting commands.
+
+If no code change is justified, do not create an empty commit or push.
 
 ### 4. Validate
 
@@ -58,9 +48,11 @@ Run the narrowest checks that exercise the changed behavior, then relevant modul
 
 ### 5. Commit and push
 
-Only in update mode, inspect changed, staged, unstaged, and untracked files plus the final diff. Commit only task-owned changes traceable to validated feedback and push to the existing pull request head branch. Do not create an empty commit when no change is justified.
+Inspect changed, staged, unstaged, and untracked files plus the final diff. Commit only task-owned changes traceable to validated feedback and push to the existing pull request head branch.
 
 Do not push to the base branch, create a replacement pull request, rewrite unrelated commits, or force-push without explicit authorization. If task-owned changes cannot be separated safely, do not commit or push.
+
+Do not merge or enable auto-merge, submit review replies, resolve threads, change issues, delete branches or worktrees, or clean temporary artifacts unless separately requested.
 
 ## Blockers
 
@@ -68,6 +60,6 @@ Attempt safe, scoped recovery such as retrieving missing thread context, running
 
 ## Completion
 
-Report the mode used, feedback inspected, classifications, fixes applied, items not changed and why, directly related scope checked, files changed, validation results and omissions, and commit and push status. State any material blocker or inspection limit.
+Report the feedback inspected, classifications, fixes applied, items not changed and why, directly related scope checked, files changed, validation results and omissions, and commit and push status. State any material blocker or inspection limit.
 
 State explicitly that the pull request was not merged and that review replies, thread resolution, issue changes, branch deletion, worktree cleanup, and temporary-artifact cleanup were not performed unless separately authorized.

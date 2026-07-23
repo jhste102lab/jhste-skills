@@ -3,8 +3,8 @@
 ## Unreleased
 
 ### Added
-- Added `jhste-pr-review` for explicit, evidence-based pull request reviews that remain read-only unless GitHub comments are separately requested.
-- Added `jhste-review-followup` to assess existing PR feedback, apply justified fixes only when requested, and update the PR branch under separate explicit authorization.
+- Added `jhste-pr-review` for explicit, evidence-based pull request reviews that post only high-confidence actionable comments.
+- Added `jhste-review-followup` to validate existing PR feedback, apply only justified fixes, and update the existing PR branch.
 
 ## 0.6.0 - 2026-07-13
 
@@ -39,5 +39,4 @@
 ### Changed
 - Reworked the package into a single personal `jhste-coding` skill.
 - Removed bundled Matt Pocock workflow skills; users can install `mattpocock/skills` separately.
-- Removed jhste workflow/review/guard/setup skills and shared review doctrine from the model-facing package.
 - Simplified docs, package files, and validation around the one-skill structure.
