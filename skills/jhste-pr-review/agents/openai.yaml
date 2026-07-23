@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE PR Review"
+  short_description: "Review PR changes and post actionable findings"
+  default_prompt: "Use $jhste-pr-review to review this pull request, post only high-confidence actionable comments, and briefly summarize the findings."
+
+policy:
+  allow_implicit_invocation: true
