@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+## 0.7.0 - 2026-07-23
+
 ### Added
 - Added `jhste-pr-review` for explicit, evidence-based pull request reviews that post only high-confidence actionable comments.
+- Added `jhste-review-followup` to validate existing PR feedback, apply only justified fixes, and update the existing PR branch.
 
 ## 0.6.0 - 2026-07-13
 
