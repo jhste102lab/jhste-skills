@@ -3,7 +3,8 @@
 ## Unreleased
 
 ### Added
-- Added `jhste-review-followup` to validate existing pull request review feedback and push only justified fixes without merging or cleanup.
+- Added `jhste-pr-review` for explicit, evidence-based pull request reviews that remain read-only unless GitHub comments are separately requested.
+- Added `jhste-review-followup` to assess existing PR feedback and update the PR branch only when applying and pushing justified fixes is explicitly requested.
 
 ## 0.6.0 - 2026-07-13
 

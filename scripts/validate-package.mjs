@@ -6,6 +6,7 @@ const expectedSkills = [
   "jhste-coding",
   "jhste-domain-modeling",
   "jhste-grill",
+  "jhste-pr-review",
   "jhste-review-followup",
   "jhste-to-tickets",
 ];

@@ -1,124 +1,69 @@
 ---
 name: jhste-review-followup
-description: Validate and address review feedback already posted on an existing GitHub pull request, then commit and push only justified fixes to that PR's head branch. Use only when the user explicitly asks to inspect, verify, address, or follow up on existing PR review comments. Do not use for an initial PR review, general code review, PR status checks, unrelated implementation, merging, review-thread resolution, cleanup, or issue closure.
+description: Assess review feedback already posted on an existing GitHub pull request and implement only justified fixes. Use when the user explicitly asks to inspect, verify, address, or follow up on existing PR review comments. Keep inspect or verify requests read-only. Modify, commit, and push the existing PR head branch only when the user explicitly asks to apply fixes and update or push the PR. Do not use for an initial review, PR summary, CI debugging, unrelated implementation, merging, review-thread resolution, cleanup, or issue closure.
 ---
 
 # JHSTE Review Follow-up
 
-## Goal
+## Outcome
 
-Evaluate existing pull request review feedback against the code and its actual execution context. Fix only valid issues at their root cause, validate the result, and update the existing PR head branch with the smallest sufficient change.
+Evaluate existing pull request feedback against the code and actual execution context. Distinguish valid issues from incorrect, outdated, duplicate, informational, or already-satisfied comments. Apply only justified fixes at their root cause.
 
-Stop after the PR branch is updated. Do not merge the PR or perform post-review cleanup.
+Existing review feedback defines the scope. Do not perform an initial review or manufacture additional findings as a substitute. The feedback may come from `jhste-pr-review` or any other reviewer; this skill does not depend on another skill.
 
-## Operating boundary
+## Modes and authorization
 
-Invoke this skill only when the user explicitly asks to handle review feedback that is already present on a pull request.
+Use assessment mode when the user asks to inspect, verify, summarize, or judge existing feedback. Report the assessment without editing, committing, or pushing.
 
-Appropriate requests include:
+Use update mode only when the user explicitly asks to apply or address fixes and update or push the pull request branch. Respect any selected threads. An unqualified request to address all review feedback means all unresolved, clearly actionable items; leave ambiguous or informational items unchanged and report them.
 
-- inspect the review comments already posted on this PR;
-- verify whether the requested changes are correct and address the valid ones;
-- handle the unresolved review threads and update the PR;
-- follow up on the existing PR review feedback.
-
-Do not invoke this skill for an initial PR review, an ordinary code review, a PR summary, a status check, or a general coding request.
-
-If no existing review feedback is found, report that state and stop. Do not perform an initial review as a substitute.
+A request to update the branch does not authorize merging, auto-merge, review replies, thread resolution, issue changes, branch deletion, or cleanup.
 
 ## Workflow
 
-### 1. Resolve the PR and workspace
+### 1. Resolve the pull request and review state
 
-Identify the repository, PR, head branch, and base branch from the request or current checkout. Inspect the working tree before editing and establish which changes belong to this task.
+Identify the repository, pull request, base, head branch, and workspace. Inspect the working tree before editing. Use thread-aware review data when resolution, outdated state, or inline context matters; do not treat a flat comment list as complete.
 
-Use thread-aware review data when unresolved, resolved, or outdated state and inline context matter. Do not treat a flat comment list as a complete view of review threads.
-
-If the PR or review state cannot be identified reliably, stop and report the missing context rather than guessing.
+If the pull request or feedback cannot be identified reliably, report the missing context rather than guessing. If no existing feedback is found, report that state and stop.
 
 ### 2. Assess the feedback
 
-For each relevant review item, inspect the referenced code, nearby implementation, callers, tests, repository guidance, and execution path as needed.
+Inspect the referenced code, nearby implementation, callers, tests, repository guidance, and execution path as needed. Cluster comments that describe the same root cause.
 
-Determine whether the item is:
+Classify each relevant item as:
 
-- valid and requires a code change;
+- valid and requiring a change;
 - valid but already satisfied;
 - incorrect or based on a false assumption;
 - outdated or duplicated;
 - informational or better answered with explanation;
 - blocked by missing context.
 
-Do not implement a reviewer-proposed solution mechanically. Verify the underlying problem and prefer the smallest change that fixes the actual root cause without creating a regression.
+Do not implement a reviewer-proposed solution mechanically. Verify the underlying problem and the directly related scope. In assessment mode, report the classifications and stop.
 
-When multiple comments describe the same problem, handle them as one root-cause cluster.
+### 3. Apply authorized fixes
 
-### 3. Inspect the directly related scope
+In update mode, implement the smallest change that fixes each selected, verified root cause. Check directly equivalent branches only when they share that cause. Preserve established contracts, errors, ordering, nullability, and side-effect boundaries unless the verified issue requires changing them.
 
-Check the directly affected module, call path, data flow, and equivalent branches for the same verified root cause. Fix repeated instances only when they are clearly part of that same cause.
+Avoid unrelated refactoring, style cleanup, speculative hardening, generated-file churn, or repository-wide changes. Do not modify or include changes owned by another worker or session. Stage by file or hunk rather than with broad add, reset, clean, or formatting commands.
 
-Do not expand into unrelated refactoring, style cleanup, feature work, speculative hardening, or repository-wide changes.
+### 4. Validate
 
-### 4. Modify the code
+Run the narrowest checks that exercise the changed behavior, then relevant module tests, type checks, lint, build, or smoke checks as needed. Distinguish task-caused failures from pre-existing failures, unrelated work, and environment problems. Never report a check as passed unless it ran successfully.
 
-Implement only fixes justified by the assessment. Preserve established contracts, behavior, errors, ordering, nullability, and side-effect boundaries unless the verified issue requires changing them.
+### 5. Commit and push
 
-Keep the patch small and avoid unrelated formatting or generated-file churn.
+Inspect changed, staged, unstaged, and untracked files plus the final diff. Commit only task-owned changes traceable to validated feedback and push to the existing pull request head branch. Do not create an empty commit when no change is justified.
 
-Do not modify, stage, reset, clean, or include changes owned by another worker or session. Avoid broad commands such as `git add .`, repository-wide formatting, broad reset, or `git clean`. Stage by file or hunk.
-
-Create a database migration only when this task directly requires one, and follow the repository's documented workflow. Do not apply changes to shared or production environments without separate authorization.
-
-### 5. Validate the result
-
-Run the narrowest checks that meaningfully exercise the changed behavior. Prefer targeted tests, then relevant module tests, type checks, lint, focused build, or smoke checks.
-
-For failures, distinguish task-caused failures from pre-existing failures, unrelated worker changes, and environment problems. Fix failures caused by this task and rerun the relevant checks.
-
-Never report a check as passed unless it was actually run successfully.
-
-### 6. Review, commit, and push
-
-Before committing, inspect changed, staged, unstaged, and untracked files and the final diff. Confirm that only task-owned changes are included and that each change is traceable to validated review feedback.
-
-If task-owned changes cannot be separated safely, do not commit or push. Report the blocker.
-
-Commit the task-owned changes with a message describing the corrected behavior or root cause. Push the commit to the existing PR head branch. If no code change is justified, do not create an empty commit or push.
-
-Do not:
-
-- push directly to the base branch;
-- create a replacement PR;
-- rewrite unrelated commits;
-- force-push without explicit authorization;
-- merge or enable auto-merge;
-- submit a review, reply to comments, or resolve threads;
-- close or update issues;
-- delete branches, worktrees, `.ai` content, or temporary artifacts.
-
-Cleanup and issue handling require a later, explicit user request.
+Do not push to the base branch, create a replacement pull request, rewrite unrelated commits, or force-push without explicit authorization. If task-owned changes cannot be separated safely, do not commit or push.
 
 ## Blockers
 
-Attempt safe, scoped recovery before stopping, such as retrieving missing review context, running narrower validation, installing an already-declared dependency, separating changes by hunk, or using an isolated worktree.
+Attempt safe, scoped recovery such as retrieving missing thread context, running narrower validation, installing an already-declared dependency, separating changes by hunk, or using an isolated worktree. Stop when continuing would risk unrelated work, data loss, unreliable history, shared infrastructure, or scope expansion.
 
-Stop when continuing would risk unrelated work, data loss, an unreliable push, remote-history rewriting, shared infrastructure, or scope expansion.
+## Completion
 
-Report the blocked stage, likely cause, recovery attempts, remaining risk, and any commit or push step that was not completed.
+Report the feedback inspected, classifications, fixes applied, items not changed and why, directly related scope checked, files changed, validation results and omissions, and commit and push status. State any material blocker or inspection limit.
 
-## Final response
-
-Report:
-
-- review items inspected;
-- items implemented and the resulting changes;
-- items not implemented and why;
-- the verified root cause and directly related scope checked;
-- files changed;
-- validation run and results;
-- validation not run and why;
-- migration status when relevant;
-- commit and push status;
-- resolved and remaining blockers.
-
-State that the PR was not merged and that review threads, issues, branches, worktrees, and temporary artifacts were not cleaned up.
+State explicitly that the pull request was not merged and that review replies, thread resolution, issue changes, branch deletion, worktree cleanup, and temporary-artifact cleanup were not performed unless separately authorized.

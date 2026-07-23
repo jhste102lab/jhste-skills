@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE PR Review"
+  short_description: "Review PR diffs with high-confidence findings"
+  default_prompt: "Use $jhste-pr-review to review this pull request against the actual diff, return only high-confidence actionable findings, and post them only if I explicitly ask."
+
+policy:
+  allow_implicit_invocation: true
