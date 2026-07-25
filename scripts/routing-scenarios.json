@@ -3,6 +3,8 @@
   "changed_skills": [
     "jhste-coding",
     "jhste-diagnosing-bugs",
+    "jhste-grill",
+    "jhste-domain-modeling",
     "jhste-to-spec",
     "jhste-to-tickets"
   ],
@@ -40,7 +42,7 @@
       "kind": "non-trigger",
       "request": "인터뷰 방식으로 결제 실패 정책의 미결정 사항을 하나씩 정리해 주세요.",
       "expected_skill": "jhste-grill",
-      "write_policy": "none",
+      "write_policy": "local-only",
       "rationale": "The user wants a decision interview, not a code change."
     },
     {
@@ -116,6 +118,114 @@
       "rationale": "The investigation can proceed, while production instrumentation or configuration writes remain outside authorization."
     },
     {
+      "id": "grill-trigger-product-policy",
+      "source_skill": "jhste-grill",
+      "kind": "trigger",
+      "request": "Grill me one consequential decision at a time about the refund policy and keep settled domain terms and ADRs updated in the repository.",
+      "expected_skill": "jhste-grill",
+      "write_policy": "local-only",
+      "rationale": "The user requests a decision interview and the skill maintains local decision documents as choices settle."
+    },
+    {
+      "id": "grill-trigger-major-branches",
+      "source_skill": "jhste-grill",
+      "kind": "trigger",
+      "request": "이 설계의 목표, 범위, 주요 실패 동작과 되돌리기 어려운 선택을 한 질문씩 검증해 주세요.",
+      "expected_skill": "jhste-grill",
+      "write_policy": "local-only",
+      "rationale": "The request explicitly asks to resolve consequential decision branches through an interview."
+    },
+    {
+      "id": "grill-non-trigger-settled-spec",
+      "source_skill": "jhste-grill",
+      "kind": "non-trigger",
+      "request": "Turn the settled decisions in this conversation into an engineering specification without interviewing me again.",
+      "expected_skill": "jhste-to-spec",
+      "write_policy": "draft-only",
+      "rationale": "The decisions are already settled and the requested artifact is a specification."
+    },
+    {
+      "id": "grill-non-trigger-incidental-rename",
+      "source_skill": "jhste-grill",
+      "kind": "non-trigger",
+      "request": "Rename this private helper for clarity and update its focused test.",
+      "expected_skill": "jhste-coding",
+      "write_policy": "local-only",
+      "rationale": "An incidental implementation rename does not justify a decision interview."
+    },
+    {
+      "id": "grill-handoff-ticketing",
+      "source_skill": "jhste-grill",
+      "kind": "handoff",
+      "request": "The product decisions are settled. Draft the GitHub parent and sub-issues with blockers.",
+      "expected_skill": "jhste-to-tickets",
+      "write_policy": "draft-only",
+      "rationale": "The interview is complete and the next artifact is an executable issue graph."
+    },
+    {
+      "id": "grill-external-write-authorized",
+      "source_skill": "jhste-grill",
+      "kind": "external-write",
+      "request": "Run the decision interview, update CONTEXT.md and qualifying ADRs, then commit and push those documentation changes to the current PR branch.",
+      "expected_skill": "jhste-grill",
+      "write_policy": "authorized-by-request",
+      "rationale": "The interview owns the decision artifacts and the user explicitly authorizes the named Git writes."
+    },
+    {
+      "id": "domain-trigger-conflicting-terms",
+      "source_skill": "jhste-domain-modeling",
+      "kind": "trigger",
+      "request": "Resolve the conflicting meanings of account, workspace, and tenant, test the boundaries with examples, and keep the glossary synchronized.",
+      "expected_skill": "jhste-domain-modeling",
+      "write_policy": "local-only",
+      "rationale": "The main work is clarifying domain language and updating its repository artifact."
+    },
+    {
+      "id": "domain-trigger-qualifying-adr",
+      "source_skill": "jhste-domain-modeling",
+      "kind": "trigger",
+      "request": "Model cancellation versus refund, and automatically record any accepted decision that qualifies for an ADR.",
+      "expected_skill": "jhste-domain-modeling",
+      "write_policy": "local-only",
+      "rationale": "The request combines concept-boundary work with continuous glossary and ADR maintenance."
+    },
+    {
+      "id": "domain-non-trigger-generic-architecture",
+      "source_skill": "jhste-domain-modeling",
+      "kind": "non-trigger",
+      "request": "Explain the general trade-offs between polling and event-driven systems without applying them to this repository.",
+      "expected_skill": null,
+      "write_policy": "none",
+      "rationale": "Generic architecture discussion does not require project domain modeling."
+    },
+    {
+      "id": "domain-non-trigger-code-rename",
+      "source_skill": "jhste-domain-modeling",
+      "kind": "non-trigger",
+      "request": "Rename the local variable result to parsedResult and run the unit test.",
+      "expected_skill": "jhste-coding",
+      "write_policy": "local-only",
+      "rationale": "An incidental code-level name does not change the domain language."
+    },
+    {
+      "id": "domain-handoff-unresolved-policy",
+      "source_skill": "jhste-domain-modeling",
+      "kind": "handoff",
+      "request": "We still have not chosen whether partial cancellation is allowed. Interview me through that product decision first.",
+      "expected_skill": "jhste-grill",
+      "write_policy": "local-only",
+      "rationale": "A consequential unresolved product choice needs a decision interview before the model can settle."
+    },
+    {
+      "id": "domain-external-write-authorized",
+      "source_skill": "jhste-domain-modeling",
+      "kind": "external-write",
+      "request": "Update the project glossary and qualifying ADRs, then commit and push the documentation changes to branch docs/domain-model.",
+      "expected_skill": "jhste-domain-modeling",
+      "write_policy": "authorized-by-request",
+      "rationale": "The domain work owns the artifacts and the request explicitly authorizes the named Git writes."
+    },
+    {
       "id": "to-spec-trigger-conversation",
       "source_skill": "jhste-to-spec",
       "kind": "trigger",
@@ -139,7 +249,7 @@
       "kind": "non-trigger",
       "request": "We have not decided the retry policy. Grill me one decision at a time until it is clear.",
       "expected_skill": "jhste-grill",
-      "write_policy": "none",
+      "write_policy": "local-only",
       "rationale": "The request is explicitly for resolving decisions through an interview."
     },
     {
@@ -157,8 +267,8 @@
       "kind": "handoff",
       "request": "Draft the spec, but the team still uses account, workspace, and tenant for conflicting concepts.",
       "expected_skill": "jhste-domain-modeling",
-      "write_policy": "none",
-      "rationale": "Conflicting domain language should be resolved before the specification asserts a contract."
+      "write_policy": "local-only",
+      "rationale": "Conflicting domain language should be resolved and documented before the specification asserts a contract."
     },
     {
       "id": "to-spec-external-write-authorized",
@@ -202,7 +312,7 @@
       "kind": "non-trigger",
       "request": "We do not know whether failed payments should retry or cancel. Create implementation tickets anyway.",
       "expected_skill": "jhste-grill",
-      "write_policy": "none",
+      "write_policy": "local-only",
       "rationale": "A consequential product decision is unresolved, so tickets would encode a guess."
     },
     {
