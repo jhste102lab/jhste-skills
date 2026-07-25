@@ -6,29 +6,33 @@ GPT-5.6의 outcome-first, lean-prompt 지침에 맞춰 관리하는 개인용 �
 
 ## 스킬
 
-- **`jhste-coding`** — 기능 구현, 버그 수정, 리팩터링을 작은 변경과 관련 검증으로 완료합니다.
+- **`jhste-coding`** — 충분히 이해된 기능 구현, 버그 수정, 리팩터링을 작은 변경과 관련 검증으로 완료합니다.
+- **`jhste-diagnosing-bugs`** — 원인이나 올바른 수정이 불명확한 어려운 버그와 성능 회귀를 재현·가설·측정으로 진단합니다.
 - **`jhste-grill`** — 계획이나 설계를 한 번에 하나의 중요한 결정 질문으로 구체화합니다.
+- **`jhste-domain-modeling`** — 도메인 용어, 개념 경계, 관계를 명확히 하고 요청 시 glossary나 ADR에 반영합니다.
+- **`jhste-to-spec`** — 이미 논의되거나 정의된 변경을 저장소 근거와 함께 검토 가능한 engineering spec으로 합성합니다.
+- **`jhste-to-tickets`** — 명확해진 작업을 GitHub 부모/sub-issues와 native dependency로 분할합니다.
 - **`jhste-pr-review`** — 사용자가 명시적으로 요청한 PR을 실제 diff 기준으로 리뷰하고 확신도 높은 actionable finding만 코멘트합니다.
 - **`jhste-review-followup`** — 기존 PR 피드백을 검증하고 타당한 수정만 기존 PR 브랜치에 반영합니다.
-- **`jhste-to-tickets`** — 명확해진 작업을 GitHub 부모/sub-issues와 native dependency로 분할합니다.
-- **`jhste-domain-modeling`** — 도메인 용어, 개념 경계, 관계를 명확히 하고 요청 시 glossary나 ADR에 반영합니다.
 
-스킬은 서로를 강제로 호출하지 않습니다. 하나의 요청이 여러 의도를 포함하면 함께 사용할 수 있습니다. `jhste-pr-review`는 최초 리뷰를 담당하고, `jhste-review-followup`은 기존 PR에 이미 달린 피드백을 처리하지만 서로를 필수로 요구하지 않습니다.
+스킬은 서로를 강제로 호출하지 않습니다. 하나의 요청이 여러 의도를 포함하면 함께 사용할 수 있습니다. 예를 들어 미결정 요구는 `jhste-grill`이나 `jhste-domain-modeling`으로 정리하고, 결정된 내용을 `jhste-to-spec`으로 합성한 뒤 `jhste-to-tickets`로 실행 이슈를 만들 수 있습니다. 어려운 진단이 끝나 수정 경로가 명확해지면 `jhste-coding`으로 이어집니다.
 
 ## 동작 경계
 
-- `jhste-coding`은 실제 코드 변경 요청에만 사용합니다.
+- `jhste-coding`은 코드 변경 경로가 충분히 이해된 구현과 수정에 사용합니다. 원인이 불명확하거나 간헐적이거나 성능 측정이 핵심인 문제는 `jhste-diagnosing-bugs`가 우선합니다.
+- `jhste-diagnosing-bugs`는 재현 신호, 복수 가설, instrumentation 또는 측정이 필요한 root-cause 조사에 사용합니다. 명확한 오타, 직접적인 compile/lint 오류, 이미 입증된 수정에는 전체 진단 절차를 적용하지 않습니다.
 - `jhste-grill`은 사용자가 인터뷰나 결정 검증을 원할 때 사용하며, 단순한 모호성만으로 긴 인터뷰를 시작하지 않습니다.
+- `jhste-domain-modeling`은 기본적으로 분석하고 제안합니다. 사용자가 기록·반영을 요청한 경우에만 저장소 문서를 수정합니다.
+- `jhste-to-spec`은 기본적으로 대화 안에 초안을 작성하고, 확정되지 않은 사항을 open question으로 남깁니다. 사용자가 파일이나 이슈에 기록·게시하라고 요청한 경우에만 해당 artifact를 씁니다.
+- `jhste-to-tickets`는 기본적으로 초안을 만듭니다. 사용자가 GitHub에 생성·게시하라고 명시한 경우에만 외부 쓰기를 수행하며, 저장소에 없는 workflow label을 추측해서 추가하지 않습니다.
 - `jhste-pr-review`는 사용자가 PR 코드 리뷰를 명시적으로 요청한 경우에만 사용합니다. 해당 요청은 확신도 높은 인라인 코멘트를 `COMMENT` event로 게시하는 것까지 승인하며, approve나 request changes는 해당 동작을 정확히 명시해야 합니다.
 - `jhste-review-followup`은 사용자가 기존 PR 리뷰 피드백 처리를 명시적으로 요청한 경우에만 사용합니다. 각 항목의 타당성을 검증하고, 타당한 root cause만 수정·검증한 뒤 기존 PR 브랜치를 업데이트합니다. 병합, 답글, thread resolve, 이슈 변경, 작업 흔적 정리는 수행하지 않습니다.
-- `jhste-to-tickets`는 기본적으로 초안을 만듭니다. 사용자가 GitHub에 생성·게시하라고 명시한 경우에만 외부 쓰기를 수행합니다.
-- `jhste-domain-modeling`은 기본적으로 분석하고 제안합니다. 사용자가 기록·반영을 요청한 경우에만 저장소 문서를 수정합니다.
 
-TDD, 디버깅 절차, Wayfinder, 아키텍처 감사 workflow는 포함하지 않습니다. 모델의 기본 능력과 저장소 자체의 CI·지침을 우선하고, 반복되는 실제 실패가 확인될 때만 새 스킬을 추가합니다.
+TDD를 강제하는 workflow, Wayfinder, 별도 architecture-audit 스킬은 포함하지 않습니다. module ownership, caller contract, 실제 variation, test seam 같은 설계 판단은 `jhste-coding`의 현재 변경 범위 안에서만 적용합니다. 반복되는 실사용 실패가 별도 orchestration이나 설계 스킬의 유지비를 정당화할 때 다시 분리할 수 있습니다.
 
 ## npm으로 사용자 전역 설치
 
-이 패키지는 CLI를 제공하지 않습니다. npm 패키지는 여섯 스킬과 Codex 메타데이터를 배포하는 번들입니다.
+이 패키지는 CLI를 제공하지 않습니다. npm 패키지는 여덟 스킬과 Codex 메타데이터를 배포하는 번들입니다.
 
 ```sh
 npm install -g jhste-skills
@@ -45,7 +49,7 @@ mkdir -p "$HOME/.agents/skills"
 cp -R skills/. "$HOME/.agents/skills/"
 ```
 
-다른 에이전트가 별도 전역 skills 디렉터리를 요구하면 `skills/` 아래의 여섯 디렉터리를 그 위치로 복사하세요. 이 패키지는 프로젝트별 스킬 복사본을 요구하지 않습니다.
+다른 에이전트가 별도 전역 skills 디렉터리를 요구하면 `skills/` 아래의 여덟 디렉터리를 그 위치로 복사하세요. 이 패키지는 프로젝트별 스킬 복사본을 요구하지 않습니다.
 
 ## 개발 및 검증
 
@@ -54,4 +58,6 @@ npm test
 npm pack --dry-run
 ```
 
-릴리스 태그 `v*.*.*`를 푸시하면 GitHub Actions가 테스트 후 npm trusted publishing으로 공개 배포합니다.
+`npm test`는 package·metadata·문서 일관성과 변경된 네 스킬의 static routing scenario 계약을 검사합니다. 이 fixture는 모델을 호출하거나 실제 자동 trigger 정확도를 측정하지 않습니다.
+
+외부 아이디어와 문구의 출처 및 라이선스는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)에 기록합니다. 릴리스 태그 `v*.*.*`를 푸시하면 GitHub Actions가 테스트 후 npm trusted publishing으로 공개 배포합니다.

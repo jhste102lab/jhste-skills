@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE Diagnosing Bugs"
+  short_description: "Diagnose uncertain bugs with reproducible evidence"
+  default_prompt: "Use $jhste-diagnosing-bugs to reproduce this difficult failure, test competing causes, and verify the root-cause fix if one is requested."
+
+policy:
+  allow_implicit_invocation: true

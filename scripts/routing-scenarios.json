@@ -1,0 +1,227 @@
+{
+  "validation_scope": "Static routing contract only; this fixture does not invoke a model or measure runtime trigger accuracy.",
+  "changed_skills": [
+    "jhste-coding",
+    "jhste-diagnosing-bugs",
+    "jhste-to-spec",
+    "jhste-to-tickets"
+  ],
+  "cases": [
+    {
+      "id": "coding-trigger-feature",
+      "source_skill": "jhste-coding",
+      "kind": "trigger",
+      "request": "Implement the approved CSV export behavior in this repository and run the focused tests.",
+      "expected_skill": "jhste-coding",
+      "write_policy": "local-only",
+      "rationale": "The requested behavior and code-edit outcome are defined."
+    },
+    {
+      "id": "coding-trigger-bounded-refactor",
+      "source_skill": "jhste-coding",
+      "kind": "trigger",
+      "request": "Refactor this parser to remove the duplicated branch while preserving its return shape and errors.",
+      "expected_skill": "jhste-coding",
+      "write_policy": "local-only",
+      "rationale": "This is a scoped refactor with an explicit caller contract."
+    },
+    {
+      "id": "coding-non-trigger-pr-review",
+      "source_skill": "jhste-coding",
+      "kind": "non-trigger",
+      "request": "Review pull request 42 and post any high-confidence findings.",
+      "expected_skill": "jhste-pr-review",
+      "write_policy": "authorized-by-request",
+      "rationale": "The request is an initial pull request review rather than implementation."
+    },
+    {
+      "id": "coding-non-trigger-interview",
+      "source_skill": "jhste-coding",
+      "kind": "non-trigger",
+      "request": "인터뷰 방식으로 결제 실패 정책의 미결정 사항을 하나씩 정리해 주세요.",
+      "expected_skill": "jhste-grill",
+      "write_policy": "none",
+      "rationale": "The user wants a decision interview, not a code change."
+    },
+    {
+      "id": "coding-handoff-uncertain-bug",
+      "source_skill": "jhste-coding",
+      "kind": "handoff",
+      "request": "This timeout appears only under load and the cause is unknown. Reproduce it, find the root cause, and fix it.",
+      "expected_skill": "jhste-diagnosing-bugs",
+      "write_policy": "local-only",
+      "rationale": "Root-cause uncertainty and performance sensitivity make diagnosis the primary workflow."
+    },
+    {
+      "id": "coding-external-write-authorized",
+      "source_skill": "jhste-coding",
+      "kind": "external-write",
+      "request": "Implement the agreed fix, commit the scoped changes, push a topic branch, and open a Draft PR.",
+      "expected_skill": "jhste-coding",
+      "write_policy": "authorized-by-request",
+      "rationale": "The code change belongs to coding and the request explicitly authorizes the named GitHub writes."
+    },
+    {
+      "id": "diagnosing-trigger-intermittent",
+      "source_skill": "jhste-diagnosing-bugs",
+      "kind": "trigger",
+      "request": "Diagnose an intermittent duplicate-charge bug that we cannot reproduce reliably and identify the root cause.",
+      "expected_skill": "jhste-diagnosing-bugs",
+      "write_policy": "local-only",
+      "rationale": "The symptom is serious and the cause and reproduction are uncertain."
+    },
+    {
+      "id": "diagnosing-trigger-performance",
+      "source_skill": "jhste-diagnosing-bugs",
+      "kind": "trigger",
+      "request": "지난 배포 이후 검색 응답이 간헐적으로 10배 느려졌습니다. 기준선을 측정하고 원인을 좁혀 수정해 주세요.",
+      "expected_skill": "jhste-diagnosing-bugs",
+      "write_policy": "local-only",
+      "rationale": "A performance regression needs measurement and hypothesis-driven investigation."
+    },
+    {
+      "id": "diagnosing-non-trigger-compile-error",
+      "source_skill": "jhste-diagnosing-bugs",
+      "kind": "non-trigger",
+      "request": "Fix this TypeScript compile error; the renamed property is still referenced on line 18.",
+      "expected_skill": "jhste-coding",
+      "write_policy": "local-only",
+      "rationale": "The cause and direct correction are already known."
+    },
+    {
+      "id": "diagnosing-non-trigger-review-feedback",
+      "source_skill": "jhste-diagnosing-bugs",
+      "kind": "non-trigger",
+      "request": "Check the existing review comments on PR 88 and push only the justified fixes.",
+      "expected_skill": "jhste-review-followup",
+      "write_policy": "authorized-by-request",
+      "rationale": "Existing pull request feedback defines the workflow and scope."
+    },
+    {
+      "id": "diagnosing-handoff-known-fix",
+      "source_skill": "jhste-diagnosing-bugs",
+      "kind": "handoff",
+      "request": "The incident report proves the cache key omitted tenant_id. Apply the documented correction and regression test.",
+      "expected_skill": "jhste-coding",
+      "write_policy": "local-only",
+      "rationale": "The evidence already establishes the cause and requested correction."
+    },
+    {
+      "id": "diagnosing-external-write-production",
+      "source_skill": "jhste-diagnosing-bugs",
+      "kind": "external-write",
+      "request": "Diagnose this production-only corruption using the code and existing logs, but do not change production.",
+      "expected_skill": "jhste-diagnosing-bugs",
+      "write_policy": "forbidden-by-request",
+      "rationale": "The investigation can proceed, while production instrumentation or configuration writes remain outside authorization."
+    },
+    {
+      "id": "to-spec-trigger-conversation",
+      "source_skill": "jhste-to-spec",
+      "kind": "trigger",
+      "request": "Turn the decisions in this conversation into a concise engineering specification with behavior, validation, and out-of-scope sections.",
+      "expected_skill": "jhste-to-spec",
+      "write_policy": "draft-only",
+      "rationale": "The user asks to synthesize established decisions into a spec."
+    },
+    {
+      "id": "to-spec-trigger-repository-evidence",
+      "source_skill": "jhste-to-spec",
+      "kind": "trigger",
+      "request": "현재 코드와 ADR을 확인해서 합의된 인증 변경을 구현 계약 형태의 spec으로 정리해 주세요.",
+      "expected_skill": "jhste-to-spec",
+      "write_policy": "draft-only",
+      "rationale": "The request combines settled requirements with repository evidence."
+    },
+    {
+      "id": "to-spec-non-trigger-grill",
+      "source_skill": "jhste-to-spec",
+      "kind": "non-trigger",
+      "request": "We have not decided the retry policy. Grill me one decision at a time until it is clear.",
+      "expected_skill": "jhste-grill",
+      "write_policy": "none",
+      "rationale": "The request is explicitly for resolving decisions through an interview."
+    },
+    {
+      "id": "to-spec-non-trigger-tickets",
+      "source_skill": "jhste-to-spec",
+      "kind": "non-trigger",
+      "request": "Split this approved specification into GitHub parent and sub-issues with blocking relationships.",
+      "expected_skill": "jhste-to-tickets",
+      "write_policy": "draft-only",
+      "rationale": "The specification is ready and the requested artifact is an issue graph."
+    },
+    {
+      "id": "to-spec-handoff-unresolved-domain",
+      "source_skill": "jhste-to-spec",
+      "kind": "handoff",
+      "request": "Draft the spec, but the team still uses account, workspace, and tenant for conflicting concepts.",
+      "expected_skill": "jhste-domain-modeling",
+      "write_policy": "none",
+      "rationale": "Conflicting domain language should be resolved before the specification asserts a contract."
+    },
+    {
+      "id": "to-spec-external-write-authorized",
+      "source_skill": "jhste-to-spec",
+      "kind": "external-write",
+      "request": "Create the agreed specification at docs/specs/billing-retry.md using the repository's existing format.",
+      "expected_skill": "jhste-to-spec",
+      "write_policy": "authorized-by-request",
+      "rationale": "The user explicitly identifies the artifact and repository location to write."
+    },
+    {
+      "id": "to-tickets-trigger-draft",
+      "source_skill": "jhste-to-tickets",
+      "kind": "trigger",
+      "request": "Draft parent and sub-issues for this approved migration spec, including acceptance criteria and blockers.",
+      "expected_skill": "jhste-to-tickets",
+      "write_policy": "draft-only",
+      "rationale": "The work is defined and the user requests a ticket graph draft."
+    },
+    {
+      "id": "to-tickets-trigger-existing-parent",
+      "source_skill": "jhste-to-tickets",
+      "kind": "trigger",
+      "request": "Use GitHub issue 120 as the parent and propose vertical implementation slices for the accepted plan.",
+      "expected_skill": "jhste-to-tickets",
+      "write_policy": "draft-only",
+      "rationale": "The source and parent are identified and the execution path is established."
+    },
+    {
+      "id": "to-tickets-non-trigger-ordinary-plan",
+      "source_skill": "jhste-to-tickets",
+      "kind": "non-trigger",
+      "request": "Give me a short implementation plan in chat; do not create or structure GitHub issues.",
+      "expected_skill": null,
+      "write_policy": "none",
+      "rationale": "The user explicitly excludes the issue artifact this skill owns."
+    },
+    {
+      "id": "to-tickets-non-trigger-unclear-behavior",
+      "source_skill": "jhste-to-tickets",
+      "kind": "non-trigger",
+      "request": "We do not know whether failed payments should retry or cancel. Create implementation tickets anyway.",
+      "expected_skill": "jhste-grill",
+      "write_policy": "none",
+      "rationale": "A consequential product decision is unresolved, so tickets would encode a guess."
+    },
+    {
+      "id": "to-tickets-handoff-spec",
+      "source_skill": "jhste-to-tickets",
+      "kind": "handoff",
+      "request": "First synthesize our settled decisions and current API contract into a spec; we will split tickets afterward.",
+      "expected_skill": "jhste-to-spec",
+      "write_policy": "draft-only",
+      "rationale": "The requested current artifact is a specification rather than tickets."
+    },
+    {
+      "id": "to-tickets-external-write-authorized",
+      "source_skill": "jhste-to-tickets",
+      "kind": "external-write",
+      "request": "Publish the approved breakdown as GitHub parent and sub-issues, using only labels already configured in the repository.",
+      "expected_skill": "jhste-to-tickets",
+      "write_policy": "authorized-by-request",
+      "rationale": "The user explicitly authorizes issue creation and constrains label behavior."
+    }
+  ]
+}

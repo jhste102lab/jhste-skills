@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Added
+- Added `jhste-to-spec` to synthesize established decisions and repository evidence into a draft-first engineering specification without inventing unresolved requirements.
+- Added `jhste-diagnosing-bugs` for difficult bugs and performance regressions that need reproduction, falsifiable hypotheses, targeted instrumentation, or measurement before a fix is clear.
+- Added static trigger, non-trigger, handoff, and external-write scenario contracts for the four changed skills.
+- Added `THIRD_PARTY_NOTICES.md` and included it in the npm package for upstream attribution and MIT license preservation.
+
+### Changed
+- Refined `jhste-coding` to frame caller contracts, owning modules, test seams, bounded preparatory refactors, and the handoff to difficult-bug diagnosis without returning to SOLID-first instruction.
+- Refined `jhste-to-tickets` to inspect repository seams and validation paths, keep preparatory work bounded, route unresolved behavior before ticketing, and follow established label policy instead of inventing `ready-for-agent`.
+- Expanded package metadata, validation, and both READMEs from six to eight independent skills.
+
 ## 0.7.0 - 2026-07-23
 
 ### Added
