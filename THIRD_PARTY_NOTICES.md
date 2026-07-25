@@ -4,6 +4,8 @@
 
 The JHSTE workflow set is independently maintained, but parts of the workflow structure and terminology in the following areas were informed by or adapted from the `mattpocock/skills` repository:
 
+- `jhste-grill`: one-question-at-a-time decision-tree interviews, environment-first fact gathering, continuous domain-document maintenance, and resolving consequential branches before stopping;
+- `jhste-domain-modeling`: immediate glossary updates, concrete scenario checks, lazy `CONTEXT.md` and ADR locations, and the three-part ADR threshold;
 - `jhste-to-spec`: conversation and codebase synthesis, behavioral test seams, and avoiding stale implementation recipes;
 - `jhste-diagnosing-bugs`: feedback-loop construction, falsifiable hypotheses, targeted instrumentation, regression verification, and cleanup;
 - `jhste-to-tickets`: tracer-bullet slices, blocking edges, bounded preparatory work, and expand-migrate-contract sequencing;
