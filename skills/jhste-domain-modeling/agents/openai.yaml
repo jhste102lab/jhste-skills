@@ -1,7 +1,7 @@
 interface:
   display_name: "JHSTE Domain Modeling"
-  short_description: "Clarify domain terms, boundaries, and decisions"
-  default_prompt: "Use $jhste-domain-modeling to clarify the domain language and surface any conflicting concepts."
+  short_description: "Clarify terms and maintain glossary and ADRs"
+  default_prompt: "Use $jhste-domain-modeling to clarify the domain language and keep the project glossary and qualifying ADRs synchronized."
 
 policy:
   allow_implicit_invocation: true
