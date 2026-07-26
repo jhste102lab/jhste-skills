@@ -1,6 +1,6 @@
 ---
 name: jhste-coding
-description: Implement features, sufficiently understood bug fixes, and refactors with a small contract-preserving code change and relevant validation. Use when the requested outcome requires modifying repository code and the path to a correction is reasonably clear. For uncertain, intermittent, or performance-sensitive root-cause work, use jhste-diagnosing-bugs first. Do not use for read-only analysis, planning, interviewing, issue creation, or domain documentation.
+description: Implement features, sufficiently understood bug fixes, and refactors with a small contract-preserving code change and relevant validation. Use when the requested outcome requires modifying repository code and the path to a correction is reasonably clear. For uncertain root-cause work, use jhste-diagnosing-bugs; for independently auditing and finishing an existing implementation, use jhste-implementation-finalizer. Do not use for read-only analysis, planning, interviewing, issue creation, domain documentation, or implementation finalization.
 ---
 
 # JHSTE Coding
@@ -28,7 +28,7 @@ Introduce a new abstraction when the current change demonstrates real variation,
 
 Treat public return shapes, nullability, errors, side effects, ordering, and documented behavior as contracts. Validate external input at its entry boundary. Keep credentials, sessions, authorization data, and sensitive payloads out of logs and responses.
 
-For implementation requests, make in-scope local edits and run the narrowest useful validation without pausing for routine confirmation. Stop before an external write, destructive action, or material expansion of scope unless the user authorized it. When the root cause remains materially uncertain, avoid widening speculative edits and hand the investigation to `jhste-diagnosing-bugs`.
+For implementation requests, make in-scope local edits and run the narrowest useful validation without pausing for routine confirmation. Stop before an external write, destructive action, or material expansion of scope unless the user authorized it. When the root cause remains materially uncertain, avoid widening speculative edits and hand the investigation to `jhste-diagnosing-bugs`. When the starting point is a worker result, branch, diff, or partial implementation that must be independently audited and completed, use `jhste-implementation-finalizer` rather than treating its completion claim as evidence.
 
 ## Validation
 

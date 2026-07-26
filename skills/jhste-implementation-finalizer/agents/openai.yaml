@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE Implementation Finalizer"
+  short_description: "Audit, correct, verify, and finish worker implementations"
+  default_prompt: "Use $jhste-implementation-finalizer to independently audit this implementation, fix in-scope gaps, verify it, and complete already-authorized publication steps."
+
+policy:
+  allow_implicit_invocation: true

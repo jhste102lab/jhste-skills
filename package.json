@@ -1,7 +1,7 @@
 {
   "name": "jhste-skills",
   "version": "0.7.0",
-  "description": "A lean GPT-5.6-oriented engineering skill set for coding, hard-bug diagnosis, specifications, GitHub tickets, pull request reviews and follow-up, decision interviews, and domain modeling.",
+  "description": "A lean GPT-5.6-oriented engineering skill set for coding, diagnosis, specifications, handoffs, implementation finalization, GitHub tickets, pull request review and follow-up, decision interviews, and domain modeling.",
   "type": "module",
   "license": "MIT",
   "repository": {

@@ -1,6 +1,6 @@
 ---
 name: jhste-to-spec
-description: Synthesize an already discussed or otherwise defined engineering change into a decision-grounded specification using relevant repository evidence. Use when the user asks for a spec, PRD, design brief, or written implementation contract. Do not use to interview unresolved requirements, split work into tickets, implement code, or publish an artifact unless the user requests that write.
+description: Synthesize an already discussed or otherwise defined engineering change into a decision-grounded specification using relevant repository evidence. Use when the user asks for a spec, PRD, design brief, or written behavior contract. Do not use to interview unresolved requirements, create execution handoffs, split work into tickets, implement code, or publish an artifact unless the user requests that write.
 ---
 
 # JHSTE To Spec
@@ -32,7 +32,7 @@ Prefer behavioral language over an implementation recipe. Mention modules, inter
 
 Return a draft in the conversation by default. A request to create, record, or publish the specification authorizes only that artifact in the repository or issue tracker the user identified. Follow the repository's existing document location, issue shape, and label policy; do not invent a new convention or label.
 
-Writing a specification does not authorize code changes or implementation tickets. When the user wants an executable issue graph after the specification is ready, hand off to `jhste-to-tickets`.
+Writing a specification does not authorize code changes or implementation tickets. When the user wants an executable issue graph after the specification is ready, use `jhste-to-tickets`. When the user wants durable progress, ownership, verification, and resume state for another executor, use `jhste-handoff`; do not turn the specification into a work tracker.
 
 ## Completion
 

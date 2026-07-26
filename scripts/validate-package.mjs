@@ -7,6 +7,8 @@ const expectedSkills = [
   "jhste-diagnosing-bugs",
   "jhste-domain-modeling",
   "jhste-grill",
+  "jhste-handoff",
+  "jhste-implementation-finalizer",
   "jhste-pr-review",
   "jhste-review-followup",
   "jhste-to-spec",

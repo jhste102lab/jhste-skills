@@ -1,6 +1,6 @@
 ---
 name: jhste-to-tickets
-description: Turn a defined plan, specification, or conversation into GitHub parent and sub-issues with acceptance criteria and native dependency relationships. Use when the user asks to draft, split, organize, or publish established work as GitHub issues or tickets. Do not use for ordinary planning, unresolved product behavior, or work whose execution path still requires major investigation.
+description: Turn a defined plan, specification, or conversation into GitHub parent and sub-issues with acceptance criteria and native dependency relationships. Use when the user asks to draft, split, organize, or publish established work as GitHub issues or tickets. Do not use for ordinary planning, local execution handoffs, unresolved product behavior, or work whose execution path still requires major investigation.
 ---
 
 # JHSTE To Tickets
@@ -13,7 +13,7 @@ Create a GitHub-native work graph whose ready issues can be claimed and complete
 
 Identify the GitHub repository from the request or current remote. Read any referenced issue, specification, conversation context, repository guidance, glossary or ADRs, and enough relevant code and tests to understand current seams, compatibility constraints, and verification paths. Ask only for a missing decision that would materially change scope, issue boundaries, or dependencies.
 
-If the desired behavior is not yet settled, hand the request to `jhste-grill` or `jhste-to-spec` rather than encoding guesses as tickets. If the main uncertainty is the root cause of a failure, use `jhste-diagnosing-bugs` before planning implementation work.
+If the desired behavior is not yet settled, hand the request to `jhste-grill` or `jhste-to-spec` rather than encoding guesses as tickets. If the main uncertainty is the root cause of a failure, use `jhste-diagnosing-bugs` before planning implementation work. When the requested artifact is a durable local record of ownership, phase progress, verification, blockers, and an exact resume point, use `jhste-handoff` instead of duplicating that state across issues.
 
 ## Draft the work graph
 
