@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 - 2026-07-26
 
 ### Added
 - Added `jhste-to-spec` to synthesize established decisions and repository evidence into a draft-first engineering specification without inventing unresolved requirements.
