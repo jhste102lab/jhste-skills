@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE To Spec"
+  short_description: "Synthesize settled decisions into a reviewable spec"
+  default_prompt: "Use $jhste-to-spec to turn the established decisions and repository evidence into a reviewable engineering specification."
+
+policy:
+  allow_implicit_invocation: true

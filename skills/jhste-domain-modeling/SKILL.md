@@ -1,13 +1,13 @@
 ---
 name: jhste-domain-modeling
-description: Clarify domain terminology, concept boundaries, and relationships, and optionally maintain a project glossary or ADRs. Use when the user asks to define domain language, resolve conflicting terms, build a glossary, model domain concepts, or record a significant domain decision. Do not invoke for ordinary coding, generic architecture discussion, or incidental naming choices.
+description: Clarify domain terminology, concept boundaries, and relationships while continuously maintaining a project glossary and automatically recording qualifying ADRs. Use when the user asks to define domain language, resolve conflicting terms, build a glossary, model domain concepts, or record a significant domain decision. Do not invoke for ordinary coding, generic architecture discussion, or incidental naming choices.
 ---
 
 # JHSTE Domain Modeling
 
 ## Goal
 
-Establish precise shared language that matches the intended domain and the behavior implemented by the code.
+Establish precise shared language that matches the intended domain and the behavior implemented by the code, and keep the repository's domain documents synchronized as decisions settle.
 
 ## Investigate
 
@@ -17,17 +17,21 @@ Clarify one material concept at a time. Use concrete scenarios and edge cases to
 
 Keep the glossary free of implementation details. Keep specifications, task notes, and temporary decisions in their own artifacts.
 
-## Analyze versus write
+## Maintain the model continuously
 
-Analyze and propose changes by default. Edit `CONTEXT.md`, a repository-equivalent glossary, or an ADR only when the user asks to record, update, or apply the decisions. Follow the repository's existing location and format; create a new convention only with user authorization.
+In a writable repository, treat the domain-modeling request as authorization to maintain local glossary and ADR files. Follow the repository's existing locations and formats. If no convention exists, create `CONTEXT.md` at the root and `docs/adr/` lazily when the first corresponding entry is needed.
 
-Offer an ADR only when the decision is all three:
+When a term's meaning and boundary are agreed, test it with at least one concrete scenario. If no material contradiction remains, update the glossary immediately rather than waiting for the end of the session.
+
+Write an ADR immediately, without requesting separate confirmation, when the user selects a decision that is all three:
 
 - costly to reverse;
 - surprising without its rationale;
 - the result of a real trade-off between alternatives.
 
-Do not create an ADR for routine, temporary, or self-evident choices.
+Do not create an ADR for routine, temporary, self-evident, or still-unresolved choices. Follow the repository's ADR format. If none exists, use the next available `docs/adr/NNNN-<slug>.md` filename with `Status`, `Context`, `Decision`, `Alternatives considered`, and `Consequences` sections.
+
+If the user requests analysis only or forbids edits, present the exact proposed glossary and ADR changes instead. Do not commit, push, or publish repository changes without explicit authorization for those actions.
 
 ## Completion
 
@@ -36,5 +40,5 @@ Report:
 - terms added, changed, rejected, or still ambiguous;
 - scenarios used to test the model;
 - code or document mismatches found;
-- files changed, if writing was authorized;
-- ADR candidates and unresolved decisions that materially block the model.
+- glossary and ADR files changed;
+- unresolved decisions that materially block the model.

@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE Handoff"
+  short_description: "Create durable executor-neutral implementation handoffs"
+  default_prompt: "Use $jhste-handoff to create or update a compact implementation handoff with clear ownership, verification, and an exact resume point."
+
+policy:
+  allow_implicit_invocation: true

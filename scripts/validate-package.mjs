@@ -4,10 +4,14 @@ import path from "node:path";
 const root = process.cwd();
 const expectedSkills = [
   "jhste-coding",
+  "jhste-diagnosing-bugs",
   "jhste-domain-modeling",
   "jhste-grill",
+  "jhste-handoff",
+  "jhste-implementation-finalizer",
   "jhste-pr-review",
   "jhste-review-followup",
+  "jhste-to-spec",
   "jhste-to-tickets",
 ];
 
@@ -50,6 +54,10 @@ for (const skill of expectedSkills) {
   }
 
   const metadata = read(metadataPath);
+  const shortDescription = metadata.match(/^  short_description: "([^"]+)"$/m)?.[1];
+  if (!shortDescription || shortDescription.length < 25 || shortDescription.length > 64) {
+    throw new Error(`${skill} short_description must be 25-64 characters`);
+  }
   if (!metadata.includes(`$${skill}`)) {
     throw new Error(`${skill} metadata default prompt must mention $${skill}`);
   }
@@ -64,6 +72,7 @@ for (const requiredPath of [
   "README.en.md",
   "CHANGELOG.md",
   "LICENSE",
+  "THIRD_PARTY_NOTICES.md",
 ]) {
   if (!pkg.files.includes(requiredPath) || !exists(requiredPath)) {
     throw new Error(`package file is missing or not published: ${requiredPath}`);
@@ -86,6 +95,13 @@ for (const readme of ["README.md", "README.en.md"]) {
 
 if (!read("CHANGELOG.md").includes(`## ${pkg.version} -`)) {
   throw new Error(`CHANGELOG.md is missing release ${pkg.version}`);
+}
+
+const notices = read("THIRD_PARTY_NOTICES.md");
+for (const requiredNotice of ["Matt Pocock", "MIT License", "Copyright (c) 2026 Matt Pocock"]) {
+  if (!notices.includes(requiredNotice)) {
+    throw new Error(`THIRD_PARTY_NOTICES.md is missing: ${requiredNotice}`);
+  }
 }
 
 console.log(`validated ${expectedSkills.length} skills for jhste-skills ${pkg.version}`);
