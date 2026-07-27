@@ -1,6 +1,6 @@
 ---
 name: jhste-coding
-description: Implement features, sufficiently understood bug fixes, and refactors with a small contract-preserving code change and relevant validation. Use when the requested outcome requires modifying repository code and the path to a correction is reasonably clear. For uncertain root-cause work, use jhste-diagnosing-bugs; for independently auditing and finishing an existing implementation, use jhste-implementation-finalizer. Do not use for read-only analysis, planning, interviewing, issue creation, domain documentation, or implementation finalization.
+description: Implement features, sufficiently understood bug fixes, refactors, and ordinary continuation from a handoff's exact resume point with a small contract-preserving code change and relevant validation. Use when the requested outcome requires modifying repository code and the path to a correction or next implementation step is reasonably clear, including partial progress from another worker when no independent completion audit was requested. For uncertain root-cause work, use jhste-diagnosing-bugs; for independently auditing, verifying, and finalizing claimed-complete or submitted implementation work, use jhste-implementation-finalizer. Do not use for read-only analysis, planning, interviewing, issue creation, domain documentation, or review-only work.
 ---
 
 # JHSTE Coding
@@ -28,7 +28,7 @@ Introduce a new abstraction when the current change demonstrates real variation,
 
 Treat public return shapes, nullability, errors, side effects, ordering, and documented behavior as contracts. Validate external input at its entry boundary. Keep credentials, sessions, authorization data, and sensitive payloads out of logs and responses.
 
-For implementation requests, make in-scope local edits and run the narrowest useful validation without pausing for routine confirmation. Stop before an external write, destructive action, or material expansion of scope unless the user authorized it. When the root cause remains materially uncertain, avoid widening speculative edits and hand the investigation to `jhste-diagnosing-bugs`. When the starting point is a worker result, branch, diff, or partial implementation that must be independently audited and completed, use `jhste-implementation-finalizer` rather than treating its completion claim as evidence.
+For implementation requests, make in-scope local edits and run the narrowest useful validation without pausing for routine confirmation. Continue from an existing handoff or partial implementation with this skill when the exact next step is clear and the user asks to proceed, implement, or resume; prior work alone is not evidence that an independent completion audit is wanted. Stop before an external write, destructive action, or material expansion of scope unless the user authorized it. When the root cause remains materially uncertain, avoid widening speculative edits and hand the investigation to `jhste-diagnosing-bugs`. When the user asks to independently audit, verify, correct, and finalize a completion claim or submitted implementation, use `jhste-implementation-finalizer`.
 
 ## Validation
 
