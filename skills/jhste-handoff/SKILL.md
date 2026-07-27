@@ -1,6 +1,6 @@
 ---
 name: jhste-handoff
-description: Create or update executor-neutral implementation handoff documents that preserve settled decisions, scope, ownership, progress, verification, blockers, and an exact resume point. Use when the user explicitly asks to hand work off, prepare implementation context for another worker or session, split long work into resumable phases, or refresh an existing handoff. Do not use for a specification, GitHub ticket graph, ordinary plan, implementation itself, or automatic worker orchestration.
+description: Create or update executor-neutral implementation handoff documents that preserve settled decisions, scope, ownership, progress, verification, blockers, and an exact resume point. Use when the user explicitly asks to create, prepare, refresh, or restructure a handoff for another worker or session, or to split long work into resumable phases. Do not use merely because an existing handoff must be read before implementation resumes; ordinary continuation belongs to jhste-coding, uncertain investigation to jhste-diagnosing-bugs, and independent completion audit to jhste-implementation-finalizer. Do not use for a specification, GitHub ticket graph, ordinary plan, implementation itself, or automatic worker orchestration.
 ---
 
 # JHSTE Handoff
@@ -16,6 +16,8 @@ An explicit request to create or update a handoff authorizes the corresponding l
 Keep the handoff independent of any agent, provider, model, CLI, branch strategy, or status protocol. Record the actual executor or workspace only as an execution fact when it helps coordination.
 
 A handoff records execution state; it is not a substitute for a specification, ADR, domain glossary, or GitHub issue graph. Link to those sources instead of copying them.
+
+Reading an existing handoff does not itself select this skill. When the user asks to continue implementation from its exact resume point, route to `jhste-coding`; when unresolved root cause remains the work, route to `jhste-diagnosing-bugs`; when the user requests independent verification or final acceptance of claimed-complete work, route to `jhste-implementation-finalizer`.
 
 ## Inspect and settle the contract
 
