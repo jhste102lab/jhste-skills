@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.1 - 2026-07-27
+
+### Changed
+- Narrowed `jhste-implementation-finalizer` so an existing handoff, partial implementation, branch, diff, worktree, or worker result does not select finalization without an explicit independent audit, verification, or completion intent.
+- Routed ordinary implementation continuation from a handoff's exact resume point to `jhste-coding`, with unresolved root-cause work remaining in `jhste-diagnosing-bugs`.
+- Clarified that `jhste-handoff` authors and updates handoff documents rather than owning implementation merely because a handoff must be read.
+- Expanded static routing coverage from 48 to 52 scenarios for handoff continuation, uncertain diagnosis, and independent finalization boundaries.
+- Updated npm publishing so a package version bump merged to `main` runs release checks and publishes an unpublished version, while tag pushes remain supported without duplicate publication.
+
 ## 0.8.0 - 2026-07-26
 
 ### Added
