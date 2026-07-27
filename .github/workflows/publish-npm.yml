@@ -3,6 +3,10 @@ name: Publish npm package
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
+    paths:
+      - package.json
     tags:
       - 'v*.*.*'
 
@@ -30,5 +34,19 @@ jobs:
       - name: Run release checks
         run: npm test
 
+      - name: Check whether this version is unpublished
+        id: version
+        shell: bash
+        run: |
+          version="$(node --print "require('./package.json').version")"
+          if npm view "jhste-skills@${version}" version >/dev/null 2>&1; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "jhste-skills@${version} is already published"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+            echo "jhste-skills@${version} will be published"
+          fi
+
       - name: Publish to npm with trusted publishing
+        if: steps.version.outputs.publish == 'true'
         run: npm publish --provenance --access public
