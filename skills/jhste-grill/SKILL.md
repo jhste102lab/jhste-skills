@@ -1,6 +1,6 @@
 ---
 name: jhste-grill
-description: Interview the user one consequential decision at a time to sharpen or stress-test a plan, product behavior, or design while maintaining settled domain context and qualifying ADRs in the repository. Use when the user asks to be interviewed, grilled, questioned, or guided through unresolved decisions. Do not invoke merely because an ordinary request has a small ambiguity.
+description: Interview the user one consequential decision at a time to sharpen or stress-test a plan, product behavior, or design while maintaining settled domain context and qualifying ADRs in the repository. Use when the user asks to be interviewed, grilled, questioned, or guided through unresolved user-owned decisions. Do not invoke merely because an ordinary request has a small ambiguity; when the decision is settled and the remaining uncertainty needs executable evidence, use jhste-prototype.
 ---
 
 # JHSTE Grill
@@ -17,7 +17,7 @@ Ask one decision question at a time. For each question, provide a recommended an
 
 Treat a branch as consequential when it can change the goal, success criteria, scope, user-visible behavior, compatibility, data or security behavior, recovery from failure, or a costly-to-reverse trade-off. Resolve every consequential branch or record it as an explicit blocker. Skip reversible preferences and implementation details that the next worker can decide safely.
 
-Challenge contradictions and unsupported assumptions directly. Preserve explicit user choices. Do not implement code or publish issues as part of this skill alone.
+Challenge contradictions and unsupported assumptions directly. Preserve explicit user choices. Do not use a prototype to choose a product policy, priority, or trade-off that belongs to the user. Once those choices are settled, use `jhste-prototype` when representability, API ergonomics, interaction flow, or UI structure still needs runnable evidence. Do not implement code or publish issues as part of this skill alone.
 
 ## Maintain decision documents
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0 - 2026-07-28
+
+### Added
+- Added `jhste-prototype` for deliberately disposable, runnable experiments that answer one concrete design question before production implementation.
+- Added static prototype routing contracts for state models, API surfaces, data shapes, UI structures, handoffs, non-triggers, and external-write policy.
+
+### Changed
+- Clarified prototype boundaries with `jhste-coding`, `jhste-diagnosing-bugs`, `jhste-grill`, `jhste-to-spec`, and `jhste-implementation-finalizer`.
+- Linked every skill name in both READMEs directly to its `SKILL.md`, synchronized the descriptions, and updated installation text from ten to eleven skills.
+- Bumped the package minor version for the new published capability and expanded static routing coverage from 52 to 78 scenarios across nine covered skills.
+- Updated upstream attribution to the reviewed Matt Pocock revision and documented which prototype concepts were adapted or deliberately softened.
+
 ## 0.8.1 - 2026-07-27
 
 ### Changed

@@ -10,6 +10,7 @@ const expectedSkills = [
   "jhste-handoff",
   "jhste-implementation-finalizer",
   "jhste-pr-review",
+  "jhste-prototype",
   "jhste-review-followup",
   "jhste-to-spec",
   "jhste-to-tickets",
@@ -82,7 +83,10 @@ for (const requiredPath of [
 for (const readme of ["README.md", "README.en.md"]) {
   const body = read(readme);
   for (const skill of expectedSkills) {
-    if (!body.includes(skill)) throw new Error(`${readme} does not mention ${skill}`);
+    const expectedLink = `[\`${skill}\`](skills/${skill}/SKILL.md)`;
+    if (!body.includes(expectedLink)) {
+      throw new Error(`${readme} does not link ${skill} to its SKILL.md`);
+    }
   }
 
   for (const match of body.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {

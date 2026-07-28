@@ -1,6 +1,6 @@
 ---
 name: jhste-coding
-description: Implement features, sufficiently understood bug fixes, refactors, and ordinary continuation from a handoff's exact resume point with a small contract-preserving code change and relevant validation. Use when the requested outcome requires modifying repository code and the path to a correction or next implementation step is reasonably clear, including partial progress from another worker when no independent completion audit was requested. For uncertain root-cause work, use jhste-diagnosing-bugs; for independently auditing, verifying, and finalizing claimed-complete or submitted implementation work, use jhste-implementation-finalizer. Do not use for read-only analysis, planning, interviewing, issue creation, domain documentation, or review-only work.
+description: Implement features, sufficiently understood bug fixes, refactors, and ordinary continuation from a handoff's exact resume point with a small contract-preserving code change and relevant validation. Use when the requested outcome requires modifying production repository code and the path to a correction or next implementation step is reasonably clear. For a disposable runnable experiment that answers an important design question before production, use jhste-prototype; for uncertain root-cause work, use jhste-diagnosing-bugs; for an independent completion audit, use jhste-implementation-finalizer. Do not use for read-only analysis, planning, interviewing, issue creation, domain documentation, or review-only work.
 ---
 
 # JHSTE Coding
@@ -20,6 +20,8 @@ Deliver the requested behavior with the smallest clear change that fits the repo
 
 Before editing, identify the requested outcome, material non-goals, caller-visible contract, and important failure states. Locate the module that owns the behavior and the seam through which callers or tests observe it. For a trivial change this can be a brief check; expand the analysis only when the change crosses boundaries or alters a contract.
 
+If an important uncertainty is about what should be built rather than how to implement an approved direction, and the uncertainty is best resolved through disposable executable evidence, use `jhste-prototype` instead of embedding exploration in production code. Once a direction is selected, treat the prototype as evidence: implement the production behavior cleanly here rather than promoting prototype scaffolding, shortcuts, variants, or test gaps.
+
 ## Working contract
 
 Inspect the affected code, repository guidance, and nearby patterns before editing. Keep behavior that changes for the same reason together. Reuse established boundaries and abstractions when they fit.
@@ -32,7 +34,7 @@ For implementation requests, make in-scope local edits and run the narrowest use
 
 ## Validation
 
-Choose checks that exercise the changed behavior: targeted tests first, then applicable type, lint, build, or smoke checks. Add tests at a seam that represents the caller-visible behavior rather than creating an artificial seam to claim coverage. Re-read the final diff for scope creep, stale compatibility paths, and temporary instrumentation. Do not imply that a check ran when it did not.
+Choose checks that exercise the changed behavior: targeted tests first, then applicable type, lint, build, or smoke checks. Add tests at a seam that represents the caller-visible behavior rather than creating an artificial seam to claim coverage. Re-read the final diff for scope creep, stale compatibility paths, temporary instrumentation, and prototype-only artifacts. Do not imply that a check ran when it did not.
 
 ## Final response
 
