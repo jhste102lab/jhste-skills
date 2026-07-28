@@ -9,11 +9,19 @@ The JHSTE workflow set is independently maintained, but parts of the workflow st
 - `jhste-to-spec`: conversation and codebase synthesis, behavioral test seams, and avoiding stale implementation recipes;
 - `jhste-diagnosing-bugs`: feedback-loop construction, falsifiable hypotheses, targeted instrumentation, regression verification, and cleanup;
 - `jhste-to-tickets`: tracer-bullet slices, blocking edges, bounded preparatory work, and expand-migrate-contract sequencing;
-- `jhste-coding`: module/interface/seam reasoning, caller-visible contracts, and avoiding shallow pass-through abstractions.
+- `jhste-coding`: module/interface/seam reasoning, caller-visible contracts, and avoiding shallow pass-through abstractions;
+- `jhste-prototype`: disposable runnable evidence for one design question, separate logic and UI exploration modes, visible state, in-memory or stubbed side effects by default, structurally distinct UI variants, and preserving the question and verdict separately from production implementation.
 
-Upstream reviewed at commit `ed37663cc5fbef691ddfecd080dff42f7e7e350d` and compared with the current `main` branch on 2026-07-25:
+Upstream reviewed at commit `2ab958093e83e0ec752e6c1c5932da465bf23e0c` on 2026-07-28:
 
 - https://github.com/mattpocock/skills
+- https://github.com/mattpocock/skills/tree/2ab958093e83e0ec752e6c1c5932da465bf23e0c/skills/engineering/prototype
+
+The prototype review also considered the upstream history that made the skill model-invoked and later reframed the runnable prototype as primary-source evidence retained outside the main branch. `jhste-prototype` does not copy the upstream files verbatim: it does not require a terminal UI, URL-parameter switcher, floating bar, a blanket prohibition on tests, or automatic branch, push, and issue-link writes. Those external writes remain subject to explicit user authorization.
+
+The related GitHub article was reviewed as contextual evidence for both early executable exploration and the maintenance risk of adding too many skills; no article text is copied:
+
+- https://github.blog/ai-and-ml/github-copilot/the-harness-is-all-you-need-mostly/
 
 No upstream skill file is distributed verbatim. The full upstream MIT notice is retained because the resulting instructions adapt workflow structure and some terminology.
 
