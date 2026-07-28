@@ -1,6 +1,6 @@
 ---
 name: jhste-diagnosing-bugs
-description: Diagnose difficult bugs and performance regressions whose cause or correct fix is uncertain, intermittent, environment-dependent, or spread across components. Use for explicit root-cause investigation that needs reproduction, competing hypotheses, instrumentation, or measurement. Do not use for an obvious typo, a direct compile or lint error, a known fix, CI inspection alone, or ordinary implementation.
+description: Diagnose difficult bugs and performance regressions in existing behavior whose cause or correct fix is uncertain, intermittent, environment-dependent, or spread across components. Use for explicit root-cause investigation that needs reproduction, competing hypotheses, instrumentation, or measurement. Do not use for an obvious typo, a direct compile or lint error, a known fix, ordinary implementation, or executable exploration of what should be built before production; use jhste-prototype for the latter.
 ---
 
 # JHSTE Diagnosing Bugs
@@ -11,9 +11,9 @@ Establish an evidence-backed root cause and, when a fix is in scope, prove that 
 
 ## Frame the investigation
 
-Confirm the exact symptom, affected environment, expected behavior, known-good comparison, and whether the user requested diagnosis only or diagnosis plus a fix. Read repository guidance, relevant code, recent changes, tests, logs, traces, and operational evidence that are available.
+Confirm the exact observed symptom, affected environment, expected behavior, known-good comparison, and whether the user requested diagnosis only or diagnosis plus a fix. Read repository guidance, relevant code, recent changes, tests, logs, traces, and operational evidence that are available.
 
-When the cause and correction are already clear, use `jhste-coding` instead. Route failing pull request checks to the repository's CI workflow unless the user is asking for a deeper root-cause investigation.
+When the cause and correction are already clear, use `jhste-coding` instead. When there is no existing failure to explain and the question is whether a proposed state model, data shape, API surface, interaction flow, or UI structure should be built, use `jhste-prototype`. Route failing pull request checks to the repository's CI workflow unless the user is asking for a deeper root-cause investigation.
 
 ## Build a useful feedback loop
 
