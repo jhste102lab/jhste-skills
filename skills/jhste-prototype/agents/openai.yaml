@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE Prototype"
+  short_description: "Test design questions with disposable runnable evidence"
+  default_prompt: "Use $jhste-prototype to build the smallest disposable runnable experiment that answers this design question."
+
+policy:
+  allow_implicit_invocation: true
