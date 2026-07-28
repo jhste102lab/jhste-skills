@@ -1,6 +1,6 @@
 ---
 name: jhste-to-spec
-description: Synthesize an already discussed or otherwise defined engineering change into a decision-grounded specification using relevant repository evidence. Use when the user asks for a spec, PRD, design brief, or written behavior contract. Do not use to interview unresolved requirements, create execution handoffs, split work into tickets, implement code, or publish an artifact unless the user requests that write.
+description: Synthesize an already discussed or otherwise defined engineering change into a decision-grounded specification using relevant repository evidence. Use when the user asks for a spec, PRD, design brief, or written behavior contract. Do not use to interview unresolved requirements, prototype an unsettled design assumption, create execution handoffs, split work into tickets, implement code, or publish an artifact unless the user requests that write.
 ---
 
 # JHSTE To Spec
@@ -13,7 +13,7 @@ Produce a reviewable specification that separates established decisions from unr
 
 Read the relevant conversation, referenced artifacts, repository guidance, glossary or ADRs, current code, and nearby tests or contracts. Use repository vocabulary where it is established. Treat code as evidence of the current state rather than proof that the current state is intended.
 
-Ask only when a missing decision would materially change the requested outcome. When useful progress is still possible, draft with the uncertainty named instead of inventing an answer. Route a decision interview to `jhste-grill` and domain-language conflicts to `jhste-domain-modeling`.
+Ask only when a missing decision would materially change the requested outcome. When useful progress is still possible, draft with the uncertainty named instead of inventing an answer. Route a decision interview to `jhste-grill`, domain-language conflicts to `jhste-domain-modeling`, and a concrete unsettled design assumption that needs executable evidence to `jhste-prototype` before freezing it into a contract.
 
 ## Write the specification
 
