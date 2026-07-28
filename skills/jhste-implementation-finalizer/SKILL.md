@@ -1,17 +1,17 @@
 ---
 name: jhste-implementation-finalizer
-description: Independently audit, correct, verify, and finish an implementation that is claimed complete, submitted as a worker result for independent acceptance, or explicitly requested for finalization and, when applicable, synchronize an existing handoff and complete already-authorized updates to the same pull request. Use only when the user asks to independently audit, verify, finalize, or finish existing implementation work. Do not use merely because work resumes from a handoff, partial implementation, branch, diff, worktree, or another worker; ordinary continuation with a clear next step belongs to jhste-coding. Do not use for an initial PR review, existing review-comment follow-up alone, ordinary implementation from scratch, CI-log diagnosis alone, or merging.
+description: Independently audit, correct, verify, and finish production implementation that is claimed complete, submitted for independent acceptance, or explicitly requested for finalization and, when applicable, complete already-authorized updates to the same pull request. Use only when the user asks to independently audit, verify, finalize, or finish existing implementation work. Do not use for ordinary continuation, initial PR review, review-feedback follow-up alone, CI-log diagnosis, merging, or promoting disposable prototype code; a selected prototype direction belongs to jhste-coding.
 ---
 
 # JHSTE Implementation Finalizer
 
 ## Goal
 
-Treat completion claims as unverified input. Determine whether the requested outcome is complete, correct, integrated, and ready to publish, then directly fix in-scope gaps instead of stopping at review comments.
+Treat completion claims as unverified input. Determine whether the requested production outcome is complete, correct, integrated, and ready to publish, then directly fix in-scope gaps instead of stopping at review comments.
 
 ## Route the right work
 
-Use `jhste-coding` for implementation from scratch and for ordinary continuation from a handoff's exact resume point when the next change is sufficiently understood. The mere existence of prior edits, a worker result, partial work, a branch, a diff, a worktree, or a handoff does not select this skill. Use this skill when the request requires an independent acceptance audit, verification of a completion claim, or final correction and completion of existing implementation work. Use `jhste-diagnosing-bugs` when uncertain root cause or measurement is the primary work. Use `jhste-pr-review` for review-only findings and `jhste-review-followup` when existing review comments define the scope.
+Use `jhste-coding` for implementation from scratch, ordinary continuation from a handoff's exact resume point, and proper production implementation of a direction selected through `jhste-prototype`. Prototype scaffolding, shortcuts, losing variants, switchers, missing hardening, and intentionally limited validation are not a completion claim to finalize or code to promote. Use this skill only when existing production work requires an independent acceptance audit, verification of a completion claim, or final correction and completion. Use `jhste-diagnosing-bugs` when uncertain root cause or measurement is the primary work. Use `jhste-pr-review` for review-only findings and `jhste-review-followup` when existing review comments define the scope.
 
 Do not merge, enable auto-merge, resolve review threads, or make unrelated issue changes unless the user explicitly requests those actions.
 
