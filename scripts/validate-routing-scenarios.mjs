@@ -2,12 +2,18 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const document = JSON.parse(
-  fs.readFileSync(path.join(root, "scripts/routing-scenarios.json"), "utf8"),
+const fixturePaths = [
+  "scripts/routing-scenarios.json",
+  "scripts/routing-scenarios-orchestration.json",
+];
+const documents = fixturePaths.map((fixturePath) =>
+  JSON.parse(fs.readFileSync(path.join(root, fixturePath), "utf8")),
 );
 
-if (!document.validation_scope?.includes("does not invoke a model")) {
-  throw new Error("routing scenarios must state their static validation limit");
+for (const [index, document] of documents.entries()) {
+  if (!document.validation_scope?.includes("does not invoke a model")) {
+    throw new Error(`${fixturePaths[index]} must state its static validation limit`);
+  }
 }
 
 const skillNames = new Set(
@@ -16,8 +22,8 @@ const skillNames = new Set(
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name),
 );
-const changedSkills = new Set(document.changed_skills ?? []);
-const cases = document.cases ?? [];
+const changedSkills = new Set(documents.flatMap((document) => document.changed_skills ?? []));
+const cases = documents.flatMap((document) => document.cases ?? []);
 const ids = new Set();
 const requiredKinds = new Map([
   ["trigger", 2],

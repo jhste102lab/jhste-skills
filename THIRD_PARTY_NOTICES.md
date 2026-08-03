@@ -46,3 +46,43 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Codexclaw
+
+The `jhste-subagent-orchestration` design is independently maintained. Its review considered the following orchestration concepts from `lidge-jun/codexclaw`:
+
+- distinguish runtime-enforced harness controls from model-followed guidance;
+- delegate work that is decision-complete, independently verifiable, and bounded so consequential judgment remains with the head;
+- record a head disposition for each worker return before dependent work proceeds;
+- bind verification evidence to the source state it covered so later integration can invalidate stale evidence;
+- treat repeated independent failures of the same unchanged assignment as evidence that the assignment packet may be defective;
+- dispatch independent work in waves and triage required returns before opening dependent work.
+
+Upstream reviewed at commit `ecc644e7742dc516ea91777414baf3da1859a162` on 2026-08-03:
+
+- https://github.com/lidge-jun/codexclaw
+- https://github.com/lidge-jun/codexclaw/tree/ecc644e7742dc516ea91777414baf3da1859a162
+
+The JHSTE skill does not copy Codexclaw's PABCD state machine, hooks, evidence-receipt runtime, role TOMLs, model or reasoning-effort routing, worker-count limits, or fixed retry counts. No Codexclaw source file is distributed verbatim. The full upstream MIT notice is retained conservatively because the resulting instructions adapt several orchestration concepts and terms.
+
+### MIT License
+
+Copyright (c) 2026 lidge-jun
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

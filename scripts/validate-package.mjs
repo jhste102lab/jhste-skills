@@ -12,9 +12,17 @@ const expectedSkills = [
   "jhste-pr-review",
   "jhste-prototype",
   "jhste-review-followup",
+  "jhste-subagent-orchestration",
   "jhste-to-spec",
   "jhste-to-tickets",
 ];
+
+const requiredSkillFiles = new Map([
+  [
+    "jhste-subagent-orchestration",
+    ["references/worker-contract.md", "references/control-state.md"],
+  ],
+]);
 
 const read = (relativePath) =>
   fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -39,6 +47,12 @@ for (const skill of expectedSkills) {
 
   if (!exists(skillPath) || !exists(metadataPath)) {
     throw new Error(`${skill} is missing SKILL.md or agents/openai.yaml`);
+  }
+
+  for (const relativePath of requiredSkillFiles.get(skill) ?? []) {
+    if (!exists(`skills/${skill}/${relativePath}`)) {
+      throw new Error(`${skill} is missing ${relativePath}`);
+    }
   }
 
   const skillText = read(skillPath);
@@ -102,7 +116,12 @@ if (!read("CHANGELOG.md").includes(`## ${pkg.version} -`)) {
 }
 
 const notices = read("THIRD_PARTY_NOTICES.md");
-for (const requiredNotice of ["Matt Pocock", "MIT License", "Copyright (c) 2026 Matt Pocock"]) {
+for (const requiredNotice of [
+  "Matt Pocock",
+  "Copyright (c) 2026 Matt Pocock",
+  "Codexclaw",
+  "Copyright (c) 2026 lidge-jun",
+]) {
   if (!notices.includes(requiredNotice)) {
     throw new Error(`THIRD_PARTY_NOTICES.md is missing: ${requiredNotice}`);
   }

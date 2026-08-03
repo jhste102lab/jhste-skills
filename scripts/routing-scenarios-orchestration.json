@@ -1,0 +1,98 @@
+{
+  "validation_scope": "Static routing contract only; this fixture does not invoke a model or measure runtime trigger accuracy.",
+  "changed_skills": [
+    "jhste-subagent-orchestration"
+  ],
+  "cases": [
+    {
+      "id": "orchestration-trigger-explicit-fanout",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "trigger",
+      "request": "Use subagents to investigate the API and UI independently, then have the head integrate the verified results.",
+      "expected_skill": "jhste-subagent-orchestration",
+      "write_policy": "local-only",
+      "rationale": "Explicit bounded multi-worker execution is requested."
+    },
+    {
+      "id": "orchestration-trigger-separate-acceptance",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "trigger",
+      "request": "Implement the settled change and have a separate worker perform an independent read-only acceptance pass.",
+      "expected_skill": "jhste-subagent-orchestration",
+      "write_policy": "local-only",
+      "rationale": "A separate-agent acceptance pass is explicitly requested."
+    },
+    {
+      "id": "orchestration-trigger-independent-workstreams",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "trigger",
+      "request": "Investigate the parser and storage paths independently, then implement only after the head verifies which hypothesis is supported.",
+      "expected_skill": "jhste-subagent-orchestration",
+      "write_policy": "local-only",
+      "rationale": "Decision-complete independent workstreams and a dependent verified wave provide concrete structural benefit."
+    },
+    {
+      "id": "orchestration-non-linear-coding",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "non-trigger",
+      "request": "Implement the approved pagination change and run its focused tests.",
+      "expected_skill": "jhste-coding",
+      "write_policy": "local-only",
+      "rationale": "Ordinary linear implementation does not benefit from worker coordination."
+    },
+    {
+      "id": "orchestration-non-diagnosis",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "non-trigger",
+      "request": "Reproduce and diagnose the intermittent timeout whose cause is unknown.",
+      "expected_skill": "jhste-diagnosing-bugs",
+      "write_policy": "local-only",
+      "rationale": "Uncertain root-cause diagnosis is the primary work, not orchestration."
+    },
+    {
+      "id": "orchestration-non-domain-term",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "non-trigger",
+      "request": "Implement Kubernetes workload orchestration for the approved deployment design.",
+      "expected_skill": "jhste-coding",
+      "write_policy": "local-only",
+      "rationale": "Orchestration is a domain concept here, not a request to coordinate ChatGPT workers."
+    },
+    {
+      "id": "orchestration-non-finalizer",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "non-trigger",
+      "request": "Take over this submitted implementation, independently audit it, fix gaps, and finish it.",
+      "expected_skill": "jhste-implementation-finalizer",
+      "write_policy": "local-only",
+      "rationale": "One existing implementation needs corrective finalization rather than worker orchestration."
+    },
+    {
+      "id": "orchestration-handoff-document",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "handoff",
+      "request": "Turn the settled multi-worker execution state into a durable handoff for another session; do not execute it.",
+      "expected_skill": "jhste-handoff",
+      "write_policy": "draft-only",
+      "rationale": "The requested outcome is a handoff artifact, not live orchestration."
+    },
+    {
+      "id": "orchestration-write-release",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "external-write",
+      "request": "Use bounded workers to implement and independently accept the change, then commit, push, merge the PR, and publish the authorized release.",
+      "expected_skill": "jhste-subagent-orchestration",
+      "write_policy": "authorized-by-request",
+      "rationale": "Worker coordination and the named external writes are explicitly authorized."
+    },
+    {
+      "id": "orchestration-write-local-only",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "external-write",
+      "request": "Use subagents for the work, but do not commit, push, merge, publish, or change any external system.",
+      "expected_skill": "jhste-subagent-orchestration",
+      "write_policy": "forbidden-by-request",
+      "rationale": "Delegation is explicit while all named external writes are forbidden."
+    }
+  ]
+}
