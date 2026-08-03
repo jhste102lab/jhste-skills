@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.10.0 - 2026-08-03
+
+### Added
+- Added `jhste-subagent-orchestration` for bounded investigation, implementation, and read-only acceptance workers under a decision-owning head.
+- Added static routing contracts for explicit delegation, implicit structural benefit, ordinary-work exclusions, handoff boundaries, and external-write authority.
+
+### Changed
+- Reduced the reviewed orchestration package from 469 to 264 lines while preserving the four-file structure and critical head, worker, ownership, and verification invariants.
+- Separated worker stage from task skill, read-only acceptance from corrective finalization, worker lifecycle from head verification and disposition, and logical mutation leases from harness-enforced permissions.
+- Moved worker concurrency limits entirely to the harness boundary and excluded worker model and reasoning-effort routing from the skill.
+- Added wave-level result dispositions, source-basis checks for stale verification, resumable clarification rules, live-activity transfer, and assignment-defect recovery after repeated independent failures.
+- Updated both READMEs and package metadata from eleven to twelve skills and expanded static routing coverage from 78 to 88 scenarios across ten covered skills.
+- Recorded the reviewed Codexclaw revision and the orchestration concepts adapted or deliberately omitted.
+
 ## 0.9.0 - 2026-07-28
 
 ### Added
