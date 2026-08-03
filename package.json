@@ -8,6 +8,9 @@
     "type": "git",
     "url": "git+https://github.com/jhste102lab/jhste-skills.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "skills",
     "README.md",
