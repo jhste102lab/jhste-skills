@@ -25,7 +25,7 @@ GPT-5.6의 outcome-first, lean-prompt 지침에 맞춰 관리하는 개인용 �
 
 - `jhste-coding`은 구현 경로가 충분히 명확한 코드 변경과 기존 handoff 또는 부분 구현의 일반적인 이어서 하기를 담당합니다. production 전 실행 실험으로 중요한 설계 가정을 검증하는 작업은 `jhste-prototype`에 속합니다.
 - `jhste-prototype`은 state model, business rule, data shape, API surface, interaction flow, UI structure에 관한 하나의 구체적 질문을 폐기 가능한 실행 증거로 답합니다. 일반 구현, 기존 장애 원인 진단, 정적 mockup, 열린 아이디어 탐색, production-ready 전달을 가로채지 않습니다.
-- `jhste-subagent-orchestration`은 서브에이전트, 위임, head-worker 분리, agent 병렬 fan-out, 별도-agent acceptance가 명시적으로 요청되면 선택됩니다. 암묵적으로는 assignment가 decision-complete하고 독립 검증 가능하며, 중요한 판단이 헤드에 남는 경우에만 사용합니다. 다른 task skill이 이미 소유한 일반적인 선형 작업, 미해결 사용자 결정, Kubernetes 같은 도메인 의미의 orchestration은 가로채지 않습니다. 조정 비용은 작업 크기에 맞춥니다. 확정된 단일 변경은 구현 워커 하나로 처리하고, 3단계 분리는 중요한 작업의 상한이지 기본값이 아닙니다. 워커 수, 워커 등급, 실제 권한·격리는 하네스가 관리합니다.
+- `jhste-subagent-orchestration`은 서브에이전트, 위임, head-worker 분리, agent 병렬 fan-out, 별도-agent acceptance가 명시적으로 요청되면 선택됩니다. 암묵적으로는 assignment가 decision-complete하고 독립 검증 가능하며, 중요한 판단이 헤드에 남는 경우에만 사용합니다. 다른 task skill이 이미 소유한 일반적인 선형 작업, 미해결 사용자 결정, Kubernetes 같은 도메인 의미의 orchestration은 가로채지 않습니다. 조정 비용은 작업 크기에 맞춥니다. 확정된 단일 변경은 구현 워커 하나로 처리하고, 3단계 분리는 중요한 작업의 상한이지 기본값이 아닙니다. 워커 수와 실제 권한·격리는 하네스가 관리합니다.
 - `jhste-diagnosing-bugs`는 이미 관찰된 실패에 재현 신호, 경쟁 가설, 계측, 측정이 필요할 때 담당합니다. 아직 만들지 않은 설계를 시험하는 작업은 `jhste-prototype`입니다.
 - `jhste-grill`은 사용자가 인터뷰나 의사결정 검증을 원할 때만 동작합니다. 사용자 소유 결정이 먼저 필요하면 프로토타입으로 추측하지 않고 인터뷰하며, 결정된 가정의 representability나 ergonomics가 실행 증거를 필요로 하면 `jhste-prototype`으로 넘깁니다.
 - `jhste-domain-modeling`은 도메인 언어와 개념 경계를 담당하며, 단순 변수명 변경이나 일반적인 아키텍처 설명을 가로채지 않습니다.

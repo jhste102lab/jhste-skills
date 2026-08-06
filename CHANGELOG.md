@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.1 - 2026-08-06
+
+### Removed
+- Removed the worker capability-tier guidance from `jhste-subagent-orchestration`. Worker model and tier selection is harness configuration owned by the user, so the skill states no preference. The 0.11.0 coordination-sizing rules are unchanged.
+
 ## 0.11.0 - 2026-08-06
 
 ### Changed
