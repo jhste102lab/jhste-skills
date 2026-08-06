@@ -1,68 +1,42 @@
 ---
 name: jhste-diagnosing-bugs
-description: Diagnose difficult bugs and performance regressions in existing behavior whose cause or correct fix is uncertain, intermittent, environment-dependent, or spread across components. Use when the user asks to diagnose or debug, or reports broken, failing, throwing, hanging, or slow behavior that needs reproduction, competing hypotheses, instrumentation, or measurement. Do not use for an obvious typo, a direct compile or lint error, a known fix, ordinary implementation, or executable exploration of what should be built before production; use jhste-prototype for the latter.
+description: Diagnose uncertain bugs and performance regressions in existing behavior through symptom-specific evidence, competing explanations, instrumentation, or measurement. Use for broken, failing, throwing, hanging, intermittent, environment-dependent, or slow behavior whose cause or correct fix is not clear. Do not use for known fixes, ordinary implementation, or not-yet-built design questions.
 ---
 
 # JHSTE Diagnosing Bugs
 
 ## Goal
 
-Establish the strongest evidence-backed explanation available and, when a fix is requested, prove that the smallest supported correction resolves the reported symptom without leaving diagnostic artifacts behind.
+Establish the strongest evidence-backed explanation available and, when a fix is requested, prove that the smallest supported correction resolves the reported symptom.
 
-## Establish the investigation without routine questions
+## Establish the investigation
 
-Derive the observed symptom, affected environment, expected behavior, known-good comparison, and requested outcome from the user's request and available evidence. Inspect repository guidance, domain context, relevant code, recent changes, tests, logs, traces, and operational artifacts before asking the user for anything discoverable.
+Derive the symptom, environment, expected behavior, known-good comparison, and requested outcome from the request and available evidence. Inspect relevant guidance, domain context, code, recent changes, tests, logs, traces, and operational artifacts before asking for anything discoverable.
 
-Treat requests to diagnose, investigate, debug, or explain as diagnosis-only unless a fix is also requested. Treat requests to fix, resolve, repair, or correct as authority to diagnose and apply the in-scope correction. Ask only when unavailable access, evidence, credentials, or a consequential user-owned decision actually blocks progress.
+Treat diagnose, investigate, debug, or explain as diagnosis-only unless a fix is also requested. Treat fix, resolve, repair, or correct as authority to diagnose and apply the in-scope correction.
 
-When the cause and correction are already clear, use `jhste-coding` instead. When there is no existing failure to explain and the question is what should be built, use `jhste-prototype`.
+## Build a useful signal
 
-## Build the shortest useful signal
+Prefer the shortest safe signal that observes the reported symptom and distinguishes failure from success. It may be an existing test, focused command, replay, fixture, measurement, runtime inspection, or small harness; choose by fit rather than a fixed order.
 
-Prefer the shortest practical signal that exercises the reported behavior: an existing test, focused command, request replay, fixture, benchmark, profiler capture, trace replay, differential run, or small harness.
+The signal should support the same comparison before and after a fix. For intermittent or performance problems, record bounded counts, rates, or measurements rather than treating one passing run as proof.
 
-A useful signal should:
-
-- observe the user's reported symptom rather than a nearby failure;
-- distinguish failure from success;
-- be repeatable, or quantitatively measurable when the failure is intermittent;
-- be runnable by the agent without user interaction when practical; and
-- support the same comparison before and after a fix.
-
-Run the signal when the environment permits and record what it can actually prove. Tighten it only when doing so materially improves speed, determinism, or fidelity.
-
-For intermittent failures, increase the observation rate through bounded repetition, stress, controlled timing, or a fixed seed when appropriate. Record counts or rates rather than treating one passing run as proof. For performance regressions, establish a comparable baseline and measure the affected path before choosing an optimization.
-
-When no runnable signal is safe or available, continue from the strongest captured artifact or observation. Do not call a hypothesis a confirmed root cause when the available evidence cannot distinguish it from credible alternatives; report the best-supported explanation, confidence limit, and exact missing evidence.
+When no runnable signal is safe or available, continue from the strongest captured artifact. Do not call an explanation a confirmed root cause when credible alternatives cannot be distinguished; state the evidence limit and what is missing.
 
 ## Reduce uncertainty
 
-Minimize the reproduction when that narrows the search without changing the failure. When more than one cause remains credible, form at least two falsifiable hypotheses, rank them by inspected evidence, and choose probes that distinguish them. Do not manufacture extra hypotheses after the evidence has already isolated one cause.
+Minimize the reproduction when doing so narrows the search without changing the failure. When several causes remain credible, form only as many falsifiable hypotheses as needed to separate them and use probes that distinguish their predictions.
 
-Prefer direct runtime inspection when the harness supports it. Otherwise add only instrumentation that separates named hypotheses. Change one material variable at a time where practical. Give temporary logs, flags, fixtures, or harnesses a unique searchable marker so cleanup is reliable.
+Prefer direct runtime inspection when the harness supports it. Otherwise add only targeted instrumentation that separates named explanations. Give temporary artifacts a unique searchable marker and remove them before completion.
 
-Do not pause to present hypotheses for approval. Continue testing them unless user knowledge is the only available discriminator.
+Do not pause to seek approval for hypotheses unless user knowledge is the only available discriminator.
 
 ## Fix and verify
 
-When a fix is requested, apply the smallest change that addresses the supported root cause. Add a regression test only at a seam that reproduces the real failure pattern. If the available seam would create false confidence, document that limit and verify the original reproduction, artifact, or measurement directly.
+When a fix is requested, apply the smallest change supported by the evidence. Add regression protection only at a seam that reproduces the real failure pattern; do not create a shallow test that produces false confidence.
 
-Re-run the original signal after the fix, then run the narrowest relevant nearby checks. For intermittent or performance failures, compare the same bounded measurement before and after. Remove temporary instrumentation and throwaway artifacts unless the user asked to retain a clearly identified diagnostic aid.
-
-Temporary production instrumentation, shared-infrastructure changes, or writes to an external environment require explicit authorization for that target.
+Re-run the original signal or compare the same captured measurement after the fix. Expand nearby validation only when risk, integration surface, or an observed failure justifies it. Production instrumentation, shared-infrastructure changes, and external writes require authority for that target.
 
 ## Completion
 
-Report:
-
-- the reproduced or captured symptom;
-- the signal or evidence and what it could prove;
-- hypotheses tested and their disposition;
-- the supported root cause or best-supported explanation with remaining uncertainty;
-- the change made, when requested;
-- regression protection or why no honest test seam existed;
-- commands, repetitions, rates, or measurements run;
-- diagnostic artifacts removed; and
-- any evidence that was unavailable.
-
-Do not describe an unrun check as successful or an insufficiently distinguished hypothesis as confirmed.
+Report the symptom, evidence and what it could prove, explanations tested, supported root cause or confidence limit, change made when requested, verification, removed diagnostic artifacts, and any unavailable evidence. Never describe an unrun check as passed or an insufficiently distinguished explanation as confirmed.
