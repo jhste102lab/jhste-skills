@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.13.0 - 2026-08-06
+
+### Changed
+- Ablated generic workflow correction, duplicated routing prose, fixed validation ladders, and context-window-based work splitting while preserving authority, ownership, evidence, and completion contracts.
+- Reframed `jhste-subagent-orchestration` around direct work, one bounded owner, parallel owners, and dynamic verified waves; moved detailed packet and control-state behavior behind existing on-demand references.
+- Changed `jhste-coding` and `jhste-implementation-finalizer` to select the strongest task-appropriate verification signal instead of following habitual test, type, lint, build, and smoke sequences.
+- Split `jhste-pr-review` into broad candidate discovery followed by narrow evidence validation and publication, so conservative posting rules do not suppress initial defect search.
+- Simplified `jhste-review-followup` by removing rigid phase ceremony and exhaustive reporting of actions that were not requested.
+- Reduced `jhste-prototype`, `jhste-handoff`, `jhste-domain-modeling`, and `jhste-to-tickets` core instructions and moved specialized logic, UI, portable, durable, fallback-format, and wide-migration guidance into one-hop references.
+- Removed context-window size as a reason to divide tickets or durable handoff phases; issue and document boundaries now follow coherent outcomes, ownership, real dependencies, independent evidence, and integration boundaries.
+- Shortened diagnosis and specification workflows while preserving symptom-specific evidence, uncertainty calibration, synthesis-first behavior, and minimal user interruption.
+- Added `MAINTENANCE.md` with a deletion-first, evidence-backed, progressive-disclosure policy for future model and harness generations.
+- Updated package validation to require the new references and maintenance document, validate relative Markdown links in skill resources, and release version `0.13.0`.
+
 ## 0.12.0 - 2026-08-06
 
 ### Changed
