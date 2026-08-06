@@ -1,67 +1,52 @@
 ---
 name: jhste-to-tickets
-description: Turn a defined plan, specification, or conversation into one or more GitHub issues with observable acceptance criteria and real dependency relationships. Use when the user asks to draft, split, organize, or publish established work as GitHub issues or tickets. Do not use for ordinary planning, local execution handoffs, unresolved product behavior, or work whose execution path still requires major investigation.
+description: Turn a defined plan, specification, or conversation into the smallest useful GitHub issue or issue graph with observable acceptance criteria and real dependencies. Use when the user asks to draft, split, organize, or publish established work as issues. Do not use for unresolved product behavior, root-cause investigation, local resume state, or ordinary planning.
 ---
 
 # JHSTE To Tickets
 
 ## Goal
 
-Create the smallest GitHub-native work graph whose ready issues can be claimed and completed independently without duplicating the same goal across empty parent-child layers.
+Create issue boundaries that represent coherent outcomes, ownership, and verification rather than templates, layers, or context-window size.
 
 ## Resolve context autonomously
 
-Identify the GitHub repository from the request or current remote. Read referenced issues, specifications, conversation context, repository guidance, glossary or ADRs, and enough relevant code and tests to understand current seams, compatibility constraints, and verification paths. Discover repository facts directly rather than asking the user.
+Identify the repository and read referenced issues, specifications, guidance, domain context, and enough relevant code and tests to understand current contracts and validation paths. Discover repository facts directly.
 
-Ask only for a missing user-owned decision that would materially change scope, issue boundaries, or real dependencies. If desired behavior is not settled, use `jhste-grill` or `jhste-to-spec` rather than encoding guesses. If the main uncertainty is the root cause of a failure, use `jhste-diagnosing-bugs` first. Use `jhste-handoff` when the requested artifact is resume state, ownership, verification, and an exact next action rather than an issue graph.
+Ask only for a user-owned decision that would materially change scope, issue boundaries, or real dependencies. Do not encode unsettled behavior or an unknown root cause as implementation tickets.
 
 ## Choose the smallest useful graph
 
-Create one issue when the work is one independently reviewable unit.
+Create one issue when the work is one independently reviewable outcome.
 
-Use a parent issue only when:
+Use a parent only when one already exists or when two or more execution issues share material goal, decisions, constraints, or coordination context. Do not create a parent whose only child repeats the same outcome.
 
-- the user supplied an existing parent;
-- two or more execution issues share material goal, decisions, constraints, or coordination context; or
-- the parent provides a useful stable outcome while children can progress independently.
+When multiple issues are justified, each execution issue must have:
 
-Do not create a parent whose only child repeats the same outcome. Do not split work merely to create parallelism or to fit a preferred template.
+- one coherent result owned without hidden coordination;
+- observable acceptance criteria;
+- an honest verification path; and
+- only the context needed to execute it.
 
-When multiple issues are justified, split implementation into tracer-bullet slices. Each execution issue must:
+Do not split by database, API, UI, documentation, test layer, worker count, or expected context size when none of those pieces delivers useful behavior alone. Keep directly related documentation and regression protection with the outcome that needs them.
 
-- deliver a narrow but complete behavior across the layers it needs;
-- be independently demonstrable or verifiable;
-- fit one fresh worker context;
-- state observable acceptance criteria and relevant validation; and
-- include only the shared context needed to execute it.
+Create preparatory work only when it removes a concrete blocker for a useful outcome. Keep generic cleanup with the work that benefits from it.
 
-Do not create separate database, API, UI, documentation, and test issues when none delivers useful behavior alone. Keep directly related documentation and regression protection with the slice that needs them.
+For a broad mechanical migration that cannot land as ordinary vertical slices, read [references/wide-migrations.md](references/wide-migrations.md).
 
-## Handle preparation and wide migrations honestly
+Add a dependency only when the blocked issue cannot start until the blocker completes. Preferred order and convenience are not dependencies. Unblocked open issues form the execution frontier.
 
-Create a preparatory issue only when a bounded refactor or compatibility step genuinely blocks a useful slice. State the exact constraint it removes. Keep generic cleanup inside the slice that needs it.
+## Draft or publish
 
-For a wide mechanical change that cannot land as vertical slices, use expand-migrate-contract:
+Draft by default. Publish only when the user asks to create, post, or publish issues; that request authorizes those GitHub writes, not unrelated repository changes.
 
-1. introduce a compatible new form;
-2. migrate bounded batches sized by blast radius; and
-3. remove the old form only after every caller has moved.
+Use native parent and blocked-by relationships when available. When they are unavailable, fall back automatically to explicit references in issue bodies and report the representation in the final result.
 
-When migration batches cannot be integrated or verified independently, do not describe them as standalone green slices. Give them one explicit shared integration target and add a final integrate-and-verify issue blocked by every batch.
+Follow established label policy or labels named by the user. Do not invent a workflow label.
 
-Add a dependency only when the blocked issue cannot start until the blocker completes. Convenience and preferred order are not dependencies. Open issues with no unresolved blockers form the execution frontier.
+## Issue shape
 
-## Draft versus publish
-
-Draft by default. Present the proposed issue or issue graph and dependency edges without writing to GitHub.
-
-Publish when the user explicitly asks to create, post, or publish the issues. That request authorizes those GitHub writes, not unrelated repository changes. Create blockers before blocked issues when identifiers are needed, use native parent and blocked-by relationships when available, and return the links plus the initial frontier.
-
-Follow the repository's existing label policy or labels named by the user. Do not invent or automatically apply a workflow label. When native relationships are unavailable, fall back automatically to explicit references in issue bodies and report that representation in the final result; do not stop merely to request permission for the fallback.
-
-## Issue shapes
-
-A single issue or execution issue should contain only material sections:
+Use only material sections:
 
 ```markdown
 ## Outcome
@@ -74,14 +59,12 @@ A single issue or execution issue should contain only material sections:
 
 ## Coordination
 - Parent: reference, or omitted
-- Blocked by: native relationship, explicit reference, or None
+- Blocked by: relationship, reference, or None
 - Integration target: only when shared integration is required
 ```
 
-A parent should contain the shared goal, success criteria, settled decisions, constraints, open blockers, and out-of-scope items. Do not copy local handoff state into every issue.
-
-Avoid speculative file paths, detailed implementation recipes, and code snippets that will go stale. Include a prototype-derived shape only when it records a settled decision more precisely than prose.
+A parent holds shared goal, success criteria, settled decisions, constraints, blockers, and out-of-scope items. Do not duplicate local handoff state or stale implementation recipes across issue bodies.
 
 ## Completion
 
-Before finishing, verify that every issue has a distinct outcome, every parent earns its existence, every preparatory issue removes a real blocker, every dependency prevents work from starting, fallback relationships remain understandable, labels follow established policy, and at least one frontier issue exists unless an external blocker prevents all work.
+Verify that every issue has a distinct outcome, every parent earns its existence, preparatory work removes a real blocker, dependencies prevent work from starting, and at least one frontier issue exists unless an external blocker prevents all work.
