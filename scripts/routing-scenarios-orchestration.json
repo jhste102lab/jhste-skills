@@ -32,6 +32,24 @@
       "rationale": "Decision-complete independent workstreams and a dependent verified wave provide concrete structural benefit."
     },
     {
+      "id": "orchestration-trigger-head-role",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "trigger",
+      "request": "You are the head: make the judgment calls yourself and give every investigation and execution step to subagents with detailed instructions.",
+      "expected_skill": "jhste-subagent-orchestration",
+      "write_policy": "local-only",
+      "rationale": "The user explicitly assigns the head role and requires all execution to run through workers."
+    },
+    {
+      "id": "orchestration-trigger-parallelize-across-agents",
+      "source_skill": "jhste-subagent-orchestration",
+      "kind": "trigger",
+      "request": "Parallelize these two independent workstreams across agents and integrate the verified results yourself.",
+      "expected_skill": "jhste-subagent-orchestration",
+      "write_policy": "local-only",
+      "rationale": "Explicit fan-out across agents with head-owned integration is requested."
+    },
+    {
       "id": "orchestration-non-linear-coding",
       "source_skill": "jhste-subagent-orchestration",
       "kind": "non-trigger",
@@ -56,7 +74,7 @@
       "request": "Implement Kubernetes workload orchestration for the approved deployment design.",
       "expected_skill": "jhste-coding",
       "write_policy": "local-only",
-      "rationale": "Orchestration is a domain concept here, not a request to coordinate ChatGPT workers."
+      "rationale": "Orchestration is a domain concept here, not a request to coordinate assistant workers."
     },
     {
       "id": "orchestration-non-finalizer",
