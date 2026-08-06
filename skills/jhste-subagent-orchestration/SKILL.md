@@ -1,6 +1,6 @@
 ---
 name: jhste-subagent-orchestration
-description: Coordinate low-retention worker agents under a decision-owning head through bounded investigation, implementation, or acceptance assignments, mutation leases, and head-verified evidence. Use whenever the user asks to delegate work to subagents or workers, to act as a head that assigns work to workers, to fan out or parallelize work across agents, or to obtain a separate-agent acceptance pass. Invoke implicitly only when real worker execution exists and decision-complete, independently verifiable workstreams or a genuinely independent check provide concrete structural benefit. Do not invoke implicitly for ordinary linear work already owned by another task skill, for unresolved user decisions, or for orchestration used as a domain term such as container or workflow orchestration. Compose task skills without replacing their contracts.
+description: Coordinate bounded worker agents under a decision-owning head for explicit delegation, independent parallel work, focused investigation or implementation, and a separate acceptance check when it adds real value. Use whenever the user asks for subagents, workers, a head-worker split, parallel agent fan-out, or a separate-agent check, and implicitly only when real worker execution exists and independently ownable work creates concrete benefit. Do not use for ordinary linear work already owned by another task skill, unresolved user decisions, or domain meanings such as container orchestration. The user and harness own model, provider, reasoning, concurrency, and isolation settings.
 ---
 
 # JHSTE Subagent Orchestration
@@ -9,22 +9,24 @@ description: Coordinate low-retention worker agents under a decision-owning head
 
 Coordinate bounded workers while the head retains canonical state, consequential judgment, ownership, integration, and final verification.
 
-Treat each worker as a low-retention leaf with one stage and one outcome. Use workers to widen evidence or execute separable work, not to outsource decisions the head must own.
+Treat each worker as the bounded owner of one outcome. Do not assume workers are disposable or persistent; reuse or replace them according to harness capability, context freshness, and the need for independent judgment.
 
-## Establish runtime and authority
+## Respect the harness boundary
 
-Confirm that a real worker mechanism is available. An explicit delegation request selects this skill even when the mechanism is unavailable; report the limitation instead of simulating workers or inventing results.
+Confirm that a real worker mechanism is available. An explicit delegation request still selects this skill when none exists; report the limitation instead of simulating workers or inventing results.
 
-Treat harness controls as authoritative for concurrency and actual permissions. Do not set a worker-count limit in this skill. Treat mutation ownership as a head-maintained lease, not a runtime lock, unless the harness provides real isolation.
+Treat model selection, provider selection, reasoning or effort level, concurrency limits, concrete agent configuration, and isolation mechanics as user- and harness-owned. Do not choose, recommend, or override them.
+
+Use harness-native shared context, structured output, artifacts, worker reuse, isolation, and completion notifications when available. Fall back to self-contained text assignments and compact text reports when they are unavailable.
 
 Keep these responsibilities in the head:
 
-- Spawn, assign, interrupt, replace, and retire workers.
+- Spawn, assign, interrupt, reuse, replace, and retire workers.
 - Resolve consequential product, scope, security, data, compatibility, and architecture decisions.
-- Maintain canonical state, dependencies, mutation leases, and live-activity ownership.
+- Maintain canonical state, dependencies, mutation ownership, and live-activity ownership.
 - Verify evidence, choose dispositions, integrate results, and decide completion.
 
-Use a star topology. Workers report only to the head. A worker must not hand off its assignment to another worker or invoke this orchestration skill. A worker that believes it needs workers of its own must report that need to the head and receive an explicit grant first, because unreported fan-out hides cost, ownership, and live activity from the head.
+Workers report outcomes to the head. A worker must not transfer its assignment, broaden its authority, or invoke this orchestration skill. It may request permission before spawning a worker of its own. When the harness supports peer messaging, the head may allow bounded factual exchange, but peer communication must not transfer ownership, settle consequential decisions, or hide additional work.
 
 ## Decide what to delegate
 
@@ -34,96 +36,85 @@ For implicit invocation, delegate only when the assignment is:
 - **Independently verifiable:** the head can check the return through code, a diff, tests, measurements, artifacts, or external state.
 - **Judgment-bounded:** consequential selection and integration remain with the head.
 
-Complexity alone is not a reason to delegate. Keep large-but-linear work in the owning task skill when workers would add only coordination cost. Dispatch within harness capacity and use the smallest set of independently ownable assignments that creates a concrete benefit.
+Complexity alone is not a reason to delegate. Keep large-but-linear work in the owning task skill when workers would add only repeated reading and coordination. Use the smallest set of independently ownable assignments that creates a concrete benefit.
 
-## Size the coordination to the work
+## Size coordination to the work
 
-Orchestration overhead is a real cost. Spend it in proportion to the work.
+- For one settled outcome, one owner, and a clear verification signal, dispatch one implementation worker. Do not manufacture investigation or acceptance stages.
+- A worker may investigate and implement in one assignment when a fix is already authorized, the correction policy is settled, the mutation boundary is narrow, the verification signal is clear, and no consequential product, architecture, security, or data decision remains. It must stop if the supported fix crosses that boundary.
+- Use a separate investigation worker when the implementation choice is not settled, the evidence search is broad, or investigation must remain read-only.
+- Use a separate acceptance worker only when the user requests one or when risk, integration surface, or weak verification makes head inspection insufficient. Do not add one merely because an implementer completed work, and do not duplicate an independent review already provided by the harness.
 
-- One settled decision, one owner, and a deterministic check: dispatch a single implementation worker with a fixed verification command. Do not manufacture extra stages.
-- Add a separate investigation worker when the implementation choice is not yet settled and the evidence needed is larger than the head should read directly.
-- Add a separate acceptance worker when the change is consequential, its implementer claims completion, or the head cannot verify it from the diff and checks alone.
-- Running investigation, implementation, and acceptance is a ceiling for consequential work, not a default sequence for every item.
+Use these stage labels:
 
-## Separate stage from task skill
+- `investigation`: gather evidence without changing production behavior.
+- `implementation`: execute a settled decision within a bounded mutation and external-write scope.
+- `investigation-and-implementation`: diagnose and correct within the narrow conditions above.
+- `acceptance`: independently inspect and verify; keep it read-only.
 
-Assign exactly one stage independently of the skill used to perform it:
+## Compose task skills without expanding authority
 
-- `investigation`: gather evidence without changing production behavior. Explicitly authorized disposable prototype artifacts may support the investigation.
-- `implementation`: execute a settled decision within a fixed mutation and external-write boundary.
-- `acceptance`: independently inspect and verify; keep it read-only by default.
+Name one primary task skill when a matching installed skill materially improves execution. Supporting skills are optional. The assignment narrows every invoked skill; no skill may expand mutation, delegation, destructive-action, decision, or external-write authority.
 
-Name one primary task skill when a matching installed skill materially improves execution. Supporting skills are optional. The assignment narrows every invoked skill and no skill may expand mutation, delegation, decision, or external-write authority.
+Use `jhste-diagnosing-bugs` for uncertain root-cause work, `jhste-coding` for defined implementation, and `jhste-prototype` only for an explicitly bounded executable experiment. Use `jhste-pr-review` only for an identifiable PR review. Do not use `jhste-implementation-finalizer` as a read-only acceptance worker. Resolve user-owned decisions in the head, using `jhste-grill` before dispatch when needed.
 
-Use `jhste-diagnosing-bugs` for uncertain root-cause investigation and `jhste-coding` for defined implementation. Use `jhste-prototype` only for a bounded executable experiment, normally inside investigation with explicit artifact authority. Use `jhste-pr-review` only for an identifiable PR review. Do not use `jhste-implementation-finalizer` as a read-only acceptance worker; it belongs to implementation/finalization work that is authorized to correct gaps. Resolve user-owned decisions in the head, using `jhste-grill` before dispatch when needed.
-
-Never merge stages inside one worker. Verify investigation evidence before selecting an implementation. After a material correction, use a fresh acceptance worker when the reviewed surface changed enough to invalidate the prior pass.
+Reuse an existing worker for clarification, missing evidence, or a small correction inside the same outcome and ownership boundary when its context remains current. Use a fresh worker when independence matters, ownership changes, the source state changed materially, or the prior context is stale or biased by a failed approach. After a material correction, use a fresh acceptance worker when the earlier acceptance basis is no longer valid.
 
 ## Maintain canonical state
 
-Treat every worker return as an unverified claim. Check the relevant source, diff, test output, artifact, or external state before acting on it. Record each needed return as `accepted`, `rejected`, `merged`, or `superseded` with a short rationale before opening the next dependent wave.
+Treat every worker return as an unverified claim. Check the relevant source, diff, test output, artifact, or external state before acting on it. Record each required return as `accepted`, `rejected`, `merged`, or `superseded` with a short rationale before opening dependent work.
 
-When verification evidence can become stale, record the source state it covered, such as the workspace, commit, tree state, or task-owned diff. Re-run affected checks after later integration changes invalidate that basis.
+When verification can become stale, record the source state it covered, such as a commit, workspace, tree state, task-owned diff, configuration, or external target. Re-run affected checks after later integration invalidates that basis.
 
-Keep a written ledger only once the work outgrows a single wave: an assignment depends on another's result, more than one mutation lease is live, or a return must survive into a later wave. For one wave of independent assignments the packets and their verified returns are the state; do not write a separate ledger. When a ledger is warranted, cover the objective, user authority, settled decisions, repository state, assignment graph, leases, live activity, dispositions, and the next-wave gate.
+Keep a written ledger only when work outgrows one independent wave: an assignment depends on another result, more than one mutation owner is live, or a return must survive into later work. For one wave, the assignment packets and verified returns are enough. Read [references/control-state.md](references/control-state.md) only for dependent waves, ownership transfer, live activity, or replacement recovery.
 
-Read [references/control-state.md](references/control-state.md) when a wave depends on another, a lease must transfer, or a replacement worker is needed.
+## Dispatch compact assignments
 
-## Dispatch self-contained assignments
+Place verified facts shared by several workers in the harness's shared-context mechanism when available. Keep each worker packet limited to task-specific differences. Without shared context, make every packet self-contained.
 
-Write every assignment in English as a standalone contract. Include verified context and settled decisions rather than forwarding conversation history. State exact paths, symbols, resources, and expected observations when known.
-
-Do not dispatch an assignment that requires rediscovering requirements, choosing among consequential alternatives, inferring permission, or coordinating with another worker.
-
-Use this assignment shape and omit fields that do not affect execution:
+Use this compact shape and omit anything that does not affect execution:
 
 ```text
-Assignment ID, stage (investigation | implementation | acceptance), optional primary task skill
-Repository, workspace, and exact starting state
-Single outcome this worker must produce
-Verified context and settled decisions needed here
-Decision boundary: what the worker may decide; what it must return unresolved
-Read scope
-Mutation lease: none, or the exact files, workspace, host, or resource
-Allowed external writes: none, or exact targets and actions
-Forbidden scope
-Execution authority: perform this assignment directly; do not hand off to another
-  worker or invoke this orchestration skill; report to the head before spawning any
-  worker of your own. No invoked skill grants authority beyond this packet.
-Ordered steps where sequence matters, stop conditions, done criteria
-Required verification and its expected result
-Required report shape (below)
+Assignment ID and stage; optional primary task skill
+Single outcome
+Task-specific verified context; starting state only when material
+Scope and authority: read scope, mutation ownership, allowed external writes,
+  forbidden scope, and any permitted peer fact exchange
+Done signal and required verification
+Stop conditions
+Required return shape
 ```
 
-Require this return shape:
+Add dependencies, exact source snapshot, lease-transfer rules, or live-activity handling only for work that needs them. Do not dispatch an assignment that requires rediscovering requirements, choosing among consequential alternatives, inferring permission, or coordinating ownership with another worker.
+
+Always stop on a material starting-state mismatch, ownership conflict, missing consequential decision, unavailable required evidence source, need for broader authority, or verification that cannot measure the claimed outcome.
+
+Prefer artifact-first reports when the harness preserves worker output:
 
 ```text
 Status: completed | blocked | failed
-Result and evidence: result first, then paths, lines, diff, measurements, artifacts,
-  logs, or external state
+Result: outcome first
+Evidence: compact citations plus an artifact or stable reference for full detail
 Changed resources: every modified path or external resource, or None
 Verification: command or inspection, observed result, exit status, evidence basis
 Deviation or blocker, or None
-Live activity and lease: running jobs and their identifiers, resources still held,
-  and whether the head may safely release the lease
+Live activity and ownership: active jobs or resources and whether release is safe
 ```
 
-Always require a stop on a material starting-state mismatch, ownership conflict, missing consequential decision, unavailable required evidence source, need for broader authority, or verification that cannot measure the claimed outcome.
-
-Read [references/worker-contract.md](references/worker-contract.md) for clarification and amendment handling or detailed stage constraints.
+Read [references/worker-contract.md](references/worker-contract.md) for detailed amendment, reuse, and stage constraints.
 
 ## Operate in verified waves
 
-Dispatch the current independent wave within harness capacity, then synthesize its required returns before opening a dependent wave. Prefer safe completion notifications over continuous polling for long-running commands or remote jobs.
+Dispatch independent work within harness capacity, then synthesize the required returns before opening dependent work. Prefer completion notifications over continuous polling.
 
-A worker may enter `waiting_for_head` only for an essential clarification and only when the harness can resume that worker. Reply with a self-contained amendment. If resumption is unavailable, or the outcome, stage, ownership domain, external authority, or consequential decision changes, terminate the assignment and send a fresh contract to a new worker.
+Use `waiting_for_head` only for an essential clarification when the same worker can safely resume. Send a self-contained amendment. If the outcome, stage, ownership domain, external authority, or consequential decision changes, issue a new assignment; reuse the same worker only when independence is not required and its context remains valid.
 
-Do not resume a terminal worker. Give replacements canonical state, not the prior worker conversation. When independent replacements repeatedly fail the same unchanged packet, treat the packet as defective: recheck its context, decision boundary, ownership, and verification oracle, then rewrite, narrow, or reclaim it instead of spawning another copy.
+When repeated workers fail the same unchanged packet, treat the packet as defective. Recheck its context, decision boundary, ownership, and verification oracle, then rewrite, narrow, or reclaim it instead of blindly retrying.
 
-Do not release or reassign a mutation lease while its worker owns live activity. Require the worker to stop it or transfer a stable identifier, notification path, intervention limit, termination method, and verification requirement to the head.
+Do not release or reassign mutation ownership while its worker owns live activity. Require completion, termination, or a transfer with a stable identifier, notification path, intervention limit, termination method, and release check.
 
 ## Complete in the head
 
-Finish only when material requirements have verified status, required returns have dispositions, the integrated result and relevant checks are current, no worker mutation lease remains, every live activity is completed, terminated, or explicitly owned by the head, and authorized external state matches the intended target.
+Finish only when material requirements have verified status, required returns have final dispositions, the integrated result and relevant checks are current, no worker mutation ownership remains, live activity is completed, terminated, or explicitly head-owned, and authorized external state matches the intended target.
 
 Report the verified outcome, checks performed, material limitations, and remaining risks. Never substitute a worker completion claim for head verification.
