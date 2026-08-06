@@ -2,41 +2,50 @@
 
 [한국어](README.md) | ENG
 
-A personal engineering skill set maintained around GPT-5.6's outcome-first, lean-prompt guidance. Each skill works independently and may be selected implicitly when the user's intent matches its narrow trigger.
+A personal engineering skill set designed to remain independent of any model or execution harness. The skills do not select models or reasoning levels. They respect the user's harness configuration and focus on routing work correctly, minimizing unnecessary questions, and carrying authorized work through to a verifiable result.
 
-## Skills
+## Decide what to build
 
+- **[`jhste-grill`](skills/jhste-grill/SKILL.md)** — asks all currently answerable consequential decisions in compact rounds while recording settled language and qualifying ADRs.
+- **[`jhste-domain-modeling`](skills/jhste-domain-modeling/SKILL.md)** — clarifies project-specific terms, concept boundaries, and relationships while updating the owning glossary and qualifying ADRs.
+- **[`jhste-to-spec`](skills/jhste-to-spec/SKILL.md)** — turns an already discussed or defined change into a reviewable behavioral specification without restarting the interview.
+
+## Build and fix
+
+- **[`jhste-prototype`](skills/jhste-prototype/SKILL.md)** — tests one important design question before production implementation with the smallest useful runnable experiment.
 - **[`jhste-coding`](skills/jhste-coding/SKILL.md)** — implements sufficiently understood features, bug fixes, refactors, and ordinary continuation from a handoff's exact resume point with a small change and relevant validation.
-- **[`jhste-prototype`](skills/jhste-prototype/SKILL.md)** — tests one important design question before production implementation with the smallest disposable runnable evidence.
-- **[`jhste-subagent-orchestration`](skills/jhste-subagent-orchestration/SKILL.md)** — coordinates bounded investigation, implementation, and acceptance workers under a decision-owning head when delegation is explicit or has concrete structural benefit.
-- **[`jhste-diagnosing-bugs`](skills/jhste-diagnosing-bugs/SKILL.md)** — diagnoses difficult bugs and performance regressions whose cause or correct fix is uncertain through reproduction, hypotheses, and measurement.
-- **[`jhste-grill`](skills/jhste-grill/SKILL.md)** — resolves consequential decision branches one question at a time while continuously maintaining settled domain context and ADRs.
-- **[`jhste-domain-modeling`](skills/jhste-domain-modeling/SKILL.md)** — clarifies domain terms, boundaries, and relationships, immediately recording settled glossary entries and qualifying ADRs.
-- **[`jhste-to-spec`](skills/jhste-to-spec/SKILL.md)** — synthesizes an already discussed or defined change into a reviewable engineering specification grounded in repository evidence.
-- **[`jhste-to-tickets`](skills/jhste-to-tickets/SKILL.md)** — splits defined work into GitHub parent/sub-issues with native dependencies.
-- **[`jhste-handoff`](skills/jhste-handoff/SKILL.md)** — creates or updates executor-neutral implementation handoffs with ownership, phase progress, verification, blockers, and an exact resume point.
-- **[`jhste-implementation-finalizer`](skills/jhste-implementation-finalizer/SKILL.md)** — independently audits and verifies claimed-complete or submitted implementation work, fixes gaps, finishes it, and completes already-authorized PR updates.
+- **[`jhste-diagnosing-bugs`](skills/jhste-diagnosing-bugs/SKILL.md)** — diagnoses uncertain bugs and performance regressions through a useful signal, hypotheses, runtime evidence, and measurement.
+
+## Divide and continue work
+
+- **[`jhste-subagent-orchestration`](skills/jhste-subagent-orchestration/SKILL.md)** — coordinates only the investigation, implementation, and independent checks that create real value under a decision-owning head.
+- **[`jhste-to-tickets`](skills/jhste-to-tickets/SKILL.md)** — turns defined work into the smallest useful GitHub issue or an issue graph with real dependencies.
+- **[`jhste-handoff`](skills/jhste-handoff/SKILL.md)** — creates either a single portable handoff for another session, agent, or harness, or a durable handoff for shared long-running state.
+
+## Review and finish
+
+- **[`jhste-implementation-finalizer`](skills/jhste-implementation-finalizer/SKILL.md)** — independently audits claimed-complete or submitted implementation work, fixes in-scope gaps, verifies it, and finishes it.
 - **[`jhste-pr-review`](skills/jhste-pr-review/SKILL.md)** — reviews explicitly requested PRs against the actual diff and posts only high-confidence actionable findings.
 - **[`jhste-review-followup`](skills/jhste-review-followup/SKILL.md)** — validates existing PR feedback and pushes only justified fixes to the existing PR branch.
 
-Most skills do not require or automatically call one another. `jhste-subagent-orchestration` composes existing task skills into bounded worker assignments only when real worker execution exists and delegation is explicit or provides concrete structural benefit; it does not copy their contracts or expand their authority. A sufficiently clear implementation belongs to `jhste-coding`; only an important uncertainty about what to build that needs runnable evidence belongs to `jhste-prototype`; an unexplained failure in existing behavior belongs to `jhste-diagnosing-bugs`; and a user-owned policy decision belongs to `jhste-grill`. Once a prototype direction is selected, `jhste-coding` implements it for production and `jhste-to-spec` records it only when a specification is requested.
+## Core principles
 
-## Behavioral boundaries
+- Discover repository, documentation, and tool facts directly instead of asking the user.
+- Involve the user only for product policy, compatibility, security or data policy, external writes, and other decisions or permissions only they can supply. Batch independent questions into one round.
+- Model, provider, reasoning or effort, worker count, concurrency, and actual isolation belong to the user and harness. Skills do not choose or override them.
+- Use subagents only when separation saves more than repeated reading and coordination cost. Reuse a current worker for missing evidence or a small correction in the same scope; use a fresh worker when independent judgment matters.
+- Do not maximize tests. Run the narrowest honest check that can distinguish success from failure, and do not impose mandatory TDD on every task.
+- Requests for `jhste-grill` and `jhste-domain-modeling` include maintaining settled local glossary entries and qualifying ADRs. Commits, pushes, issues, PRs, releases, and other external writes remain limited to the authority in the request.
 
-- `jhste-coding` applies to sufficiently understood code changes and ordinary continuation from an existing handoff or partial implementation. Executable experiments that test an important design assumption before production belong to `jhste-prototype`.
-- `jhste-prototype` answers one concrete question about a state model, business rule, data shape, API surface, interaction flow, or UI structure with disposable runnable evidence. It does not take over ordinary implementation, diagnosis of an existing failure, static mockups, open-ended ideation, or production-ready delivery.
-- `jhste-subagent-orchestration` applies whenever the user explicitly requests subagents, delegation, a head-and-worker split, parallel fan-out across agents, or a separate-agent acceptance pass. Implicit use requires decision-complete, independently verifiable work whose consequential judgment remains with the head. It does not take over ordinary linear work already owned by another task skill, unresolved user decisions, or domain meanings such as Kubernetes orchestration. Coordination weight is sized to the work: a single settled change gets one implementation worker, and the three-stage split is a ceiling for consequential work rather than a default. The harness owns worker limits and actual permission or isolation enforcement.
-- `jhste-diagnosing-bugs` applies when an observed failure needs a reproduction signal, competing hypotheses, instrumentation, or measurement. Testing a design that has not been built yet belongs to `jhste-prototype`.
-- `jhste-grill` applies when the user wants an interview or decision stress test. It does not let a prototype guess a user-owned choice; once a decision is settled, representability or ergonomics that need executable evidence can move to `jhste-prototype`.
-- `jhste-domain-modeling` owns focused domain-language clarification and the corresponding glossary and qualifying ADR updates, not incidental code naming or generic architecture discussion.
-- `jhste-to-spec` defines settled behavior, contracts, validation, and scope. It does not freeze a guess into a specification when an unresolved design assumption should first be tested.
-- `jhste-to-tickets` drafts or publishes a GitHub issue graph. It does not duplicate local handoff state across issue bodies.
-- `jhste-handoff` runs only when the user asks to create, update, refresh, or phase a handoff document. It does not own implementation merely because an existing handoff must be read.
-- `jhste-implementation-finalizer` applies to production implementation explicitly submitted for independent audit, verification, correction, or final completion. It does not promote disposable prototype code or serve as a read-only acceptance worker; a selected direction is implemented properly with `jhste-coding`.
-- `jhste-pr-review` applies only to an explicit review-only request and does not modify the branch.
-- `jhste-review-followup` applies only when existing PR feedback defines the scope. It is not the general completion workflow for a worker result or partially implemented branch.
+## Main boundaries
 
-This package does not include a mandatory TDD workflow, Wayfinder, or a separate architecture-audit skill. Orchestration is narrowly limited to real worker coordination and does not replace ordinary single-agent delivery.
+Use `jhste-coding` when the implementation direction is clear, `jhste-prototype` when a not-yet-built design question needs runnable evidence, and `jhste-diagnosing-bugs` when an existing failure has an uncertain cause. User-owned decisions belong to `jhste-grill`; changes to the domain model itself belong to `jhste-domain-modeling`.
+
+`jhste-subagent-orchestration` composes task skills into bounded assignments without copying or expanding their contracts. It does not manufacture multiple stages for one linear task or add an acceptance worker merely because implementation completed.
+
+`jhste-to-spec` records the behavior contract, `jhste-to-tickets` records executable issue boundaries and dependencies, and `jhste-handoff` records the current state another executor needs. They reference authoritative artifacts instead of duplicating them.
+
+This package does not include a mandatory TDD workflow, Wayfinder, or a separate architecture-audit skill.
 
 ## Install user-wide from npm
 
@@ -48,7 +57,7 @@ mkdir -p "$HOME/.agents/skills"
 cp -R "$(npm root -g)/jhste-skills/skills/." "$HOME/.agents/skills/"
 ```
 
-Run the copy command again after updating the npm package. Restart Codex if the updated skills do not appear.
+Run the copy command again after updating the npm package. If another agent expects a different global skills directory, copy the twelve directories under `skills/` there.
 
 ## Install user-wide from the repository
 
@@ -57,8 +66,6 @@ mkdir -p "$HOME/.agents/skills"
 cp -R skills/. "$HOME/.agents/skills/"
 ```
 
-If another agent expects a different global skills directory, copy the twelve directories under `skills/` there. This package does not require project-local skill copies.
-
 ## Development and validation
 
 ```sh
@@ -66,6 +73,6 @@ npm test
 npm pack --dry-run
 ```
 
-`npm test` checks package, metadata, and documentation consistency plus 90 static routing scenarios across ten covered skills. The fixture does not invoke a model or measure live automatic-trigger accuracy.
+`npm test` checks package, metadata, and documentation consistency plus 90 static routing contracts. The fixture does not invoke a model or measure live automatic-trigger accuracy.
 
 External sources and license attribution are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). When a change containing a new package version is merged to `main`, or a `v*.*.*` release tag is pushed, GitHub Actions runs release checks and publishes the version through npm trusted publishing if it is not already present.

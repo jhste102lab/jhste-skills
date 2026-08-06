@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.0 - 2026-08-06
+
+### Changed
+- Reworked `jhste-subagent-orchestration` around harness-owned runtime settings and proportional coordination: the skill no longer assumes disposable workers, permits current-context worker reuse, allows bounded investigation-and-implementation assignments, avoids acceptance workers that merely duplicate completion or harness review, prefers shared context and artifact-first returns, and keeps peer communication factual and head-authorized.
+- Updated the orchestration worker contract and control-state references for compact packets, reusable worker identities, artifact-backed evidence, factual peer exchange, non-duplicative acceptance, and assignment-defect recovery.
+- Changed `jhste-grill` from one-question-at-a-time interviewing to dependency-aware decision rounds that batch the full currently answerable frontier while continuing to maintain settled glossary entries and qualifying ADRs without separate confirmation.
+- Refined `jhste-prototype` to choose evidence by its intended judge, conditionally prefer a self-contained domain-language HTML experiment for non-developer logic review, prefer existing product surfaces for UI variants, and continue requiring a clean production reimplementation rather than direct promotion.
+- Strengthened `jhste-diagnosing-bugs` with autonomous evidence gathering, symptom-specific signal quality, quantitative treatment of intermittent failures, direct runtime inspection when available, and explicit limits on root-cause certainty when evidence cannot distinguish alternatives.
+- Expanded `jhste-domain-modeling` with bounded-context ownership, dependency-aware concept rounds, canonical terms and discouraged synonyms, exclusion of generic programming vocabulary, and compact variable-length fallback ADRs while preserving automatic local glossary and ADR updates.
+- Made `jhste-to-spec` explicitly synthesis-first and non-interviewing: it now completes useful drafts with visible uncertainty and asks only when a requested decision-complete contract is impossible without a user-owned decision.
+- Reformed `jhste-to-tickets` so one reviewable unit becomes one issue, a parent must justify itself with shared context across multiple execution issues, native relationship fallbacks happen automatically, and wide migrations that cannot stay independently green receive an explicit final integration issue.
+- Split `jhste-handoff` behavior into a portable single-file default for context that must travel and a durable repository-maintained form only for shared evolving state; added minimal source inspection, sensitive-data redaction, authoritative references, suggested skills, and one exact next action.
+- Rewrote both READMEs in simpler language, grouped the twelve skills by user goal, removed GPT-5.6-specific positioning, and documented autonomy, harness ownership, proportional delegation, and minimal honest validation.
+- Re-reviewed and updated Matt Pocock attribution, including `jhste-handoff` and the latest prototype and grilling changes.
+
 ## 0.11.1 - 2026-08-06
 
 ### Removed
