@@ -1,49 +1,67 @@
 ---
 name: jhste-to-tickets
-description: Turn a defined plan, specification, or conversation into GitHub parent and sub-issues with acceptance criteria and native dependency relationships. Use when the user asks to draft, split, organize, or publish established work as GitHub issues or tickets. Do not use for ordinary planning, local execution handoffs, unresolved product behavior, or work whose execution path still requires major investigation.
+description: Turn a defined plan, specification, or conversation into one or more GitHub issues with observable acceptance criteria and real dependency relationships. Use when the user asks to draft, split, organize, or publish established work as GitHub issues or tickets. Do not use for ordinary planning, local execution handoffs, unresolved product behavior, or work whose execution path still requires major investigation.
 ---
 
 # JHSTE To Tickets
 
 ## Goal
 
-Create a GitHub-native work graph whose ready issues can be claimed and completed independently by fresh workers.
+Create the smallest GitHub-native work graph whose ready issues can be claimed and completed independently without duplicating the same goal across empty parent-child layers.
 
-## Resolve context
+## Resolve context autonomously
 
-Identify the GitHub repository from the request or current remote. Read any referenced issue, specification, conversation context, repository guidance, glossary or ADRs, and enough relevant code and tests to understand current seams, compatibility constraints, and verification paths. Ask only for a missing decision that would materially change scope, issue boundaries, or dependencies.
+Identify the GitHub repository from the request or current remote. Read referenced issues, specifications, conversation context, repository guidance, glossary or ADRs, and enough relevant code and tests to understand current seams, compatibility constraints, and verification paths. Discover repository facts directly rather than asking the user.
 
-If the desired behavior is not yet settled, hand the request to `jhste-grill` or `jhste-to-spec` rather than encoding guesses as tickets. If the main uncertainty is the root cause of a failure, use `jhste-diagnosing-bugs` before planning implementation work. When the requested artifact is a durable local record of ownership, phase progress, verification, blockers, and an exact resume point, use `jhste-handoff` instead of duplicating that state across issues.
+Ask only for a missing user-owned decision that would materially change scope, issue boundaries, or real dependencies. If desired behavior is not settled, use `jhste-grill` or `jhste-to-spec` rather than encoding guesses. If the main uncertainty is the root cause of a failure, use `jhste-diagnosing-bugs` first. Use `jhste-handoff` when the requested artifact is resume state, ownership, verification, and an exact next action rather than an issue graph.
 
-## Draft the work graph
+## Choose the smallest useful graph
 
-Use a parent issue to hold the shared goal, success criteria, decisions, constraints, open questions, and out-of-scope items. Reuse an existing parent when supplied. Otherwise draft one.
+Create one issue when the work is one independently reviewable unit.
 
-Split implementation into tracer-bullet issues. Each issue must:
+Use a parent issue only when:
+
+- the user supplied an existing parent;
+- two or more execution issues share material goal, decisions, constraints, or coordination context; or
+- the parent provides a useful stable outcome while children can progress independently.
+
+Do not create a parent whose only child repeats the same outcome. Do not split work merely to create parallelism or to fit a preferred template.
+
+When multiple issues are justified, split implementation into tracer-bullet slices. Each execution issue must:
 
 - deliver a narrow but complete behavior across the layers it needs;
 - be independently demonstrable or verifiable;
 - fit one fresh worker context;
-- state observable acceptance criteria and relevant validation;
-- preserve only the shared context needed to execute it.
+- state observable acceptance criteria and relevant validation; and
+- include only the shared context needed to execute it.
 
-Do not create separate database, API, UI, and test issues when none delivers behavior alone. Do not split work that is already safe and reviewable as one issue.
+Do not create separate database, API, UI, documentation, and test issues when none delivers useful behavior alone. Keep directly related documentation and regression protection with the slice that needs them.
 
-Create a separate preparatory issue only when a bounded refactor or compatibility step is required before a useful vertical slice can land green. State the constraint it removes and keep generic cleanup in the slice that needs it. For a wide mechanical change that cannot land green as vertical slices, use expand-migrate-contract: introduce the compatible form, migrate bounded batches, then remove the old form.
+## Handle preparation and wide migrations honestly
 
-Add a dependency only when the blocked issue cannot start until the blocker completes. Convenience or preferred order is not a dependency. The open, unblocked issues form the execution frontier.
+Create a preparatory issue only when a bounded refactor or compatibility step genuinely blocks a useful slice. State the exact constraint it removes. Keep generic cleanup inside the slice that needs it.
+
+For a wide mechanical change that cannot land as vertical slices, use expand-migrate-contract:
+
+1. introduce a compatible new form;
+2. migrate bounded batches sized by blast radius; and
+3. remove the old form only after every caller has moved.
+
+When migration batches cannot be integrated or verified independently, do not describe them as standalone green slices. Give them one explicit shared integration target and add a final integrate-and-verify issue blocked by every batch.
+
+Add a dependency only when the blocked issue cannot start until the blocker completes. Convenience and preferred order are not dependencies. Open issues with no unresolved blockers form the execution frontier.
 
 ## Draft versus publish
 
-Draft by default. Present the parent, sub-issues, and dependency edges without writing to GitHub.
+Draft by default. Present the proposed issue or issue graph and dependency edges without writing to GitHub.
 
-Publish when the user explicitly asks to create, post, or publish the issues. That request authorizes these GitHub writes; it does not authorize unrelated repository changes. Create the parent and sub-issues, use GitHub's native parent and blocked-by relationships, then return their links and the initial frontier.
+Publish when the user explicitly asks to create, post, or publish the issues. That request authorizes those GitHub writes, not unrelated repository changes. Create blockers before blocked issues when identifiers are needed, use native parent and blocked-by relationships when available, and return the links plus the initial frontier.
 
-Follow the repository's existing label policy or labels named by the user. Do not invent or automatically apply `ready-for-agent` or another workflow label. When native relationships are unavailable, report the limitation before falling back to references in issue bodies.
+Follow the repository's existing label policy or labels named by the user. Do not invent or automatically apply a workflow label. When native relationships are unavailable, fall back automatically to explicit references in issue bodies and report that representation in the final result; do not stop merely to request permission for the fallback.
 
-## Issue shape
+## Issue shapes
 
-Each sub-issue should contain:
+A single issue or execution issue should contain only material sections:
 
 ```markdown
 ## Outcome
@@ -55,12 +73,15 @@ Each sub-issue should contain:
 ## Context
 
 ## Coordination
-- Blocked by: native GitHub relationship, or None
-- Integration point: branch, contract, or artifact when known
+- Parent: reference, or omitted
+- Blocked by: native relationship, explicit reference, or None
+- Integration target: only when shared integration is required
 ```
 
-Avoid speculative file paths, implementation recipes, and code snippets that will go stale. Include a prototype-derived shape only when it records a decision more precisely than prose.
+A parent should contain the shared goal, success criteria, settled decisions, constraints, open blockers, and out-of-scope items. Do not copy local handoff state into every issue.
+
+Avoid speculative file paths, detailed implementation recipes, and code snippets that will go stale. Include a prototype-derived shape only when it records a settled decision more precisely than prose.
 
 ## Completion
 
-Before finishing, verify that every issue has a clear outcome, every preparatory issue is necessary, every dependency is a real blocker, labels follow an established policy, and at least one frontier issue exists unless an explicit external blocker prevents all work.
+Before finishing, verify that every issue has a distinct outcome, every parent earns its existence, every preparatory issue removes a real blocker, every dependency prevents work from starting, fallback relationships remain understandable, labels follow established policy, and at least one frontier issue exists unless an external blocker prevents all work.
