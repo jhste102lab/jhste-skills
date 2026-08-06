@@ -33,7 +33,9 @@ jobs:
         run: npm --version
 
       - name: Run release checks
-        run: npm test
+        run: |
+          npm test
+          npm pack --dry-run
 
       - name: Check whether this version is unpublished
         id: version
