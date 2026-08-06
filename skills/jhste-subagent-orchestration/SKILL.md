@@ -45,8 +45,6 @@ Orchestration overhead is a real cost. Spend it in proportion to the work.
 - Add a separate acceptance worker when the change is consequential, its implementer claims completion, or the head cannot verify it from the diff and checks alone.
 - Running investigation, implementation, and acceptance is a ceiling for consequential work, not a default sequence for every item.
 
-When the harness exposes worker types or capability tiers, assign the least capable type that can satisfy the stage: read-only evidence gathering and mechanical edits rarely need the strongest worker, while consequential implementation usually does. Read the harness's own worker inventory at dispatch time; do not name specific models or fix a routing table here.
-
 ## Separate stage from task skill
 
 Assign exactly one stage independently of the skill used to perform it:
