@@ -1,46 +1,42 @@
 ---
 name: jhste-implementation-finalizer
-description: Independently audit, correct, verify, and finish production implementation that is claimed complete, submitted for independent acceptance, or explicitly requested for finalization and, when applicable, complete already-authorized updates to the same pull request. Use only when the user asks to independently audit, verify, finalize, or finish existing implementation work. Do not use for ordinary continuation, initial PR review, review-feedback follow-up alone, CI-log diagnosis, merging, or promoting disposable prototype code; a selected prototype direction belongs to jhste-coding.
+description: Independently audit, correct, verify, and finish existing production implementation that is claimed complete or explicitly submitted for finalization. Use when the user asks to verify, finalize, or finish implemented work, including already-authorized updates to the same pull request. Do not use for ordinary continuation, initial PR review, review-feedback follow-up alone, CI diagnosis, merging, or promoting prototype code.
 ---
 
 # JHSTE Implementation Finalizer
 
 ## Goal
 
-Treat completion claims as unverified input. Determine whether the requested production outcome is complete, correct, integrated, and ready to publish, then directly fix in-scope gaps instead of stopping at review comments.
+Treat completion claims as unverified input. Determine whether the requested production outcome is complete, correct, integrated, and ready for the authorized next action, then directly fix in-scope gaps.
 
-## Route the right work
+## Establish the real contract
 
-Use `jhste-coding` for implementation from scratch, ordinary continuation from a handoff's exact resume point, and proper production implementation of a direction selected through `jhste-prototype`. Prototype scaffolding, shortcuts, losing variants, switchers, missing hardening, and intentionally limited validation are not a completion claim to finalize or code to promote. Use this skill only when existing production work requires an independent acceptance audit, verification of a completion claim, or final correction and completion. Use `jhste-diagnosing-bugs` when uncertain root cause or measurement is the primary work. Use `jhste-pr-review` for review-only findings and `jhste-review-followup` when existing review comments define the scope.
+Resolve the material requirements from current user instructions and authoritative repository evidence: guidance, specifications, ADRs, domain context, issues, interfaces, handoffs, tests, and caller-visible behavior. Inspect the complete task-owned diff, current source state, unrelated changes, parallel ownership, and shared integration points.
 
-Do not merge, enable auto-merge, resolve review threads, or make unrelated issue changes unless the user explicitly requests those actions.
-
-## Establish the contract
-
-Reconcile evidence in this order: current user instructions, repository guidance, current specs and ADRs, domain context and interfaces, related issues and acceptance criteria, handoff documents, tests and caller-visible behavior, then the worker report. Verify the handoff itself; correct it when stronger evidence or the implementation disproves it.
-
-Identify the repository, base, working branch or workspace, starting commit, complete task-owned diff, unrelated changes, parallel ownership, and shared integration points. An uncommitted tree is not a blocker when ownership and isolation are clear.
-
-For nontrivial work, map each material requirement to implementation and verification evidence in one compact table in the handoff or final report. Skip ceremony for a tiny change, but never mark a requirement complete from self-report alone.
+Do not require a fixed evidence order or a mandatory requirement table. Use a compact requirement-to-evidence map only when the work is complex enough that status would otherwise be ambiguous.
 
 ## Audit and finish
 
-Inspect the complete task-owned diff and relevant surrounding code, callers, tests, contracts, configuration, and documentation. Check for missing behavior, edge cases, partial integration, compatibility regressions, stale assumptions, weak tests, temporary artifacts, unnecessary abstraction, relevant performance or usability regressions, and accidental absorption of another workstream.
+Inspect the implementation and directly related integration surface for missing behavior, partial wiring, compatibility regressions, weak or misleading verification, temporary artifacts, unnecessary complexity, and accidental overlap with another workstream.
 
-Make one consolidated correction pass for related findings. Directly fix in-scope omissions, defects, integration gaps, regression coverage, stale handoff or documentation, temporary code, unnecessary complexity, and relevant performance or usability problems. Do not invent unresolved product policy, redesign another workstream's owned contract, or make unsettled destructive, migration, authentication, or authorization decisions.
+Make a consolidated correction pass for related findings. Fix only gaps required by the established outcome. Do not invent product policy, take ownership from another workstream, or make unsettled destructive, migration, authentication, authorization, security, or data decisions.
 
-When a material decision remains unresolved after inspecting available evidence, record a compact blocker with the decision, consequence, evidence, options, recommendation, safe work completed, verification, and exact resume point.
+When a consequential decision remains unresolved after inspecting available evidence, complete safe work and record one compact blocker: the decision, consequence, evidence, viable options, recommendation, and exact resume point.
 
-## Verify and synchronize
+## Verify the final state
 
-Run focused verification in useful batches: changed-behavior tests first, then applicable regressions, type checks, lint, build, packaging, manual scenarios, and integration checks. Re-run affected checks after corrections. Record exact commands, results, skipped checks, and reasons; never claim an unrun check passed.
+For each material requirement, use the strongest available signal that distinguishes success from failure. Expand verification only when risk, integration surface, or an observed failure justifies it. Re-run evidence invalidated by corrections or integration changes, and never claim that an unrun check passed.
 
-Update an existing task handoff with actual implementation locations, requirement status, verification evidence, completed and remaining work, ownership, risks, and the exact next entry point or final completion state. Do not create a new handoff merely because this skill ran unless the user also requested one.
+Synchronize an existing task handoff when it is part of the authoritative state. Do not create a new handoff merely because finalization ran.
 
 ## Publish when authorized
 
-When the user's request already authorizes commit, push, or updating an existing pull request, inspect the final diff, keep unrelated changes out, commit intentionally, push the correct head branch, and update that same pull request's title and body to match the actual scope, validation, limitations, and risks. Never create a duplicate pull request when an existing one was named.
+When the request already authorizes commit, push, or updating an existing pull request, keep unrelated changes out, publish to the correct existing branch, and update that pull request to match the actual scope, verification, limitations, and risks.
+
+Do not merge, enable auto-merge, resolve review threads, create a duplicate pull request, or alter unrelated issues unless explicitly requested.
 
 ## Completion
 
-Finish only when every material requirement has a traceable status, the complete task-owned diff has been inspected, in-scope gaps are corrected, relevant verification passed or has an honest limitation, parallel ownership remains intact, the handoff reflects reality when present, and authorized publication is complete.
+Finish only when every material requirement has an honest status, the task-owned diff and integration surface have been inspected, in-scope gaps are corrected, current evidence supports the result or exposes a clear limitation, ownership remains intact, and authorized publication is complete.
+
+Report the verified outcome, corrections made, evidence used, publication status, and any remaining blocker or risk.
