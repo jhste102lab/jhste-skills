@@ -1,7 +1,7 @@
 interface:
   display_name: "JHSTE Subagent Orchestration"
   short_description: "Coordinate bounded workers under head-owned decisions"
-  default_prompt: "Use $jhste-subagent-orchestration to coordinate bounded worker assignments under head-owned decisions, isolated mutation leases, and head verification."
+  default_prompt: "Use $jhste-subagent-orchestration to coordinate only independently ownable work under head-owned decisions, harness-owned runtime settings, bounded mutation ownership, and head verification."
 
 policy:
   allow_implicit_invocation: true
