@@ -24,7 +24,7 @@ List only verified facts, settled decisions, paths, symbols, and identifiers nee
 - Mutation lease: none | exact files, workspace, host, or resource
 - Allowed external writes: none | exact targets and actions
 - Forbidden scope:
-Execution authority: Perform this assignment directly. Do not spawn, delegate, hand off, coordinate with another worker, or invoke `jhste-subagent-orchestration`.
+Execution authority: Perform this assignment directly. Do not hand off this assignment to another worker, coordinate with another worker, or invoke `jhste-subagent-orchestration`. Report to the head and obtain an explicit grant before spawning any worker of your own.
 Authority ceiling: This assignment may narrow any invoked skill. No skill grants additional decision, mutation, delegation, destructive-action, or external-write authority.
 ## Procedure, hard stops, and completion
 - Ordered steps, only where sequence matters:

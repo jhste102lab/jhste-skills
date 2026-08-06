@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.11.0 - 2026-08-06
+
+### Changed
+- Removed the vendor-specific assistant name from the `jhste-subagent-orchestration` trigger description so the skill matches delegation requests on any harness, and added the head-and-worker split and parallel fan-out phrasings that previously failed to select it.
+- Shortened the implicit-invocation exclusion list to ordinary linear work owned by another task skill, unresolved user decisions, and domain uses of the word orchestration, so the description no longer biases against legitimate selection.
+- Sized coordination to the work: a settled single-owner change takes one implementation worker with a fixed check, and the investigation, implementation, and acceptance split became a ceiling for consequential work instead of a default sequence.
+- Added harness-neutral worker-tier guidance that assigns the least capable worker type able to satisfy a stage, without naming models or fixing a routing table.
+- Made the written head ledger conditional on dependent waves, multiple live leases, or returns that must survive a wave, instead of requiring it for every delegation.
+- Inlined the assignment and report shapes into `SKILL.md` and demoted `references/worker-contract.md` and `references/control-state.md` to on-demand detail, removing two mandatory head reads before the first dispatch.
+- Replaced the absolute worker re-delegation ban with a report-first grant, so nested fan-out stays visible to the head instead of being silently impossible or silently unbounded.
+- Expanded static routing coverage from 88 to 90 scenarios with head-role and parallel-fan-out triggers.
+
 ## 0.10.0 - 2026-08-03
 
 ### Added

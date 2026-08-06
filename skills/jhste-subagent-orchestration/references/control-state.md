@@ -31,7 +31,7 @@ Next wave gate
 - Required evidence, decisions, dispositions, and available leases
 ```
 
-Track only state that prevents conflicting work, stale evidence, or false completion.
+Track only state that prevents conflicting work, stale evidence, or false completion. Skip the written ledger entirely for a single wave of independent assignments; there the packets and their verified returns are the state.
 
 ## Lifecycle and dispositions
 
