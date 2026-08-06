@@ -18,15 +18,33 @@ const expectedSkills = [
 ];
 
 const requiredSkillFiles = new Map([
+  ["jhste-domain-modeling", ["references/formats.md"]],
+  ["jhste-handoff", ["references/portable.md", "references/durable.md"]],
+  ["jhste-prototype", ["references/logic.md", "references/ui.md"]],
   [
     "jhste-subagent-orchestration",
     ["references/worker-contract.md", "references/control-state.md"],
   ],
+  ["jhste-to-tickets", ["references/wide-migrations.md"]],
 ]);
 
 const read = (relativePath) =>
   fs.readFileSync(path.join(root, relativePath), "utf8");
 const exists = (relativePath) => fs.existsSync(path.join(root, relativePath));
+
+const checkRelativeLinks = (documentPath) => {
+  const body = read(documentPath);
+  for (const match of body.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
+    const href = match[1];
+    if (/^(https?:|mailto:|#)/.test(href)) continue;
+    const target = path.normalize(
+      path.join(path.dirname(documentPath), href.split("#")[0]),
+    );
+    if (!exists(target)) {
+      throw new Error(`${documentPath} has broken link: ${href}`);
+    }
+  }
+};
 
 const pkg = JSON.parse(read("package.json"));
 const actualSkills = fs
@@ -44,14 +62,17 @@ if (JSON.stringify(actualSkills) !== JSON.stringify(expectedSkills)) {
 for (const skill of expectedSkills) {
   const skillPath = `skills/${skill}/SKILL.md`;
   const metadataPath = `skills/${skill}/agents/openai.yaml`;
+  const supportingPaths = (requiredSkillFiles.get(skill) ?? []).map(
+    (relativePath) => `skills/${skill}/${relativePath}`,
+  );
 
   if (!exists(skillPath) || !exists(metadataPath)) {
     throw new Error(`${skill} is missing SKILL.md or agents/openai.yaml`);
   }
 
-  for (const relativePath of requiredSkillFiles.get(skill) ?? []) {
-    if (!exists(`skills/${skill}/${relativePath}`)) {
-      throw new Error(`${skill} is missing ${relativePath}`);
+  for (const supportingPath of supportingPaths) {
+    if (!exists(supportingPath)) {
+      throw new Error(`${skill} is missing ${supportingPath}`);
     }
   }
 
@@ -66,6 +87,10 @@ for (const skill of expectedSkills) {
     !frontmatterLines[1].startsWith("description: ")
   ) {
     throw new Error(`${skill} frontmatter must contain only name and description`);
+  }
+
+  for (const documentPath of [skillPath, ...supportingPaths]) {
+    checkRelativeLinks(documentPath);
   }
 
   const metadata = read(metadataPath);
@@ -85,6 +110,7 @@ for (const requiredPath of [
   "skills",
   "README.md",
   "README.en.md",
+  "MAINTENANCE.md",
   "CHANGELOG.md",
   "LICENSE",
   "THIRD_PARTY_NOTICES.md",
@@ -102,13 +128,7 @@ for (const readme of ["README.md", "README.en.md"]) {
       throw new Error(`${readme} does not link ${skill} to its SKILL.md`);
     }
   }
-
-  for (const match of body.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)) {
-    const href = match[1];
-    if (!/^(https?:|mailto:|#)/.test(href) && !exists(href.split("#")[0])) {
-      throw new Error(`${readme} has broken link: ${href}`);
-    }
-  }
+  checkRelativeLinks(readme);
 }
 
 if (!read("CHANGELOG.md").includes(`## ${pkg.version} -`)) {
