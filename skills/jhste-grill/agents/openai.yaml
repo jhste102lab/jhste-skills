@@ -1,7 +1,7 @@
 interface:
   display_name: "JHSTE Grill"
-  short_description: "Resolve decisions and maintain context documents"
-  default_prompt: "Use $jhste-grill to interview me one consequential decision at a time, updating settled context and qualifying ADRs as we go."
+  short_description: "Resolve decisions in rounds and maintain context docs"
+  default_prompt: "Use $jhste-grill to resolve every currently answerable consequential decision in compact rounds while updating settled context and qualifying ADRs."
 
 policy:
   allow_implicit_invocation: true
