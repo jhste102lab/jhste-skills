@@ -1,7 +1,7 @@
 interface:
   display_name: "JHSTE PR Review"
-  short_description: "Review PR diffs and post actionable findings"
-  default_prompt: "Use $jhste-pr-review to review this pull request against the actual diff, post only high-confidence actionable inline comments, and briefly summarize the findings."
+  short_description: "Discover PR defects, then post verified findings"
+  default_prompt: "Use $jhste-pr-review to inspect this pull request broadly, validate each candidate against the actual diff and execution path, and post only verified material findings."
 
 policy:
   allow_implicit_invocation: true
