@@ -1,41 +1,34 @@
 ---
 name: jhste-coding
-description: Implement features, sufficiently understood bug fixes, refactors, and ordinary continuation from a handoff's exact resume point with a small contract-preserving code change and relevant validation. Use when the requested outcome requires modifying production repository code and the path to a correction or next implementation step is reasonably clear. For a disposable runnable experiment that answers an important design question before production, use jhste-prototype; for uncertain root-cause work, use jhste-diagnosing-bugs; for an independent completion audit, use jhste-implementation-finalizer. Do not use for read-only analysis, planning, interviewing, issue creation, domain documentation, or review-only work.
+description: Implement clear, in-scope production code changes while preserving caller-visible contracts and repository conventions. Use for features, known fixes, refactors, and resuming an exact implementation step. Use jhste-diagnosing-bugs when the root cause is uncertain and jhste-prototype when a not-yet-built design question needs runnable evidence. Do not use for planning, review-only work, or an independent completion audit.
 ---
 
 # JHSTE Coding
 
 ## Goal
 
-Deliver the requested behavior with the smallest clear change that fits the repository.
+Deliver the requested production behavior with the smallest clear change that fits the repository.
 
-## Success criteria
+## Define the contract
 
-- The requested behavior is implemented without unrelated scope.
-- Existing caller-visible contracts remain intact unless the request changes them.
-- Relevant non-destructive validation passes, or the unverified surface and reason are reported.
-- Uncertain, partial, and failed states are not silently treated as success.
+Before editing, identify the outcome, material non-goals, caller-visible behavior, important failure states, and the module that owns the change. Keep this brief for a small change and deepen it only when a contract or boundary is affected.
 
-## Frame the change
+Discover repository and environment facts directly. Make reversible, repository-consistent implementation choices without routine confirmation. Use `jhste-prototype` when the unresolved question is what should be built, and `jhste-diagnosing-bugs` when the cause of existing behavior is still materially uncertain.
 
-Before editing, identify the requested outcome, material non-goals, caller-visible contract, and important failure states. Locate the module that owns the behavior and the seam through which callers or tests observe it. For a trivial change this can be a brief check; expand the analysis only when the change crosses boundaries or alters a contract.
+## Implement
 
-If an important uncertainty is about what should be built rather than how to implement an approved direction, and the uncertainty is best resolved through disposable executable evidence, use `jhste-prototype` instead of embedding exploration in production code. Once a direction is selected, treat the prototype as evidence: implement the production behavior cleanly here rather than promoting prototype scaffolding, shortcuts, variants, or test gaps.
+Inspect the affected code, local guidance, and nearby patterns. Keep behavior that changes for the same reason together. Preserve public return shapes, nullability, errors, side effects, ordering, compatibility, authorization, and sensitive-data boundaries unless the request changes them.
 
-## Working contract
+Add an abstraction only when the current change demonstrates real variation, repeated change, or a clearer side-effect boundary. Avoid speculative extension points, pass-through wrappers, broad cleanup, and prototype scaffolding in production code.
 
-Inspect the affected code, repository guidance, and nearby patterns before editing. Keep behavior that changes for the same reason together. Reuse established boundaries and abstractions when they fit.
+Continue through in-scope local edits without pausing. Stop only when progress requires a consequential user-owned decision, broader authority, an external or destructive action not already authorized, unresolved ownership conflict, or root-cause work that should move to diagnosis.
 
-Introduce a new abstraction when the current change demonstrates real variation, repeated change, or a concrete side-effect boundary that becomes clearer by doing so. Prefer a bounded preparatory refactor only when it directly enables the requested behavior and can be reviewed and validated independently. Avoid pass-through wrappers, broad configuration objects, and extension points justified only by possible future use.
+## Verify
 
-Treat public return shapes, nullability, errors, side effects, ordering, and documented behavior as contracts. Validate external input at its entry boundary. Keep credentials, sessions, authorization data, and sensitive payloads out of logs and responses.
+Use the strongest available repository-native signal that directly distinguishes the requested behavior from failure. Expand validation only when the change's risk, integration surface, or an observed failure justifies it; do not run a fixed test, type, lint, build, and smoke sequence by habit.
 
-For implementation requests, make in-scope local edits and run the narrowest useful validation without pausing for routine confirmation. Continue from an existing handoff or partial implementation with this skill when the exact next step is clear and the user asks to proceed, implement, or resume; prior work alone is not evidence that an independent completion audit is wanted. Stop before an external write, destructive action, or material expansion of scope unless the user authorized it. When the root cause remains materially uncertain, avoid widening speculative edits and hand the investigation to `jhste-diagnosing-bugs`. When the user asks to independently audit, verify, correct, and finalize a completion claim or submitted implementation, use `jhste-implementation-finalizer`.
+Add or update a test only at a seam that represents the real caller-visible behavior. Inspect the final task-owned diff for scope creep, temporary instrumentation, stale compatibility paths, and prototype-only artifacts. Never imply that an unrun check passed.
 
-## Validation
+## Completion
 
-Choose checks that exercise the changed behavior: targeted tests first, then applicable type, lint, build, or smoke checks. Add tests at a seam that represents the caller-visible behavior rather than creating an artificial seam to claim coverage. Re-read the final diff for scope creep, stale compatibility paths, temporary instrumentation, and prototype-only artifacts. Do not imply that a check ran when it did not.
-
-## Final response
-
-Report the outcome, validation performed, and any material caveat or remaining blocker. Omit generic background and unchanged details.
+Report the implemented outcome, the evidence used to verify it, and any material limitation or blocker. Omit generic background and unchanged details.
