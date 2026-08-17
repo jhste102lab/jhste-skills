@@ -21,6 +21,8 @@ Prefer the shortest safe signal that observes the reported symptom and distingui
 
 The signal should support the same comparison before and after a fix. For intermittent or performance problems, record bounded counts, rates, or measurements rather than treating one passing run as proof.
 
+Redact API keys, tokens, passwords, cookies, session identifiers, connection strings, signed URLs, and equivalent credentials before surfacing commands, logs, traces, captures, or other artifacts. Show command shape with environment-variable placeholders instead of secret values, and quote only the signal-bearing evidence needed for the diagnosis. If redaction removes evidence required to distinguish credible explanations, state that limit and request the smallest safer substitute or user-owned observation.
+
 When no runnable signal is safe or available, continue from the strongest captured artifact. Do not call an explanation a confirmed root cause when credible alternatives cannot be distinguished; state the evidence limit and what is missing.
 
 ## Reduce uncertainty

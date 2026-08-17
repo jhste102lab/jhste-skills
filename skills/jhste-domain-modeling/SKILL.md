@@ -1,6 +1,6 @@
 ---
 name: jhste-domain-modeling
-description: Clarify or change project-specific domain terms, identities, boundaries, and relationships while maintaining the owning glossary and qualifying ADRs. Use for conflicting or overloaded language, glossary work, domain concepts, or significant domain decisions. Merely following an existing glossary is ordinary work, not domain modeling.
+description: Clarify or change project-specific domain terms, identities, boundaries, and relationships while maintaining the owning glossary and qualifying ADRs. Use for conflicting or overloaded language, domain concepts, writing or editing the owning glossary or CONTEXT.md, or recording or editing an ADR about a significant domain decision. Merely following an existing glossary is ordinary work, not domain modeling.
 ---
 
 # JHSTE Domain Modeling

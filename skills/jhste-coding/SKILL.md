@@ -1,6 +1,6 @@
 ---
 name: jhste-coding
-description: Implement clear, in-scope production code changes while preserving caller-visible contracts and repository conventions. Use for features, known fixes, refactors, and resuming an exact implementation step. Use jhste-diagnosing-bugs when the root cause is uncertain and jhste-prototype when a not-yet-built design question needs runnable evidence. Do not use for planning, review-only work, or an independent completion audit.
+description: Implement clear, in-scope production code changes while preserving caller-visible contracts and repository conventions. Use for features, known fixes, refactors, resuming an exact implementation step, and resolving an in-progress merge or rebase conflict when the intended behavior can be recovered from repository history. Use jhste-diagnosing-bugs when the root cause is uncertain and jhste-prototype when a not-yet-built design question needs runnable evidence. Do not use for planning, review-only work, or an independent completion audit.
 ---
 
 # JHSTE Coding
@@ -20,6 +20,8 @@ Discover repository and environment facts directly. Make reversible, repository-
 Inspect the affected code, local guidance, and nearby patterns. Keep behavior that changes for the same reason together. Preserve public return shapes, nullability, errors, side effects, ordering, compatibility, authorization, and sensitive-data boundaries unless the request changes them.
 
 Add an abstraction only when the current change demonstrates real variation, repeated change, or a clearer side-effect boundary. Avoid speculative extension points, pass-through wrappers, broad cleanup, and prototype scaffolding in production code.
+
+For an in-progress merge or rebase conflict, read [references/merge-conflicts.md](references/merge-conflicts.md) before resolving the conflicted state.
 
 Continue through in-scope local edits without pausing. Stop only when progress requires a consequential user-owned decision, broader authority, an external or destructive action not already authorized, unresolved ownership conflict, or root-cause work that should move to diagnosis.
 

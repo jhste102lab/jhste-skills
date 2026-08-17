@@ -32,6 +32,7 @@ Do not add or retain:
 - generic reminders to think, re-read, or verify;
 - examples that merely restate instructions;
 - duplicated routing guidance in descriptions, bodies, README files, and references;
+- repository facts that are cheap to rediscover from package scripts, configuration, layout, or tool help; treat documentation that restates them as a cache that must earn its maintenance cost;
 - work splitting based only on file count, task length, or context-window size; or
 - speculative rules for failures that have not been observed.
 
@@ -56,7 +57,9 @@ Use token, time, and request data when the harness exposes it. Replace a sentine
 
 ## Change discipline
 
-Prefer one behavioral hypothesis per change. Update the skill, README files, metadata, validation, changelog, package version, and attribution together when they are affected.
+Prefer one behavioral hypothesis per change. Apply a no-op test to every new instruction: if removing it would not change behavior on a representative sentinel with current models, leave it out.
+
+Update the skill, README files, metadata, validation, changelog, package version, and attribution together when they are affected.
 
 Run `npm test` and `npm pack --dry-run` before release. The main-branch GitHub Actions workflow is the publication gate and verifies the exact npm registry version.
 

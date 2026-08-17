@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE To Questionnaire"
+  short_description: "Draft focused questions for external knowledge owners"
+  default_prompt: "Use $jhste-to-questionnaire to turn these missing stakeholder facts or decisions into a focused questionnaire."
+
+policy:
+  allow_implicit_invocation: true
