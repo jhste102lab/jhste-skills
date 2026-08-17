@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.14.0 - 2026-08-17
+
+### Added
+- Added `jhste-to-questionnaire` for turning facts or decisions the current user cannot supply into focused questions for the customer, stakeholder, domain expert, security/legal/compliance team, vendor, or other respondent who actually owns the missing knowledge.
+- Added an on-demand merge/rebase conflict reference under `jhste-coding` that recovers both sides' intent from repository history, preserves compatible intent, avoids inventing unrelated behavior, and permits abort/restart when the current operation is unsafe or based on stale assumptions.
+
+### Changed
+- Added explicit credential redaction to `jhste-diagnosing-bugs` for commands, logs, traces, captures, signed URLs, connection strings, cookies, session identifiers, and other surfaced diagnostic evidence.
+- Expanded `jhste-domain-modeling` trigger metadata to recognize direct owning-glossary/`CONTEXT.md` edits and ADR edits about significant domain decisions.
+- Extended the deletion-first maintenance policy with environment-as-source-of-truth guidance and a no-op test for instructions that do not materially change current-model behavior.
+- Expanded static routing coverage from 90 to 100 scenarios, updated package validation and both READMEs for thirteen skills, re-reviewed Matt Pocock's current upstream, and released package version `0.14.0`.
+
 ## 0.13.0 - 2026-08-06
 
 ### Changed
