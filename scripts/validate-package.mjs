@@ -13,11 +13,13 @@ const expectedSkills = [
   "jhste-prototype",
   "jhste-review-followup",
   "jhste-subagent-orchestration",
+  "jhste-to-questionnaire",
   "jhste-to-spec",
   "jhste-to-tickets",
 ];
 
 const requiredSkillFiles = new Map([
+  ["jhste-coding", ["references/merge-conflicts.md"]],
   ["jhste-domain-modeling", ["references/formats.md"]],
   ["jhste-handoff", ["references/portable.md", "references/durable.md"]],
   ["jhste-prototype", ["references/logic.md", "references/ui.md"]],
