@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.1 - 2026-09-03
+
+### Changed
+- Updated `jhste-subagent-orchestration` to keep safe head-owned work moving while workers are pending when the harness allows it, waiting only at real dependency barriers.
+- Updated `jhste-coding` to prefer targeted edits over rewriting otherwise unchanged files when behavior is equivalent.
+- Synchronized both READMEs, recorded the Anthropic Claude Fable 5.1 prompting guidance reviewed for these behaviors, and released package version `0.14.1`.
+
 ## 0.14.0 - 2026-08-17
 
 ### Added
