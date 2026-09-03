@@ -22,6 +22,8 @@ An explicit delegation request still selects this skill. If no real worker mecha
 
 Delegate only when the outcome is decision-complete enough to assign, independently verifiable, and separable without hidden coordination. Complexity alone is not a reason to fan out. Repeated reading, duplicated setup, and integration cost count against delegation.
 
+When the harness permits the head to continue while workers are pending, continue safe head-owned work that does not depend on those results. Wait only at a real dependency barrier.
+
 ## Respect the harness boundary
 
 Treat model selection, provider selection, reasoning or effort, worker count, concurrency, concrete agent configuration, isolation, and scheduling as user- and harness-owned. Do not choose, recommend, or override them.

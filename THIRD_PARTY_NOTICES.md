@@ -94,3 +94,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Anthropic Claude Fable 5.1 prompting guidance
+
+The 0.14.1 maintenance pass reviewed Anthropic's public prompting guidance for Claude Fable 5.1 and adapted two model-agnostic behaviors into the existing JHSTE contracts:
+
+- when the harness allows the head to keep working while delegated workers are pending, continue safe head-owned work that does not depend on those results and wait only at a real dependency barrier;
+- when behavior is equivalent, prefer a targeted edit over rewriting otherwise unchanged files.
+
+Guidance reviewed on 2026-09-03:
+
+- https://platform.claude.com/docs/ko/build-with-claude/prompt-engineering/prompting-claude-fable-5-1
+
+No guide text is copied. Model-specific effort, search-trigger, conversation-history, thinking-display, and API-message guidance remains outside these harness-neutral skills.

@@ -16,12 +16,12 @@ Core `SKILL.md` files contain the task contract and important boundaries. Rare f
 ## Build and fix
 
 - **[`jhste-prototype`](skills/jhste-prototype/SKILL.md)** — tests one design question with the smallest runnable experiment and loads logic or UI detail only when relevant.
-- **[`jhste-coding`](skills/jhste-coding/SKILL.md)** — implements clear features, known fixes, refactors, exact resume steps, and in-progress merge or rebase conflict resolution while preserving repository contracts.
+- **[`jhste-coding`](skills/jhste-coding/SKILL.md)** — implements clear features, known fixes, refactors, exact resume steps, and in-progress merge or rebase conflict resolution while preserving repository contracts, and prefers targeted edits over rewriting otherwise unchanged files when behavior is equivalent.
 - **[`jhste-diagnosing-bugs`](skills/jhste-diagnosing-bugs/SKILL.md)** — diagnoses uncertain failures and performance regressions through symptom-specific signals, competing explanations, runtime evidence, and measurement while redacting secrets from surfaced diagnostic evidence.
 
 ## Divide and continue work
 
-- **[`jhste-subagent-orchestration`](skills/jhste-subagent-orchestration/SKILL.md)** — chooses the lightest useful structure among direct work, one owner, parallel owners, and dynamic verified waves.
+- **[`jhste-subagent-orchestration`](skills/jhste-subagent-orchestration/SKILL.md)** — chooses the lightest useful structure among direct work, one owner, parallel owners, and dynamic verified waves, and keeps independent head-owned work moving while workers are pending when the harness permits it.
 - **[`jhste-to-tickets`](skills/jhste-to-tickets/SKILL.md)** — turns defined work into one useful GitHub issue or an issue graph with real dependencies.
 - **[`jhste-handoff`](skills/jhste-handoff/SKILL.md)** — creates a portable transfer for another executor or a durable record for shared evolving state.
 

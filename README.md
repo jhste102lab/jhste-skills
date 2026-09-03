@@ -16,12 +16,12 @@
 ## 직접 만들고 고치기
 
 - **[`jhste-prototype`](skills/jhste-prototype/SKILL.md)** — production 구현 전에 하나의 설계 질문을 가장 작은 실행 가능한 실험으로 검증하고, 필요한 logic 또는 UI 지침만 추가로 읽습니다.
-- **[`jhste-coding`](skills/jhste-coding/SKILL.md)** — 충분히 이해된 기능, 알려진 수정, 리팩터링, 정확한 재개 지점, 진행 중인 merge/rebase conflict를 저장소 계약에 맞게 처리합니다.
+- **[`jhste-coding`](skills/jhste-coding/SKILL.md)** — 충분히 이해된 기능, 알려진 수정, 리팩터링, 정확한 재개 지점, 진행 중인 merge/rebase conflict를 저장소 계약에 맞게 처리하며, 동작이 같다면 변경되지 않은 파일 전체를 다시 쓰기보다 필요한 부분만 편집합니다.
 - **[`jhste-diagnosing-bugs`](skills/jhste-diagnosing-bugs/SKILL.md)** — 원인이 불명확한 장애와 성능 저하를 증상별 신호, 경쟁 설명, runtime 증거, 측정으로 진단하며 노출되는 진단 자료의 secret을 가립니다.
 
 ## 일을 나누고 이어가기
 
-- **[`jhste-subagent-orchestration`](skills/jhste-subagent-orchestration/SKILL.md)** — 직접 수행, 단일 소유, 병렬 소유, 동적 wave 가운데 작업에 맞는 가장 가벼운 구조로 워커를 조정합니다.
+- **[`jhste-subagent-orchestration`](skills/jhste-subagent-orchestration/SKILL.md)** — 직접 수행, 단일 소유, 병렬 소유, 동적 wave 가운데 작업에 맞는 가장 가벼운 구조로 워커를 조정하고, 하네스가 허용하면 워커 결과와 독립적인 head 작업은 기다리지 않고 계속합니다.
 - **[`jhste-to-tickets`](skills/jhste-to-tickets/SKILL.md)** — 정의된 작업을 하나의 유용한 GitHub issue 또는 실제 dependency가 있는 issue graph로 나눕니다.
 - **[`jhste-handoff`](skills/jhste-handoff/SKILL.md)** — 다른 실행자로 넘기는 portable handoff 또는 여러 소유자가 유지하는 durable handoff를 만듭니다.
 

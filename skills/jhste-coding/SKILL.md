@@ -19,6 +19,8 @@ Discover repository and environment facts directly. Make reversible, repository-
 
 Inspect the affected code, local guidance, and nearby patterns. Keep behavior that changes for the same reason together. Preserve public return shapes, nullability, errors, side effects, ordering, compatibility, authorization, and sensitive-data boundaries unless the request changes them.
 
+When behavior is equivalent, prefer targeted edits over rewriting otherwise unchanged files.
+
 Add an abstraction only when the current change demonstrates real variation, repeated change, or a clearer side-effect boundary. Avoid speculative extension points, pass-through wrappers, broad cleanup, and prototype scaffolding in production code.
 
 For an in-progress merge or rebase conflict, read [references/merge-conflicts.md](references/merge-conflicts.md) before resolving the conflicted state.
