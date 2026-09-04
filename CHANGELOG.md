@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.2 - 2026-09-05
+
+### Changed
+- Updated `jhste-to-tickets` to draft the issue graph with visible uncertainty and ask a user-owned question alongside the draft instead of before it.
+- Updated `jhste-prototype` to resolve an ambiguous question or evidence surface from the surrounding code and record that assumption when the user is unavailable.
+- Re-reviewed Matt Pocock's upstream at `3cca18b` with no adopted changes, recorded the OpenAI GPT-6 Astra prompting guidance reviewed for these behaviors, synchronized both READMEs, and released package version `0.14.2`.
+
 ## 0.14.1 - 2026-09-03
 
 ### Changed

@@ -13,7 +13,7 @@ Create issue boundaries that represent coherent outcomes, ownership, and verific
 
 Identify the repository and read referenced issues, specifications, guidance, domain context, and enough relevant code and tests to understand current contracts and validation paths. Discover repository facts directly.
 
-Ask only for a user-owned decision that would materially change scope, issue boundaries, or real dependencies. Do not encode unsettled behavior or an unknown root cause as implementation tickets.
+Ask only for a user-owned decision that would materially change scope, issue boundaries, or real dependencies. Draft the rest of the graph with that uncertainty visible and ask alongside the draft. Do not encode unsettled behavior or an unknown root cause as implementation tickets.
 
 ## Choose the smallest useful graph
 
