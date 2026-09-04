@@ -13,6 +13,8 @@ Include only material sections:
 
 ## Settled decisions
 
+## Approaches tried and set aside
+
 ## Authoritative references
 
 ## Changed or owned resources

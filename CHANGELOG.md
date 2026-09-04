@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.3 - 2026-09-05
+
+### Changed
+- Updated `jhste-coding` to report a pre-existing bug or unrelated problem noticed during the work as a follow-up instead of fixing it, unless the requested behavior cannot work without that fix.
+- Added an `Approaches tried and set aside` section to the portable handoff so the next executor does not repeat abandoned approaches.
+- Re-reviewed the Anthropic Claude Fable 5.1 guidance and general Claude prompting best practices, synchronized both READMEs, and released package version `0.14.3`.
+
 ## 0.14.2 - 2026-09-05
 
 ### Changed
