@@ -17,6 +17,8 @@ State the question, why it matters, what observation would support or falsify th
 
 Do not use a prototype to manufacture certainty around an open-ended, trivial, reversible, or user-owned choice.
 
+When the question or its evidence surface is ambiguous and the user is unavailable, choose the interpretation that matches the surrounding code and state that assumption in the recorded answer.
+
 ## Choose the evidence surface
 
 Use the smallest surface that exposes the answer clearly:
