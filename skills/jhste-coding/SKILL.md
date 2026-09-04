@@ -23,6 +23,8 @@ When behavior is equivalent, prefer targeted edits over rewriting otherwise unch
 
 Add an abstraction only when the current change demonstrates real variation, repeated change, or a clearer side-effect boundary. Avoid speculative extension points, pass-through wrappers, broad cleanup, and prototype scaffolding in production code.
 
+Report a pre-existing bug, performance concern, or unrelated problem noticed during the work as a follow-up in the completion report instead of fixing it, unless the requested behavior cannot work without that fix.
+
 For an in-progress merge or rebase conflict, read [references/merge-conflicts.md](references/merge-conflicts.md) before resolving the conflicted state.
 
 Continue through in-scope local edits without pausing. Stop only when progress requires a consequential user-owned decision, broader authority, an external or destructive action not already authorized, unresolved ownership conflict, or root-cause work that should move to diagnosis.

@@ -104,11 +104,17 @@ The 0.14.1 maintenance pass reviewed Anthropic's public prompting guidance for C
 - when the harness allows the head to keep working while delegated workers are pending, continue safe head-owned work that does not depend on those results and wait only at a real dependency barrier;
 - when behavior is equivalent, prefer a targeted edit over rewriting otherwise unchanged files.
 
-Guidance reviewed on 2026-09-03:
+The 0.14.3 maintenance pass re-reviewed the Claude Fable 5.1 guidance together with the general Claude prompting best practices and adapted two more behaviors:
 
-- https://platform.claude.com/docs/ko/build-with-claude/prompt-engineering/prompting-claude-fable-5-1
+- `jhste-coding` reports a pre-existing bug or unrelated problem noticed during the work as a follow-up instead of fixing it, unless the requested behavior cannot work without that fix;
+- the portable handoff records approaches tried and set aside, mirroring what a compaction summary must preserve so the next executor does not repeat them.
 
-No guide text is copied. Model-specific effort, search-trigger, conversation-history, thinking-display, and API-message guidance remains outside these harness-neutral skills.
+Guidance reviewed on 2026-09-03 and 2026-09-05:
+
+- https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1
+- https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
+
+No guide text is copied. Model-specific effort, search-trigger, conversation-history, thinking-display, progress-update, formatting, and API-message guidance remains outside these harness-neutral skills.
 
 ## OpenAI GPT-6 Astra prompting guidance
 
