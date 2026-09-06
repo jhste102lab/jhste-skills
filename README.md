@@ -16,7 +16,7 @@
 ## 직접 만들고 고치기
 
 - **[`jhste-prototype`](skills/jhste-prototype/SKILL.md)** — production 구현 전에 하나의 설계 질문을 가장 작은 실행 가능한 실험으로 검증하고, 필요한 logic 또는 UI 지침만 추가로 읽으며, 질문이 모호하고 사용자가 없으면 주변 코드에 맞는 해석을 택하고 그 가정을 기록합니다.
-- **[`jhste-coding`](skills/jhste-coding/SKILL.md)** — 충분히 이해된 기능, 알려진 수정, 리팩터링, 정확한 재개 지점, 진행 중인 merge/rebase conflict를 저장소 계약에 맞게 처리하며, 동작이 같다면 변경되지 않은 파일 전체를 다시 쓰기보다 필요한 부분만 편집하고, 작업 중 발견한 무관한 문제는 고치지 않고 후속 과제로 보고합니다.
+- **[`jhste-coding`](skills/jhste-coding/SKILL.md)** — 충분히 이해된 기능, 알려진 수정, 리팩터링, 정확한 재개 지점, 진행 중인 merge/rebase conflict를 저장소 계약에 맞게 처리하며, 동작이 같다면 변경되지 않은 파일 전체를 다시 쓰기보다 필요한 부분만 편집하고, 작업 중 발견한 무관한 문제는 고치지 않고 후속 과제로 보고하며, 완료 보고 전 자신이 만든 변경에서 불필요하거나 과하게 복잡한 부분을 걷어냅니다.
 - **[`jhste-diagnosing-bugs`](skills/jhste-diagnosing-bugs/SKILL.md)** — 원인이 불명확한 장애와 성능 저하를 증상별 신호, 경쟁 설명, runtime 증거, 측정으로 진단하며 노출되는 진단 자료의 secret을 가립니다.
 
 ## 일을 나누고 이어가기

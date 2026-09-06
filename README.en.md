@@ -16,7 +16,7 @@ Core `SKILL.md` files contain the task contract and important boundaries. Rare f
 ## Build and fix
 
 - **[`jhste-prototype`](skills/jhste-prototype/SKILL.md)** — tests one design question with the smallest runnable experiment, loads logic or UI detail only when relevant, and resolves an ambiguous question from the surrounding code with a recorded assumption when the user is unavailable.
-- **[`jhste-coding`](skills/jhste-coding/SKILL.md)** — implements clear features, known fixes, refactors, exact resume steps, and in-progress merge or rebase conflict resolution while preserving repository contracts, prefers targeted edits over rewriting otherwise unchanged files when behavior is equivalent, and reports unrelated problems noticed during the work as follow-ups instead of fixing them.
+- **[`jhste-coding`](skills/jhste-coding/SKILL.md)** — implements clear features, known fixes, refactors, exact resume steps, and in-progress merge or rebase conflict resolution while preserving repository contracts, prefers targeted edits over rewriting otherwise unchanged files when behavior is equivalent, reports unrelated problems noticed during the work as follow-ups instead of fixing them, and removes unnecessary or over-complex parts of its own change before reporting completion.
 - **[`jhste-diagnosing-bugs`](skills/jhste-diagnosing-bugs/SKILL.md)** — diagnoses uncertain failures and performance regressions through symptom-specific signals, competing explanations, runtime evidence, and measurement while redacting secrets from surfaced diagnostic evidence.
 
 ## Divide and continue work

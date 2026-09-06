@@ -33,7 +33,7 @@ Continue through in-scope local edits without pausing. Stop only when progress r
 
 Use the strongest available repository-native signal that directly distinguishes the requested behavior from failure. Expand validation only when the change's risk, integration surface, or an observed failure justifies it; do not run a fixed test, type, lint, build, and smoke sequence by habit.
 
-Add or update a test only at a seam that represents the real caller-visible behavior. Inspect the final task-owned diff for scope creep, temporary instrumentation, stale compatibility paths, and prototype-only artifacts. Never imply that an unrun check passed.
+Add or update a test only at a seam that represents the real caller-visible behavior. Inspect the final task-owned diff for scope creep, temporary instrumentation, stale compatibility paths, prototype-only artifacts, and anything unnecessary, over-complex, or resting on an assumption the evidence does not support; remove before simplifying, leave what already reads well unchanged, and re-run any check the cleanup invalidates. Never imply that an unrun check passed.
 
 ## Completion
 
