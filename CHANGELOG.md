@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.14.4 - 2026-09-06
+
+### Changed
+- Updated `jhste-coding` to inspect the final task-owned diff for unnecessary, over-complex, or weakly-assumed parts, removing before simplifying, leaving sound work unchanged, and re-running any check the cleanup invalidates.
+- Synchronized both READMEs and released package version `0.14.4`.
+
 ## 0.14.3 - 2026-09-05
 
 ### Changed
