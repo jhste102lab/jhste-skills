@@ -13,6 +13,8 @@ Deliver the requested production behavior with the smallest clear change that fi
 
 Before editing, identify the outcome, material non-goals, caller-visible behavior, important failure states, and the module that owns the change. Keep this brief for a small change and deepen it only when a contract or boundary is affected.
 
+Read any issue, specification, ticket, ADR, or handoff that the request identifies or that is unambiguously linked to the work. Use it to recover intended behavior, acceptance criteria, constraints, and non-goals; treat implementation details as guidance unless the artifact makes them contractual.
+
 Discover repository and environment facts directly. Make reversible, repository-consistent implementation choices without routine confirmation. Use `jhste-prototype` when the unresolved question is what should be built, and `jhste-diagnosing-bugs` when the cause of existing behavior is still materially uncertain.
 
 ## Implement
@@ -32,6 +34,8 @@ Continue through in-scope local edits without pausing. Stop only when progress r
 ## Verify
 
 Use the strongest available repository-native signal that directly distinguishes the requested behavior from failure. Expand validation only when the change's risk, integration surface, or an observed failure justifies it; do not run a fixed test, type, lint, build, and smoke sequence by habit.
+
+When a cheap focused signal can establish the relevant starting behavior before editing, run it and reuse the same signal after the change. Do not create a new pre-change check or broaden validation merely to satisfy this comparison.
 
 Add or update a test only at a seam that represents the real caller-visible behavior. Inspect the final task-owned diff for scope creep, temporary instrumentation, stale compatibility paths, prototype-only artifacts, and anything unnecessary, over-complex, or resting on an assumption the evidence does not support; remove before simplifying, leave what already reads well unchanged, and re-run any check the cleanup invalidates. Never imply that an unrun check passed.
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.5 - 2026-09-07
+
+### Changed
+- Updated `jhste-coding` to read explicitly referenced or unambiguously linked issues, specifications, tickets, ADRs, and handoffs before editing, using them to recover intended behavior, acceptance criteria, constraints, and non-goals without treating incidental implementation detail as mandatory.
+- Updated `jhste-coding` to reuse a cheap focused pre-change signal after the edit when one is readily available, without forcing a new pre-change check or broader validation.
+- Released package version `0.14.5`.
+
 ## 0.14.4 - 2026-09-06
 
 ### Changed
