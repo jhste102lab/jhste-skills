@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.15.0 - 2026-09-12
+
+### Added
+- Added `jhste-code-result-double-check` to independently recheck completed or submitted code results against requirements, the task-owned diff, current code, and verification evidence, correct in-scope gaps, and verify the resulting state.
+- Added read-only pull-request validation, package/metadata/link regression tests, tested copy-upgrade instructions, and deterministic release-note extraction. The publication workflow verifies npm tarball integrity and creates GitHub release notes from this changelog after verifying the registry version.
+
+### Changed
+- Replaced `jhste-implementation-finalizer` rather than retaining an alias. The successor preserves authority, ownership, caller-visible contracts, and honest verification without PR-publication ceremony or a required extra worker.
+- Clarified positive routing boundaries among coding, diagnosis, prototyping, and independent code-result rechecking. Ordinary coding retains self-verification and does not automatically invoke double-check.
+- Updated static routing fixtures for natural Korean requests, read-only authority, explicit publication, known review fixes, and the removed review targets. Static fixtures do not measure live model selection; representative live sentinels are documented in `MAINTENANCE.md` and must be evaluated separately.
+- Synchronized both READMEs, package metadata, and the explicit package allowlist. Existing coding, grill, diagnosis, prototype, and orchestration skill contracts remain unchanged.
+
+### Removed
+- Removed `jhste-pr-review` and `jhste-review-followup`. Review-only tasks use the harness or general GitHub tools; verified known fixes use `jhste-coding`, and uncertain root causes use `jhste-diagnosing-bugs`. Their previous automatic posting or branch-update conventions are not inherited by double-check.
+- Removed `jhste-implementation-finalizer` from the active and published skill set. The package now contains eleven skills.
+
+### Upgrade
+- `npm update -g jhste-skills` alone does not synchronize copy-based agent installations. Update the npm package, identify the agent's actual discovery paths, back up package-owned installed directories outside those paths, then install the new files.
+- Retire `jhste-pr-review`, `jhste-review-followup`, and `jhste-implementation-finalizer` from every active discovery path. Preserve local customizations and unrelated skills; do not delete all `jhste-*` directories. Both READMEs include the same tested backup-and-copy procedure.
+- Refresh the agent and confirm that `jhste-code-result-double-check` is discovered and the three old names are absent. Symlink or installer-managed installations require their own appropriate update mechanism.
+
 ## 0.14.5 - 2026-09-07
 
 ### Changed

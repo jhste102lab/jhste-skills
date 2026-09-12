@@ -1,0 +1,7 @@
+interface:
+  display_name: "JHSTE Code Result Double Check"
+  short_description: "Recheck existing code results and fix in-scope gaps"
+  default_prompt: "Use $jhste-code-result-double-check to independently recheck this existing code result against its requirements and current evidence, fix in-scope gaps, and verify the final state."
+
+policy:
+  allow_implicit_invocation: true
