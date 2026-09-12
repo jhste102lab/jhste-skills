@@ -1,7 +1,7 @@
 {
   "name": "jhste-skills",
-  "version": "0.14.5",
-  "description": "A lean, harness-neutral engineering skill set for autonomous coding, diagnosis, prototyping, subagent coordination, specifications, tickets, handoffs, implementation finalization, pull request review, decision interviews, external questionnaires, and domain modeling.",
+  "version": "0.15.0",
+  "description": "A lean, harness-neutral engineering skill set for coding, diagnosis, prototyping, independent code-result double checks, subagent coordination, specifications, tickets, handoffs, decision interviews, external questionnaires, and domain modeling.",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -21,7 +21,7 @@
     "THIRD_PARTY_NOTICES.md"
   ],
   "scripts": {
-    "test": "node scripts/validate-package.mjs && node scripts/validate-routing-scenarios.mjs"
+    "test": "node scripts/validate-package.mjs && node scripts/validate-routing-scenarios.mjs && node --test scripts/release.test.mjs"
   },
   "engines": {
     "node": ">=18"

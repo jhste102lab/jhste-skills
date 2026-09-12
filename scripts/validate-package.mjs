@@ -3,15 +3,13 @@ import path from "node:path";
 
 const root = process.cwd();
 const expectedSkills = [
+  "jhste-code-result-double-check",
   "jhste-coding",
   "jhste-diagnosing-bugs",
   "jhste-domain-modeling",
   "jhste-grill",
   "jhste-handoff",
-  "jhste-implementation-finalizer",
-  "jhste-pr-review",
   "jhste-prototype",
-  "jhste-review-followup",
   "jhste-subagent-orchestration",
   "jhste-to-questionnaire",
   "jhste-to-spec",

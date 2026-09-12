@@ -20,7 +20,7 @@
       "request": "Implement the settled change and have a separate worker perform an independent read-only acceptance pass.",
       "expected_skill": "jhste-subagent-orchestration",
       "write_policy": "local-only",
-      "rationale": "A separate-agent acceptance pass is explicitly requested."
+      "rationale": "A separate-agent read-only acceptance pass is explicitly requested; a task skill cannot enlarge the worker's mutation authority."
     },
     {
       "id": "orchestration-trigger-independent-workstreams",
@@ -77,13 +77,13 @@
       "rationale": "Orchestration is a domain concept here, not a request to coordinate assistant workers."
     },
     {
-      "id": "orchestration-non-finalizer",
+      "id": "orchestration-non-double-check",
       "source_skill": "jhste-subagent-orchestration",
       "kind": "non-trigger",
-      "request": "Take over this submitted implementation, independently audit it, fix gaps, and finish it.",
-      "expected_skill": "jhste-implementation-finalizer",
+      "request": "A worker says this implementation is complete; independently recheck it against requirements and fix gaps locally.",
+      "expected_skill": "jhste-code-result-double-check",
       "write_policy": "local-only",
-      "rationale": "One existing implementation needs corrective finalization rather than worker orchestration."
+      "rationale": "An existing worker result needs corrective rechecking; mentioning its author does not request new worker coordination."
     },
     {
       "id": "orchestration-handoff-document",
