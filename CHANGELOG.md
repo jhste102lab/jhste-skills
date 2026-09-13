@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.16.0 - 2026-09-13
+
+### Changed
+- Left subagent selection, worker contracts, coordination, and verification policy to the active harness instead of maintaining a separate skill that cannot know worker capability or runtime configuration.
+- Synchronized package metadata, validation, maintenance guidance, attribution, routing fixtures, and both READMEs for the ten-skill package.
+
+### Removed
+- Removed `jhste-subagent-orchestration` and its worker-contract and control-state references.
+- Removed the orchestration-only routing fixture. Delegation requests now use the harness's native instructions and tools without loading a package skill.
+
+### Upgrade
+- Retire `jhste-subagent-orchestration` from every active copy-based discovery path so the removed skill cannot continue routing work from a stale installation. The tested README upgrade block backs it up alongside previously retired skills before copying the current package.
+
 ## 0.15.0 - 2026-09-12
 
 ### Added

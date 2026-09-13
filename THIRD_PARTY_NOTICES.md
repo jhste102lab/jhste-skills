@@ -25,7 +25,7 @@ Upstream was re-reviewed at commit `3cca18b368ae95cdbdebbff572ccafa662551015` on
 - https://github.com/mattpocock/skills/tree/3cca18b368ae95cdbdebbff572ccafa662551015/skills/productivity/grilling
 - https://github.com/mattpocock/skills/tree/3cca18b368ae95cdbdebbff572ccafa662551015/skills/productivity/handoff
 
-The 2026-09-05 review found only punctuation cleanup, YAML description quoting, a grilling round display format, and two in-progress skills (`implement-spec`, `retro`) since the previous review. None was adopted: the display format is a presentation choice this set leaves open, and the in-progress skills cover flows already handled by `jhste-subagent-orchestration`, `jhste-to-tickets`, and `MAINTENANCE.md`.
+The 2026-09-05 review found only punctuation cleanup, YAML description quoting, a grilling round display format, and two in-progress skills (`implement-spec`, `retro`) since the previous review. None was adopted: the display format is a presentation choice this set leaves open, and the in-progress skills cover flows already handled by `jhste-coding`, `jhste-to-tickets`, and `MAINTENANCE.md`.
 
 The current review considered upstream secret-redaction guidance for debugging evidence, intent-based merge/rebase conflict resolution, literal domain-artifact triggers, and the questionnaire boundary between the current user and another knowledge owner. JHSTE adapts these ideas into its existing authority and deletion-first model: it does not force merge completion when aborting or restarting is safer, does not turn every ADR into domain modeling, does not force questionnaires into repository files, and does not add a separate research, TDD, Wayfinder, wizard, or architecture-audit workflow.
 
@@ -57,51 +57,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## Codexclaw
-
-The `jhste-subagent-orchestration` design is independently maintained. Its review considered the following orchestration concepts from `lidge-jun/codexclaw`:
-
-- distinguish runtime-enforced harness controls from model-followed guidance;
-- delegate work that is decision-complete, independently verifiable, and bounded so consequential judgment remains with the head;
-- record a head disposition for each worker return before dependent work proceeds;
-- bind verification evidence to the source state it covered so later integration can invalidate stale evidence;
-- treat repeated independent failures of the same unchanged assignment as evidence that the assignment packet may be defective;
-- dispatch independent work in waves and triage required returns before opening dependent work.
-
-Upstream reviewed at commit `ecc644e7742dc516ea91777414baf3da1859a162` on 2026-08-03:
-
-- https://github.com/lidge-jun/codexclaw
-- https://github.com/lidge-jun/codexclaw/tree/ecc644e7742dc516ea91777414baf3da1859a162
-
-The JHSTE skill does not copy Codexclaw's PABCD state machine, hooks, evidence-receipt runtime, role TOMLs, model or reasoning-effort routing, worker-count limits, or fixed retry counts. No Codexclaw source file is distributed verbatim. The full upstream MIT notice is retained conservatively because the resulting instructions adapt several orchestration concepts and terms.
-
-### MIT License
-
-Copyright (c) 2026 lidge-jun
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
 ## Anthropic Claude Fable 5.1 prompting guidance
 
-The 0.14.1 maintenance pass reviewed Anthropic's public prompting guidance for Claude Fable 5.1 and adapted two model-agnostic behaviors into the existing JHSTE contracts:
+The 0.14.1 maintenance pass reviewed Anthropic's public prompting guidance for Claude Fable 5.1 and adapted one model-agnostic behavior into the existing JHSTE contracts:
 
-- when the harness allows the head to keep working while delegated workers are pending, continue safe head-owned work that does not depend on those results and wait only at a real dependency barrier;
 - when behavior is equivalent, prefer a targeted edit over rewriting otherwise unchanged files.
 
 The 0.14.3 maintenance pass re-reviewed the Claude Fable 5.1 guidance together with the general Claude prompting best practices and adapted two more behaviors:

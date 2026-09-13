@@ -6,7 +6,7 @@ import path from "node:path";
 import test from "node:test";
 
 const root = process.cwd();
-const retired = ["jhste-pr-review", "jhste-review-followup", "jhste-implementation-finalizer"];
+const retired = ["jhste-pr-review", "jhste-review-followup", "jhste-implementation-finalizer", "jhste-subagent-orchestration"];
 const successor = "jhste-code-result-double-check";
 const read = (file) => readFileSync(file, "utf8");
 const temp = (t) => {
@@ -167,7 +167,8 @@ test("copy upgrade refuses a missing successor before moving existing skills", {
 });
 
 test("npm payload contains only current skill entrypoints and resolves packaged Markdown links", () => {
-  const [manifest] = JSON.parse(execFileSync("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: root, encoding: "utf8", shell: process.platform === "win32" }));
+  const output = JSON.parse(execFileSync("npm", ["pack", "--dry-run", "--json", "--ignore-scripts"], { cwd: root, encoding: "utf8", shell: process.platform === "win32" }));
+  const manifest = Array.isArray(output) ? output[0] : output["jhste-skills"];
   const files = new Set(manifest.files.map((file) => file.path));
   const actual = [...files].flatMap((file) => file.match(/^skills\/([^/]+)\/SKILL\.md$/)?.slice(1) ?? []).sort();
   const expected = readdirSync(path.join(root, "skills"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();

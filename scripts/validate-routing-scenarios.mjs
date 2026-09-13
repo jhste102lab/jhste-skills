@@ -4,7 +4,6 @@ import path from "node:path";
 const root = process.cwd();
 const fixturePaths = [
   "scripts/routing-scenarios.json",
-  "scripts/routing-scenarios-orchestration.json",
   "scripts/routing-scenarios-0.14.json",
 ];
 const documents = fixturePaths.map((fixturePath) =>

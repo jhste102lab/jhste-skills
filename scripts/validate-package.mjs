@@ -10,7 +10,6 @@ const expectedSkills = [
   "jhste-grill",
   "jhste-handoff",
   "jhste-prototype",
-  "jhste-subagent-orchestration",
   "jhste-to-questionnaire",
   "jhste-to-spec",
   "jhste-to-tickets",
@@ -21,10 +20,6 @@ const requiredSkillFiles = new Map([
   ["jhste-domain-modeling", ["references/formats.md"]],
   ["jhste-handoff", ["references/portable.md", "references/durable.md"]],
   ["jhste-prototype", ["references/logic.md", "references/ui.md"]],
-  [
-    "jhste-subagent-orchestration",
-    ["references/worker-contract.md", "references/control-state.md"],
-  ],
   ["jhste-to-tickets", ["references/wide-migrations.md"]],
 ]);
 
@@ -139,8 +134,6 @@ const notices = read("THIRD_PARTY_NOTICES.md");
 for (const requiredNotice of [
   "Matt Pocock",
   "Copyright (c) 2026 Matt Pocock",
-  "Codexclaw",
-  "Copyright (c) 2026 lidge-jun",
 ]) {
   if (!notices.includes(requiredNotice)) {
     throw new Error(`THIRD_PARTY_NOTICES.md is missing: ${requiredNotice}`);

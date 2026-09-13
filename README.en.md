@@ -21,7 +21,6 @@ Core `SKILL.md` files contain the task contract and important boundaries. Rare f
 
 ## Divide and continue work
 
-- **[`jhste-subagent-orchestration`](skills/jhste-subagent-orchestration/SKILL.md)** — coordinates bounded workers when separation creates value while the head retains decisions, ownership, integration, and final verification.
 - **[`jhste-to-tickets`](skills/jhste-to-tickets/SKILL.md)** — turns defined work into one useful GitHub issue or an issue graph with real dependencies.
 - **[`jhste-handoff`](skills/jhste-handoff/SKILL.md)** — preserves verified state, authoritative references, ownership, abandoned approaches, and the exact next action for another executor.
 
@@ -35,7 +34,6 @@ Core `SKILL.md` files contain the task contract and important boundaries. Rare f
 - Involve the user only for product policy, compatibility, security or data policy, external writes, and other decisions or permissions only they can supply. Batch independent questions.
 - When missing knowledge belongs to another person rather than the current user, use `jhste-to-questionnaire` to ask the actual owner only for what is needed.
 - Model, provider, reasoning or effort, worker count, concurrency, scheduling, and actual isolation belong to the user and harness. Skills do not choose or override them.
-- Use subagents only when separation saves more than repeated reading and coordination cost. Reuse current context for missing evidence or a small same-scope correction when independent judgment is not needed.
 - Choose the repository-native signal that most directly distinguishes the requested result from failure. Expand validation only for relevant risk, integration surface, or observed failures, and never claim an unrun check passed.
 - Requests for `jhste-grill` and `jhste-domain-modeling` include maintaining settled local glossary entries and qualifying ADRs. Commits, pushes, issues, PRs, releases, and other external writes remain limited to the request's authority.
 
@@ -46,8 +44,6 @@ Use `jhste-coding` to implement a clear change and verify its own result. Use `j
 Use `jhste-diagnosing-bugs` when an existing symptom has an uncertain cause, and `jhste-prototype` when a not-yet-built design question needs runnable evidence. User-owned decisions belong to `jhste-grill`; externally owned facts or decisions to `jhste-to-questionnaire`; changes to the domain model itself to `jhste-domain-modeling`.
 
 PR review-only work and read-only assessment of existing review comments use the harness or general GitHub tools. A verified review finding with a known correction belongs to `jhste-coding`; an uncertain root cause belongs to `jhste-diagnosing-bugs`. Double-check does not replace the removed review workflows or inherit automatic comment, commit, push, or merge authority.
-
-`jhste-subagent-orchestration` composes task skills into bounded outcomes without expanding their contracts. Acceptance workers remain read-only even when using a task skill that normally corrects code. An assignment's authority ceiling takes precedence; corrections need an authorized implementation assignment. Neither implementation completion nor double-check requires another worker by itself.
 
 `jhste-to-spec` records the behavior contract, `jhste-to-tickets` records executable issue boundaries and dependencies, and `jhste-handoff` records the current state another executor needs. They reference authoritative artifacts instead of duplicating them.
 
@@ -76,7 +72,7 @@ cp -R skills/. "$HOME/.agents/skills/"
 
 ## Upgrade existing installations
 
-`npm update -g jhste-skills` updates the npm package, not copies already placed in an agent's skills directory. Version 0.15.0 removes `jhste-pr-review` and `jhste-review-followup`, and replaces `jhste-implementation-finalizer` with `jhste-code-result-double-check`. Re-copying alone leaves retired directories discoverable.
+`npm update -g jhste-skills` updates the npm package, not copies already placed in an agent's skills directory. Version 0.16.0 removes `jhste-subagent-orchestration`. Re-copying alone can leave that directory and the `jhste-pr-review`, `jhste-review-followup`, and `jhste-implementation-finalizer` directories retired in 0.15.0 discoverable.
 
 First identify every active installation path and whether it is a copy, symlink, or managed by another installer. Inspect local customizations. For the standard copy-based installation, update npm and then run the block below. It moves only this package's current and retired directories to a unique backup outside the skill discovery directory, preserving local edits and unrelated skills. Review customizations in the backup before selectively reapplying them; do not restore retired skill directories.
 
@@ -100,7 +96,7 @@ npm install -g jhste-skills@latest
       mv "$dst/$name" "$backup/$name"
     fi
   done
-  for name in jhste-pr-review jhste-review-followup jhste-implementation-finalizer; do
+  for name in jhste-pr-review jhste-review-followup jhste-implementation-finalizer jhste-subagent-orchestration; do
     if [ -e "$dst/$name" ] || [ -L "$dst/$name" ]; then
       mv "$dst/$name" "$backup/$name"
     fi
@@ -113,7 +109,7 @@ npm install -g jhste-skills@latest
 
 For a repository copy, use the absolute path to its `skills/` directory as `src`. For symlink or installer-managed setups, follow that setup's update mechanism instead of blindly running the copy procedure. Never delete the whole skills directory or all `jhste-*` paths; older custom or legacy installations need ownership inspection first.
 
-Refresh or restart the agent as its harness requires. Confirm the new skill is discovered, the three retired names are absent from every active discovery path, and unrelated skills remain intact. An npm version check alone is not proof that the agent loaded the new files.
+Refresh or restart the agent as its harness requires. Confirm the current skills are discovered, the four retired names are absent from every active discovery path, and unrelated skills remain intact. An npm version check alone is not proof that the agent loaded the new files.
 
 ## Maintenance
 
