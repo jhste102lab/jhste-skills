@@ -8,9 +8,9 @@ Core `SKILL.md` files contain the task contract and important boundaries. Rare f
 
 ## Decide what to build
 
-- **[`jhste-grill`](skills/jhste-grill/SKILL.md)** — asks currently answerable consequential decisions in compact rounds while recording settled language and qualifying ADRs.
+- **[`jhste-grill`](skills/jhste-grill/SKILL.md)** — asks currently answerable consequential decisions in compact rounds and writes settled glossary or ADR updates only when the request asks to record them.
 - **[`jhste-to-questionnaire`](skills/jhste-to-questionnaire/SKILL.md)** — turns facts or decisions the current user cannot supply into a focused questionnaire for the person or role that owns them.
-- **[`jhste-domain-modeling`](skills/jhste-domain-modeling/SKILL.md)** — clarifies project-specific terms, concept boundaries, and relationships while updating the owning glossary and qualifying ADRs.
+- **[`jhste-domain-modeling`](skills/jhste-domain-modeling/SKILL.md)** — clarifies project-specific terms, concept boundaries, and relationships, updating the owning glossary and qualifying ADRs only when requested.
 - **[`jhste-to-spec`](skills/jhste-to-spec/SKILL.md)** — turns an already discussed or defined change into a reviewable behavioral specification without restarting the interview.
 
 ## Build and fix
@@ -26,7 +26,7 @@ Core `SKILL.md` files contain the task contract and important boundaries. Rare f
 
 ## Recheck existing code results
 
-- **[`jhste-code-result-double-check`](skills/jhste-code-result-double-check/SKILL.md)** — independently compares a completed or submitted code result with requirements, the task-owned diff, current code, and verification evidence, fixes in-scope gaps, and verifies the resulting state.
+- **[`jhste-code-result-double-check`](skills/jhste-code-result-double-check/SKILL.md)** — independently compares a completed or submitted code result with requirements, the task-owned diff, current code, and verification evidence. It is read-only by default and fixes in-scope gaps only when correction is requested.
 
 ## Core principles
 
@@ -35,11 +35,11 @@ Core `SKILL.md` files contain the task contract and important boundaries. Rare f
 - When missing knowledge belongs to another person rather than the current user, use `jhste-to-questionnaire` to ask the actual owner only for what is needed.
 - Model, provider, reasoning or effort, worker count, concurrency, scheduling, and actual isolation belong to the user and harness. Skills do not choose or override them.
 - Choose the repository-native signal that most directly distinguishes the requested result from failure. Expand validation only for relevant risk, integration surface, or observed failures, and never claim an unrun check passed.
-- Requests for `jhste-grill` and `jhste-domain-modeling` include maintaining settled local glossary entries and qualifying ADRs. Commits, pushes, issues, PRs, releases, and other external writes remain limited to the request's authority.
+- `jhste-grill` and `jhste-domain-modeling` do not modify repository documents merely because an interview or analysis was requested. They update local glossary or ADR files only when the request asks to record or maintain them; commits, pushes, issues, PRs, releases, and other external writes still require separate authority.
 
 ## Main boundaries
 
-Use `jhste-coding` to implement a clear change and verify its own result. Use `jhste-code-result-double-check` when an existing result needs an independent second pass. A normal implementation request does not automatically chain into double-check. A branch, handoff, PR, or worker result alone is not a trigger; the requested outcome matters.
+Use `jhste-coding` to implement a clear change and verify its own result. Use `jhste-code-result-double-check` when an existing result needs an independent second pass. A review, recheck, verify, or audit request is read-only unless it also asks to fix or apply changes. A normal implementation request does not automatically chain into double-check. A branch, handoff, PR, or worker result alone is not a trigger; the requested outcome matters.
 
 Use `jhste-diagnosing-bugs` when an existing symptom has an uncertain cause, and `jhste-prototype` when a not-yet-built design question needs runnable evidence. User-owned decisions belong to `jhste-grill`; externally owned facts or decisions to `jhste-to-questionnaire`; changes to the domain model itself to `jhste-domain-modeling`.
 
