@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.17.0 - 2026-10-07
+
+### Changed
+- Made `jhste-grill` and `jhste-domain-modeling` read-only with respect to repository documents unless the request also asks to record, write, update, edit, or maintain glossary or ADR artifacts.
+- Made `jhste-code-result-double-check` read-only for review, recheck, verify, audit, and double-check requests unless correction is explicitly requested; authorized fix requests still correct in-scope gaps and refresh invalidated evidence.
+- Changed new fallback domain-document naming to `GLOSSARY.md` and `GLOSSARY-MAP.md` while preserving repositories that already use legacy `CONTEXT.md` and `CONTEXT-MAP.md`.
+- Added a stop condition to `jhste-coding` so verified work does not start unrequested review or hardening rounds.
+- Added maintenance guidance to prefer deterministic validators, CI, linters, type checks, builds, or tests over model-facing prose for mechanically detectable recurring failures.
+- Re-reviewed Matt Pocock's upstream at `6fd9479`, OpenAI GPT-5.6 guidance, and Anthropic Claude Fable 5.1, Sonnet 5.5, Opus 5.5, and general prompting guidance; synchronized attribution, routing contracts, metadata, and both READMEs.
+- Kept `jhste-handoff` behavior unchanged after re-review and removed one stale reference to the retired `finalizer` role from its durable handoff guidance.
+
 ## 0.16.0 - 2026-09-13
 
 ### Changed
