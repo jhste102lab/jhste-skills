@@ -68,7 +68,9 @@ The 0.14.3 maintenance pass re-reviewed the Claude Fable 5.1 guidance together w
 - `jhste-coding` reports a pre-existing bug or unrelated problem noticed during the work as a follow-up instead of fixing it, unless the requested behavior cannot work without that fix;
 - the portable handoff records approaches tried and set aside, mirroring what a compaction summary must preserve so the next executor does not repeat them.
 
-Guidance reviewed on 2026-09-03 and 2026-09-05:
+The Fable 5.1 guidance was re-reviewed on 2026-10-07; no additional model-agnostic skill changes were needed beyond the behaviors already recorded below.
+
+Guidance reviewed on 2026-09-03 and 2026-09-05, and re-reviewed on 2026-10-07:
 
 - https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-1
 - https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
