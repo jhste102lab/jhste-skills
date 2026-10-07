@@ -1,7 +1,7 @@
 interface:
   display_name: "JHSTE Grill"
-  short_description: "Resolve decisions in rounds and maintain context docs"
-  default_prompt: "Use $jhste-grill to resolve every currently answerable consequential decision in compact rounds while updating settled context and qualifying ADRs."
+  short_description: "Resolve decisions in rounds without implicit repo writes"
+  default_prompt: "Use $jhste-grill to resolve every currently answerable consequential decision in compact rounds. Update repository glossary or ADR files only when the request also asks to record or maintain them."
 
 policy:
   allow_implicit_invocation: true
