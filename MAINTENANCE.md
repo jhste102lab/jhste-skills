@@ -36,6 +36,10 @@ Do not add or retain:
 - work splitting based only on file count, task length, or context-window size; or
 - speculative rules for failures that have not been observed.
 
+## Prefer deterministic guardrails
+
+When a repeated failure can be detected mechanically from syntax, schema, file layout, a linter, type checker, build, test, or other deterministic signal, fix or add that guardrail instead of adding another model-facing instruction. Keep skill prose for judgment, authority, domain knowledge, output contracts, and failures that cannot be enforced mechanically.
+
 ## Progressive disclosure
 
 Treat `SKILL.md` as the control plane. It should contain the task contract, important boundaries, and pointers needed to begin.
@@ -64,7 +68,7 @@ Use the request text in the repository's `scripts/routing-scenarios.json`, rathe
 | Natural completion-claim recheck | `double-check-trigger-korean-done`, with `double-check-trigger-korean-gaps` and `double-check-trigger-korean-requirements` as paraphrases |
 | Ordinary implementation without an automatic second pass | `coding-trigger-korean-feature`, `double-check-non-handoff-resume` |
 | Existing uncertain failure versus pre-implementation experiment | `double-check-non-uncertain-resume`, `double-check-non-design-experiment` |
-| Read-only result verification and review-only work | `double-check-trigger-read-only`, `coding-non-review` |
+| Read-only result verification and review-only work | `double-check-trigger-report-only`, `double-check-trigger-korean-done`, `double-check-trigger-read-only`, `coding-non-review` |
 | Known review correction versus whole-result rechecking | `double-check-handoff-feedback` |
 
 Run against a clean installed skill set with retired directories absent. Use a small code task with a known missing integration, an already-correct variant, stale pre-correction evidence, and unrelated owned changes. Inspect actual skill/tool calls as well as the final code: a correct first choice alone cannot prove that no unnecessary follow-on skill or worker ran. Check that corrections invalidate and refresh the relevant evidence, read-only assignments stay read-only, and unavailable checks are not reported as passed.
