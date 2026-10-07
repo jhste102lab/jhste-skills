@@ -14,20 +14,20 @@ The JHSTE workflow set is independently maintained, but parts of the workflow st
 - `jhste-coding`: module/interface/seam reasoning, caller-visible contracts, avoiding shallow pass-through abstractions, and conflict resolution guided by repository history and the intent of both sides rather than conflict text alone;
 - `jhste-prototype`: disposable runnable evidence for one design question, separate logic and UI exploration modes, visible state, in-memory or stubbed side effects by default, structurally distinct UI variants, non-developer-facing shareable logic experiments, and preserving the question and verdict separately from production implementation.
 
-Upstream was re-reviewed at commit `3cca18b368ae95cdbdebbff572ccafa662551015` on 2026-09-05 (previous review: `068b6e0c62393147daf03530149cdce209c93da8` on 2026-08-17):
+Upstream was re-reviewed at commit `6fd947921b935b7e1e69293a200400f0fdd5c15f` on 2026-10-07 (previous review: `3cca18b368ae95cdbdebbff572ccafa662551015` on 2026-09-05):
 
 - https://github.com/mattpocock/skills
-- https://github.com/mattpocock/skills/tree/3cca18b368ae95cdbdebbff572ccafa662551015/skills/engineering/diagnosing-bugs
-- https://github.com/mattpocock/skills/tree/3cca18b368ae95cdbdebbff572ccafa662551015/skills/engineering/resolving-merge-conflicts
-- https://github.com/mattpocock/skills/tree/3cca18b368ae95cdbdebbff572ccafa662551015/skills/engineering/domain-modeling
-- https://github.com/mattpocock/skills/tree/3cca18b368ae95cdbdebbff572ccafa662551015/skills/productivity/to-questionnaire
-- https://github.com/mattpocock/skills/tree/3cca18b368ae95cdbdebbff572ccafa662551015/skills/engineering/prototype
-- https://github.com/mattpocock/skills/tree/3cca18b368ae95cdbdebbff572ccafa662551015/skills/productivity/grilling
-- https://github.com/mattpocock/skills/tree/3cca18b368ae95cdbdebbff572ccafa662551015/skills/productivity/handoff
+- https://github.com/mattpocock/skills/tree/6fd947921b935b7e1e69293a200400f0fdd5c15f/skills/engineering/domain-modeling
+- https://github.com/mattpocock/skills/tree/6fd947921b935b7e1e69293a200400f0fdd5c15f/skills/engineering/to-tickets
+- https://github.com/mattpocock/skills/tree/6fd947921b935b7e1e69293a200400f0fdd5c15f/skills/productivity/handoff
+- https://github.com/mattpocock/skills/tree/6fd947921b935b7e1e69293a200400f0fdd5c15f/skills/engineering/retro
+- https://github.com/mattpocock/skills/blob/6fd947921b935b7e1e69293a200400f0fdd5c15f/SCOPE.md
 
-The 2026-09-05 review found only punctuation cleanup, YAML description quoting, a grilling round display format, and two in-progress skills (`implement-spec`, `retro`) since the previous review. None was adopted: the display format is a presentation choice this set leaves open, and the in-progress skills cover flows already handled by `jhste-coding`, `jhste-to-tickets`, and `MAINTENANCE.md`.
+The 2026-10-07 review covered 68 upstream commits since the previous baseline. JHSTE adopted the newer `GLOSSARY.md` / `GLOSSARY-MAP.md` naming for newly created fallback domain documents while preserving repositories that already use legacy `CONTEXT.md` / `CONTEXT-MAP.md`. It also adopted the maintenance principle that recurring mechanically detectable failures should be enforced by deterministic validators, CI, linters, type checks, builds, or tests rather than by more model-facing prose.
 
-The current review considered upstream secret-redaction guidance for debugging evidence, intent-based merge/rebase conflict resolution, literal domain-artifact triggers, and the questionnaire boundary between the current user and another knowledge owner. JHSTE adapts these ideas into its existing authority and deletion-first model: it does not force merge completion when aborting or restarting is safer, does not turn every ADR into domain modeling, does not force questionnaires into repository files, and does not add a separate research, TDD, Wayfinder, wizard, or architecture-audit workflow.
+JHSTE did not adopt upstream `implement-spec`, `pr`, or `retro` as new package skills, fixed TDD/full-suite/reviewer sequences, context-window-based ticket sizing, or skill-level controls for subagent recursion. Those either duplicate existing JHSTE contracts or belong to the active harness. The current handoff flow already covered the material upstream behavior: portable handoffs prefer an artifact or temporary-file location, reference existing authoritative artifacts instead of copying them, redact sensitive information, and suggest only directly relevant next skills. No new handoff workflow was added; only stale retired `finalizer` terminology in the durable reference was cleaned up.
+
+The review also reconfirmed the existing JHSTE adaptations for secret redaction in debugging evidence, intent-based merge/rebase conflict resolution, questionnaire ownership, dependency-aware decision rounds, and issue dependency modeling.
 
 The related GitHub article was reviewed as contextual evidence for both early executable exploration and the maintenance risk of adding too many skills; no article text is copied:
 
@@ -87,3 +87,31 @@ Guidance reviewed on 2026-09-05:
 - https://developers.openai.com/api/docs/guides/latest-model
 
 No guide text is copied. User-versus-skill precedence, delegation encouragement, writing style, and model-specific API guidance remain harness- and user-owned and are not written into these skills.
+
+## OpenAI GPT-5.6 model guidance
+
+The 0.17.0 maintenance pass reviewed OpenAI's current GPT-5.6 model guidance on 2026-10-07. JHSTE adopted or reinforced three model-agnostic behaviors:
+
+- requests to answer, explain, review, diagnose, or plan inspect and report by default rather than mutating files unless the request also asks for a change;
+- requests to change, build, or fix may make safe in-scope local edits and run relevant non-destructive validation without routine confirmation;
+- prompts stay lean: each instruction should appear once, and duplicated ceremony or tool orchestration belongs outside task skills unless representative evaluation proves it is needed.
+
+These changes tighten write authority for `jhste-grill`, `jhste-domain-modeling`, and `jhste-code-result-double-check` without weakening explicit fix or update requests. Model-specific reasoning modes, effort, Programmatic Tool Calling, prompt caching, and multi-agent runtime configuration remain harness-owned.
+
+Guidance reviewed on 2026-10-07:
+
+- https://developers.openai.com/api/docs/guides/latest-model
+
+## Anthropic Claude Sonnet 5.5 and Opus 5.5 prompting guidance
+
+The 0.17.0 maintenance pass reviewed the Claude Sonnet 5.5 and Claude Opus 5.5 model-specific prompting guides together with the current general Claude prompting best practices.
+
+One model-agnostic behavior was added to `jhste-coding`: once the requested behavior is verified and the task-owned diff is clean, stop rather than starting extra review or hardening rounds that the user did not request. The existing JHSTE validation contract already requires a real task-appropriate signal, so no fixed test, typecheck, build, or full-suite ladder was added.
+
+Opus 5.5 unattended-work and multi-agent guidance was treated as harness-specific. JHSTE does not add time budgets, worker recursion limits, effort selection, progress transport, or multi-agent topology rules to individual task skills.
+
+Guidance reviewed on 2026-10-07:
+
+- https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-sonnet-5-5
+- https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-opus-5-5
+- https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
