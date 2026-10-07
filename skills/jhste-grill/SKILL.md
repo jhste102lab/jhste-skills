@@ -1,6 +1,6 @@
 ---
 name: jhste-grill
-description: Interview the user in dependency-aware decision rounds to sharpen or stress-test a plan, product behavior, or design while continuously maintaining settled domain context and qualifying ADRs in the repository. Use when the user asks to be interviewed, grilled, questioned, or guided through unresolved user-owned decisions. Do not invoke merely because an ordinary request has a small ambiguity; discover facts directly, and use jhste-prototype when settled decisions still need executable evidence.
+description: Interview the user in dependency-aware decision rounds to sharpen or stress-test a plan, product behavior, or design. Use when the user asks to be interviewed, grilled, questioned, or guided through unresolved user-owned decisions. By default, keep the session read-only with respect to repository files; update settled glossary entries or qualifying ADRs only when the request also asks to record, write, update, or maintain those artifacts. Do not invoke merely because an ordinary request has a small ambiguity; discover facts directly, and use jhste-prototype when settled decisions still need executable evidence.
 ---
 
 # JHSTE Grill
@@ -11,7 +11,7 @@ Reach shared understanding across every consequential decision branch with as fe
 
 ## Discover facts before asking
 
-Inspect available code, documents, prior decisions, tools, and external evidence instead of asking the user for discoverable facts. Use bounded workers when independent fact-finding would be faster, and continue with questions that do not depend on the pending result.
+Inspect available code, documents, prior decisions, tools, and external evidence instead of asking the user for discoverable facts. Continue with frontier questions that do not depend on any still-pending fact-finding rather than blocking the whole interview.
 
 Ask the user only about choices that belong to them: desired behavior, scope, priorities, compatibility, failure behavior, data or security policy, and consequential trade-offs. Do not ask about reversible implementation details that a later executor can decide safely.
 
@@ -32,15 +32,17 @@ Treat a branch as consequential when it can change the goal, success criteria, s
 
 Do not use a prototype to choose a product policy, priority, or trade-off that belongs to the user. Once those choices are settled, use `jhste-prototype` when representability, API ergonomics, interaction flow, or UI structure still needs runnable evidence. Do not implement production code or publish issues as part of this skill alone.
 
-## Maintain decision documents
+## Record decision documents only when requested
 
-In a writable repository, treat the request to run this interview as authorization to maintain local domain and decision documents. Read the existing glossary, context map, ADRs, and repository conventions first. Follow their locations and formats. If none exists, create `CONTEXT.md` lazily when the first term settles and create `docs/adr/` lazily when the first qualifying ADR is needed.
+Do not treat an interview request by itself as authorization to modify repository files.
 
-When a domain term's meaning and boundary are agreed, test it with at least one concrete scenario. If no material contradiction remains, update the owning glossary during the same round. Keep implementation details, specifications, and temporary notes out of the glossary.
+When the user also asks to record, write, update, or maintain the settled results in a writable repository, read the existing glossary, glossary map, ADRs, and repository conventions first. Follow their locations and formats. Prefer `GLOSSARY.md` and `GLOSSARY-MAP.md` for new fallback documents; if the repository already uses legacy `CONTEXT.md` or `CONTEXT-MAP.md`, preserve that convention instead of creating a parallel glossary.
 
-When the user selects a decision that is costly to reverse, surprising without its rationale, and the result of a real trade-off, write an ADR immediately without requesting separate confirmation. Follow the repository's format. If none exists, use the next available `docs/adr/NNNN-<slug>.md` file with concise `Context` and `Decision` sections; add `Consequences` or `Alternatives` only when they preserve non-obvious information.
+When a domain term's meaning and boundary are agreed, test it with at least one concrete scenario. If no material contradiction remains and documentation updates are authorized, update the owning glossary during the same round. Keep implementation details, specifications, and temporary notes out of the glossary.
 
-Keep documents synchronized throughout the interview rather than batching updates at the end. If the user requests analysis only or forbids edits, present the exact proposed glossary and ADR changes instead. Do not commit, push, or publish repository changes without explicit authorization for those actions.
+When documentation updates are authorized and the user selects a decision that is costly to reverse, surprising without its rationale, and the result of a real trade-off, write an ADR without requesting separate confirmation. Follow the repository's format. If none exists, use the next available `docs/adr/NNNN-<slug>.md` file with concise `Context` and `Decision` sections; add `Consequences` or `Alternatives` only when they preserve non-obvious information.
+
+When repository documentation updates are not requested, keep the interview read-only and include the exact proposed glossary or ADR changes in the outcome instead. Commit, push, publication, and other external writes still require their own authorization.
 
 ## Stop condition
 
@@ -54,6 +56,6 @@ Summarize only what the session established:
 - decisions and their reasons;
 - constraints and out-of-scope items;
 - unresolved blockers;
-- domain terms added or changed;
-- ADRs created;
-- documentation files changed.
+- domain terms added, changed, or proposed;
+- ADRs created or proposed;
+- documentation files changed, when any.
