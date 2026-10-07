@@ -1,7 +1,7 @@
 interface:
   display_name: "JHSTE Domain Modeling"
-  short_description: "Clarify terms and maintain glossary and ADRs"
-  default_prompt: "Use $jhste-domain-modeling to clarify the domain language and keep the project glossary and qualifying ADRs synchronized."
+  short_description: "Clarify domain terms and update docs only when requested"
+  default_prompt: "Use $jhste-domain-modeling to clarify the domain language and identify exact glossary or ADR changes. Edit repository domain documents only when the request asks to record or update them."
 
 policy:
   allow_implicit_invocation: true
