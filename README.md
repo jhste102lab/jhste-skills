@@ -8,9 +8,9 @@
 
 ## 무엇을 만들지 정하기
 
-- **[`jhste-grill`](skills/jhste-grill/SKILL.md)** — 지금 답할 수 있는 중요한 결정을 묶어 묻고, 확정된 용어와 필요한 ADR을 진행 중에 기록합니다.
+- **[`jhste-grill`](skills/jhste-grill/SKILL.md)** — 지금 답할 수 있는 중요한 결정을 묶어 묻고, 요청받은 경우에만 확정된 용어와 필요한 ADR을 저장소에 기록합니다.
 - **[`jhste-to-questionnaire`](skills/jhste-to-questionnaire/SKILL.md)** — 현재 사용자가 답할 수 없는 사실이나 결정을 실제 지식 소유자에게 받을 질문지로 정리합니다.
-- **[`jhste-domain-modeling`](skills/jhste-domain-modeling/SKILL.md)** — 프로젝트 고유 용어, 개념 경계, 관계를 명확히 하고 해당 glossary와 필요한 ADR을 갱신합니다.
+- **[`jhste-domain-modeling`](skills/jhste-domain-modeling/SKILL.md)** — 프로젝트 고유 용어, 개념 경계, 관계를 명확히 하고, 요청받은 경우에만 해당 glossary와 필요한 ADR을 갱신합니다.
 - **[`jhste-to-spec`](skills/jhste-to-spec/SKILL.md)** — 이미 논의되거나 정의된 변경을 추가 인터뷰 없이 검토 가능한 행동 명세로 정리합니다.
 
 ## 직접 만들고 고치기
@@ -26,7 +26,7 @@
 
 ## 기존 코드 결과 재검증
 
-- **[`jhste-code-result-double-check`](skills/jhste-code-result-double-check/SKILL.md)** — 완료됐다고 하거나 제출된 코드 결과를 요구사항·작업 소유 diff·현재 코드·검증 증거와 독립적으로 대조하고, 범위 내 누락과 오류를 고친 뒤 최종 상태를 검증합니다.
+- **[`jhste-code-result-double-check`](skills/jhste-code-result-double-check/SKILL.md)** — 완료됐다고 하거나 제출된 코드 결과를 요구사항·작업 소유 diff·현재 코드·검증 증거와 독립적으로 대조합니다. 기본은 읽기 전용 검증·보고이며, 고치라고 요청한 경우에만 범위 내 누락과 오류를 수정하고 다시 검증합니다.
 
 ## 핵심 원칙
 
@@ -35,11 +35,11 @@
 - 필요한 지식이 현재 사용자가 아닌 다른 사람에게 있으면 `jhste-to-questionnaire`로 실제 소유자에게 받을 질문만 정리합니다.
 - 모델, provider, reasoning 또는 effort, worker 수, 동시성, scheduling, 실제 격리는 사용자와 하네스가 관리합니다. 스킬은 이를 선택하거나 덮어쓰지 않습니다.
 - 요청 결과를 실패와 가장 직접적으로 구분하는 저장소 고유 신호를 선택합니다. 관련 위험·통합 범위·관찰된 실패가 요구할 때만 검증을 확장하고, 실행하지 않은 검증을 성공했다고 말하지 않습니다.
-- `jhste-grill`과 `jhste-domain-modeling` 요청은 확정된 local glossary와 필요한 ADR 갱신을 포함합니다. commit, push, issue, PR, release 같은 외부 쓰기는 요청 범위에서만 수행합니다.
+- `jhste-grill`과 `jhste-domain-modeling`은 인터뷰·분석 요청만으로 저장소 문서를 수정하지 않습니다. glossary·ADR을 기록하거나 갱신하라는 요청이 있을 때만 local 문서를 바꾸고, commit, push, issue, PR, release 같은 외부 쓰기는 별도 요청 범위에서만 수행합니다.
 
 ## 주요 경계
 
-명확한 변경을 구현하고 자신의 결과를 검증하는 작업은 `jhste-coding`, 이미 존재하는 결과를 독립적으로 다시 확인하는 작업은 `jhste-code-result-double-check`가 담당합니다. 일반 구현 요청 뒤에 double-check를 자동 연쇄 실행하지 않습니다. branch, handoff, PR, worker 결과가 있다는 사실만으로 선택하지 않고 요청의 주목적을 봅니다.
+명확한 변경을 구현하고 자신의 결과를 검증하는 작업은 `jhste-coding`, 이미 존재하는 결과를 독립적으로 다시 확인하는 작업은 `jhste-code-result-double-check`가 담당합니다. double-check는 검토·재확인·검증 요청만 있으면 읽기 전용으로 동작하고, 수정 권한은 사용자가 고치거나 적용하라고 요청한 경우에만 생깁니다. 일반 구현 요청 뒤에 double-check를 자동 연쇄 실행하지 않습니다. branch, handoff, PR, worker 결과가 있다는 사실만으로 선택하지 않고 요청의 주목적을 봅니다.
 
 기존 증상의 원인이 불명확하면 `jhste-diagnosing-bugs`, 아직 만들지 않은 설계 질문을 실행 증거로 판단해야 하면 `jhste-prototype`이 담당합니다. 사용자 소유 결정은 `jhste-grill`, 다른 지식 소유자에게 받아야 하는 사실·결정은 `jhste-to-questionnaire`, 용어와 개념 모델 자체의 변경은 `jhste-domain-modeling`이 담당합니다.
 

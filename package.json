@@ -1,6 +1,6 @@
 {
   "name": "jhste-skills",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "description": "A lean, harness-neutral engineering skill set for coding, diagnosis, prototyping, independent code-result double checks, specifications, tickets, handoffs, decision interviews, external questionnaires, and domain modeling.",
   "type": "module",
   "license": "MIT",

@@ -1,10 +1,12 @@
 # Fallback Domain Document Formats
 
-Use these formats only when the repository has no established glossary or ADR convention.
+Use these formats only when the repository has no established glossary, legacy context-document, or ADR convention.
 
-## Context glossary
+## Domain glossary
 
-Create a root `CONTEXT.md` lazily for a single-context repository. When several bounded contexts exist, use a root `CONTEXT-MAP.md` that points to each owning `CONTEXT.md`.
+Create a root `GLOSSARY.md` lazily for a single-context repository. When several bounded contexts exist, use a root `GLOSSARY-MAP.md` that points to each owning `GLOSSARY.md`.
+
+If the repository already uses legacy `CONTEXT.md` or `CONTEXT-MAP.md`, preserve that established convention instead of creating parallel `GLOSSARY*` files.
 
 ```markdown
 # Context Name

@@ -39,6 +39,8 @@ When a cheap focused signal can establish the relevant starting behavior before 
 
 Add or update a test only at a seam that represents the real caller-visible behavior. Inspect the final task-owned diff for scope creep, temporary instrumentation, stale compatibility paths, prototype-only artifacts, and anything unnecessary, over-complex, or resting on an assumption the evidence does not support; remove before simplifying, leave what already reads well unchanged, and re-run any check the cleanup invalidates. Never imply that an unrun check passed.
 
+Once the requested behavior is verified and the task-owned diff is clean, stop. Do not start a separate review or hardening pass unless the user asked for one; report worthwhile deeper review or unrelated follow-up separately instead of doing it automatically.
+
 ## Completion
 
 Report the implemented outcome, the evidence used to verify it, and any material limitation or blocker. Omit generic background and unchanged details.

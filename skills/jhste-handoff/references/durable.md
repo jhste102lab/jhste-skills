@@ -22,4 +22,4 @@ Omit empty sections. Add separate phase files only when outcomes have distinct o
 
 Do not treat an uncommitted tree or parallel workers as blockers by themselves. Stop only when ownership cannot be distinguished, isolation is insufficient, or continuing would overwrite another workstream.
 
-Update durable state at a material phase start, blocker or decision change, and verified phase completion. Avoid per-edit documentation churn. The active owner may update its section; the integration owner or finalizer verifies completion state.
+Update durable state at a material phase start, blocker or decision change, and verified phase completion. Avoid per-edit documentation churn. The active owner may update its section; the integration owner or final verifier checks completion state.
