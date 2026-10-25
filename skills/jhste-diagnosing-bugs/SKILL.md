@@ -35,7 +35,7 @@ Do not pause to seek approval for hypotheses unless user knowledge is the only a
 
 ## Fix and verify
 
-When a fix is requested, apply the smallest change supported by the evidence. Add regression protection only at a seam that reproduces the real failure pattern; do not create a shallow test that produces false confidence.
+When a fix is requested, apply the smallest change supported by the evidence and keep affected callers, existing tests, and fixtures consistent with the correction. Add regression protection only at a seam that reproduces the real failure pattern; do not create a shallow test that produces false confidence.
 
 Re-run the original signal or compare the same captured measurement after the fix. Expand nearby validation only when risk, integration surface, or an observed failure justifies it. Production instrumentation, shared-infrastructure changes, and external writes require authority for that target.
 
