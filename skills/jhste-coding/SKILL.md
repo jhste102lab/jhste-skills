@@ -11,7 +11,7 @@ Deliver the requested production behavior with the smallest clear change that fi
 
 ## Define the contract
 
-Before editing, identify the outcome, material non-goals, caller-visible behavior, important failure states, and the module that owns the change. Keep this brief for a small change and deepen it only when a contract or boundary is affected.
+Before editing, identify the outcome, material non-goals, caller-visible behavior, important failure states, and the module that owns the change. When changing core data contracts or shared state, confirm relevant types, state ownership and lifetime, persistence, and atomicity boundaries. Keep this brief for a small change and deepen it only when a contract or boundary is affected.
 
 Read any issue, specification, ticket, ADR, or handoff that the request identifies or that is unambiguously linked to the work. Use it to recover intended behavior, acceptance criteria, constraints, and non-goals; treat implementation details as guidance unless the artifact makes them contractual.
 
@@ -19,9 +19,9 @@ Discover repository and environment facts directly. Make reversible, repository-
 
 ## Implement
 
-Inspect the affected code, local guidance, and nearby patterns. Keep behavior that changes for the same reason together. Preserve public return shapes, nullability, errors, side effects, ordering, compatibility, authorization, and sensitive-data boundaries unless the request changes them.
+Inspect the affected code, local guidance, nearby patterns, and relevant caller/consumer paths. Prefer suitable existing code, standard/platform facilities, and installed dependencies before adding an implementation or dependency, without sacrificing correctness or security. Keep behavior that changes for the same reason together. Preserve input validation, public return shapes, nullability, errors, side effects, ordering, compatibility, authorization, and sensitive-data boundaries, including when moving code, unless the request changes them.
 
-When behavior is equivalent, prefer targeted edits over rewriting otherwise unchanged files.
+Complete affected callers, existing tests, and fixtures as needed. When behavior is equivalent, prefer targeted edits over rewriting otherwise unchanged files.
 
 Add an abstraction only when the current change demonstrates real variation, repeated change, or a clearer side-effect boundary. Avoid speculative extension points, pass-through wrappers, broad cleanup, and prototype scaffolding in production code.
 
