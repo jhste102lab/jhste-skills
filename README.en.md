@@ -22,7 +22,7 @@ Core `SKILL.md` files contain the task contract and important boundaries. Rare f
 ## Divide and continue work
 
 - **[`jhste-to-tickets`](skills/jhste-to-tickets/SKILL.md)** — turns defined work into one useful GitHub issue or an issue graph with real dependencies.
-- **[`jhste-handoff`](skills/jhste-handoff/SKILL.md)** — preserves verified state, authoritative references, ownership, abandoned approaches, and the exact next action for another executor.
+- **[`jhste-handoff`](skills/jhste-handoff/SKILL.md)** — preserves verified state, retrievable evidence, material conversation-only requirements, approval scope, failure context, and the exact next action for another executor.
 
 ## Recheck existing code results
 
@@ -45,7 +45,7 @@ Use `jhste-diagnosing-bugs` when an existing symptom has an uncertain cause, and
 
 PR review-only work and read-only assessment of existing review comments use the harness or general GitHub tools. A verified review finding with a known correction belongs to `jhste-coding`; an uncertain root cause belongs to `jhste-diagnosing-bugs`. Double-check does not replace the removed review workflows or inherit automatic comment, commit, push, or merge authority.
 
-`jhste-to-spec` records the behavior contract, `jhste-to-tickets` records executable issue boundaries and dependencies, and `jhste-handoff` records the current state another executor needs. They reference authoritative artifacts instead of duplicating them.
+`jhste-to-spec` records the behavior contract, `jhste-to-tickets` records executable issue boundaries and dependencies, and `jhste-handoff` records the current state another executor needs. They reference retrievable authoritative artifacts instead of duplicating them; handoffs preserve only the material information that would otherwise be unavailable.
 
 This package does not include a mandatory TDD workflow, Wayfinder, or a separate architecture-audit skill.
 

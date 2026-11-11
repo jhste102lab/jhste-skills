@@ -22,7 +22,7 @@
 ## 일을 나누고 이어가기
 
 - **[`jhste-to-tickets`](skills/jhste-to-tickets/SKILL.md)** — 정의된 작업을 하나의 유용한 GitHub issue 또는 실제 dependency가 있는 issue graph로 나눕니다.
-- **[`jhste-handoff`](skills/jhste-handoff/SKILL.md)** — 다음 실행자에게 검증된 상태, authoritative reference, 소유권, 버린 접근과 정확한 다음 작업을 전달합니다.
+- **[`jhste-handoff`](skills/jhste-handoff/SKILL.md)** — 다음 실행자에게 검증된 상태, 복구 가능한 근거, 대화에만 남은 중요 조건, 승인 범위, 실패 맥락과 정확한 다음 작업을 전달합니다.
 
 ## 기존 코드 결과 재검증
 
@@ -45,7 +45,7 @@
 
 PR을 읽고 지적만 하는 작업이나 기존 리뷰 의견의 타당성만 확인하는 작업은 하네스 또는 일반 GitHub 도구로 처리합니다. 이미 타당성이 확인된 리뷰 지적의 명확한 수정은 `jhste-coding`, 원인이 불명확한 문제는 `jhste-diagnosing-bugs`가 담당합니다. double-check는 삭제된 리뷰 workflow를 대신 흡수하지 않으며, 댓글 게시·commit·push·merge 권한을 자동으로 상속하지 않습니다.
 
-`jhste-to-spec`은 요구사항 계약, `jhste-to-tickets`는 실행 issue 경계와 dependency, `jhste-handoff`는 다음 실행자가 이어갈 현재 상태를 기록합니다. 서로의 내용을 중복 저장하지 않고 authoritative artifact를 참조합니다.
+`jhste-to-spec`은 요구사항 계약, `jhste-to-tickets`는 실행 issue 경계와 dependency, `jhste-handoff`는 다음 실행자가 이어갈 현재 상태를 기록합니다. 다시 접근할 수 있는 authoritative artifact는 중복 저장하지 않고 참조하며, 인수인계에서는 복구할 수 없는 중요 정보만 최소한으로 보존합니다.
 
 이 패키지는 의무적인 TDD workflow, Wayfinder, 별도 architecture-audit 스킬을 포함하지 않습니다.
 

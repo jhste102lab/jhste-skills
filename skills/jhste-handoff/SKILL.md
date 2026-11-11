@@ -19,15 +19,15 @@ Do not split a handoff because the work is large or may exceed a context window.
 
 ## Keep authority and sources clear
 
-A handoff request authorizes the corresponding local artifact or named repository document. It does not authorize commit, push, issue, pull-request, merge, or other external writes unless the request includes them.
+A handoff request authorizes the corresponding local artifact or named repository document. It does not authorize commit, push, issue, pull-request, merge, or other external writes unless the request includes them. Preserve material approvals and denials with their source, target, and scope; a handoff does not grant or renew authority.
 
 Keep the handoff independent of model, provider, CLI, or proprietary status protocol. Record a harness, worker, workspace, branch, or commit only as a current execution fact needed for resumption.
 
-Reference specifications, ADRs, glossaries, issues, commits, diffs, and other authoritative artifacts instead of copying them. A handoff records transfer and execution state; it does not replace those sources.
+Reference specifications, ADRs, glossaries, issues, commits, diffs, and other authoritative artifacts when the next executor can retrieve them. Preserve material requirements, constraints, and completion conditions stated only in conversation, and the minimum necessary evidence from otherwise inaccessible sources, noting the access limitation. A handoff records transfer and execution state; it does not replace accessible authoritative sources.
 
 ## Inspect only what keeps the transfer honest
 
-Start from the current conversation and already referenced artifacts. Inspect source state whose staleness could mislead the next executor, such as the task-owned diff, named verification, active ownership, unresolved blockers, live activity, and exact resume location.
+Start from the current conversation and already referenced artifacts. Inspect source state whose staleness could mislead the next executor, such as the task-owned diff, named verification, active ownership, unresolved blockers, live activity, and exact resume location. For failed attempts or restrictions that affect resumption, retain the evidence and applicable conditions; do not turn a transient failure into a permanent prohibition.
 
 Do not re-read the whole repository or ask the user to repeat discoverable information. Do not invent paths, commands, decisions, verification, or architecture. Leave reversible implementation choices to the next executor.
 
