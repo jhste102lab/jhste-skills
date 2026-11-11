@@ -77,6 +77,16 @@ Guidance reviewed on 2026-09-03 and 2026-09-05, and re-reviewed on 2026-10-07:
 
 No guide text is copied. Model-specific effort, search-trigger, conversation-history, thinking-display, progress-update, formatting, and API-message guidance remains outside these harness-neutral skills.
 
+## Handoff continuity review
+
+The 0.17.2 maintenance pass reviewed the following sources on 2026-11-11:
+
+- https://arxiv.org/html/2611.05306v1 — task-relevant state preservation and selective access to original evidence;
+- https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-claude-fable-5-2 — scoped approval rules and avoiding accumulated, overgeneralized cautions; and
+- https://felixrieseberg.com/how-to-be-more-ambitious-a-tutorial-for-humans-with-models/ — deeper evidence and external validation without broader scope.
+
+Only the existing handoff contract was clarified: retain otherwise-unrecoverable requirements and evidence, make source access portable, and preserve the scope and basis of failures and authority decisions. No source text is copied. Fixed compaction thresholds, model-specific effort or API settings, code-ownership prompts, and mandatory reviewer agents were not adopted. These clarifications do not establish measured cross-model performance or cost improvements.
+
 ## OpenAI GPT-6 Astra prompting guidance
 
 The 0.14.2 maintenance pass reviewed OpenAI's public prompting guidance for GPT-6 Astra, which notes stronger sensitivity to skill-file instructions, more frequent clarifying questions, and broader testing than a change needs. Two model-agnostic behaviors were adapted into existing contracts:

@@ -1,6 +1,6 @@
 # Portable Handoff
 
-Use one Markdown artifact in the harness's artifact or temporary-file location when possible. Tailor it to the next session's stated focus. If no focus is supplied, use the first incomplete material outcome rather than asking a routine question.
+Use one Markdown artifact in a location the next executor can access and that will survive the intended transfer. Use a harness artifact or temporary file only when it meets those conditions; note material access or lifetime limits. Tailor it to the next session's stated focus. If no focus is supplied, use the first incomplete material outcome rather than asking a routine question.
 
 Include only material sections:
 
@@ -32,4 +32,4 @@ Omit empty sections. Suggested skills should be few and directly relevant to the
 
 Redact API keys, passwords, tokens, private payloads, personally identifiable information, and unrelated sensitive data. Refer to secure locations or credential names without copying secret values.
 
-Do not duplicate specification, ADR, issue, commit, or diff contents. Preserve the exact identifier or path and state why it matters to the next action.
+For authoritative sources the next executor can retrieve, preserve the exact identifier or path and why it matters instead of duplicating their contents. Otherwise preserve only the material information needed to resume, subject to the redaction rules above, and state the retrieval limitation.
