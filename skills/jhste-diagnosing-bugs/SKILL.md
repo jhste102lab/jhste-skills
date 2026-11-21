@@ -13,6 +13,8 @@ Establish the strongest evidence-backed explanation available and, when a fix is
 
 Derive the symptom, environment, expected behavior, known-good comparison, and requested outcome from the request and available evidence. Inspect relevant guidance, domain context, code, recent changes, tests, logs, traces, and operational artifacts before asking for anything discoverable.
 
+When documents, summaries, or prior reports disagree with raw artifacts such as log lines, rows, responses, or traces, trust the raw artifact and report the discrepancy.
+
 Treat diagnose, investigate, debug, or explain as diagnosis-only unless a fix is also requested. Treat fix, resolve, repair, or correct as authority to diagnose and apply the in-scope correction.
 
 ## Build a useful signal
