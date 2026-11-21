@@ -87,6 +87,8 @@ The 0.17.2 maintenance pass reviewed the following sources on 2026-11-11:
 
 Only the existing handoff contract was clarified: retain otherwise-unrecoverable requirements and evidence, make source access portable, and preserve the scope and basis of failures and authority decisions. No source text is copied. Fixed compaction thresholds, model-specific effort or API settings, code-ownership prompts, and mandatory reviewer agents were not adopted. These clarifications do not establish measured cross-model performance or cost improvements.
 
+The 0.17.3 maintenance pass reused the Rieseberg source above for one `jhste-diagnosing-bugs` clarification: when documents, summaries, or prior reports disagree with raw artifacts, trust the raw artifact and report the discrepancy. No source text is copied.
+
 ## OpenAI GPT-6 Astra prompting guidance
 
 The 0.14.2 maintenance pass reviewed OpenAI's public prompting guidance for GPT-6 Astra, which notes stronger sensitivity to skill-file instructions, more frequent clarifying questions, and broader testing than a change needs. Two model-agnostic behaviors were adapted into existing contracts:
